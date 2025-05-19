@@ -1,0 +1,111 @@
+# Product Requirements Document: Karno E-commerce Platform
+
+## Overview
+Karno is an e-commerce platform specializing in car parts and automotive accessories for the Iranian market. The platform aims to provide a comprehensive, user-friendly shopping experience with robust search capabilities, secure payment processing, and efficient order management.
+
+## Target Audience
+- Car owners in Iran looking for replacement parts
+- Auto repair shops and mechanics
+- Car enthusiasts and DIY repairers
+
+## Key Features
+
+### 1. Product Catalog Management
+- Comprehensive database of car parts with detailed specifications
+- Categorization by vehicle make, model, year, and part type
+- Multi-image support for product listings
+- Inventory management with stock tracking
+
+### 2. User Authentication and Profiles
+- Secure user registration and login system
+- User profile management with order history
+- Address book functionality for shipping addresses
+- Wishlist and saved items
+
+### 3. Advanced Search and Filtering
+- Full-text search capability with suggestions
+- Vehicle compatibility search (by make, model, year)
+- Faceted filtering options (price, brand, rating)
+- Search result optimization and relevance sorting
+
+### 4. Shopping Cart and Checkout
+- Add to cart functionality with quantity adjustment
+- Cart persistence across sessions
+- Guest checkout option
+- Order summary with tax calculation
+
+### 5. Payment Gateway Integration
+- Zarinpal payment gateway integration for local Iranian payments
+- Payment status tracking and confirmation
+- Invoice generation
+- Secure payment processing with encryption
+
+### 6. Order Management
+- Order creation and processing workflow
+- Email notifications for order status changes
+- Order history for users
+- Admin panel for order management
+
+### 7. Order Tracking System
+- Unique tracking number generation for each order
+- Real-time status updates for orders
+- Timeline visualization for order milestones
+- Status notifications via email and SMS
+
+### 8. Database Optimization
+- Efficient schema design for MongoDB
+- Indexes for frequently queried fields
+- Connection pooling optimization
+- Query performance monitoring
+
+### 9. SEO Enhancements
+- Dynamic meta tags for product pages
+- Sitemap generation
+- Structured data for rich snippets
+- SEO-friendly URLs and page structure
+
+### 10. Analytics Integration
+- Google Analytics integration
+- Event tracking for user interactions
+- E-commerce tracking for sales and conversions
+- Performance reporting dashboard
+
+### 11. Security Implementation
+- Rate limiting to prevent abuse
+- CSRF protection measures
+- Security headers configuration
+- Input validation and sanitization
+
+### 12. Mobile Responsiveness
+- Responsive design for all device sizes
+- Touch-friendly interface elements
+- Optimized images for mobile data usage
+- Mobile-specific UX enhancements
+
+### 13. Customer Support Features
+- Live chat integration
+- Help center with FAQs
+- Ticket-based support system
+- Product return and exchange workflow
+
+## Technical Requirements
+- Node.js backend with Express.js
+- MongoDB database
+- React.js frontend
+- Responsive design using Bootstrap or Material UI
+- RESTful API architecture
+- JWT for authentication
+- Redis for caching (optional)
+
+## Constraints
+- Must comply with Iranian e-commerce regulations
+- Must support Persian language and calendar
+- Must work with local payment gateways available in Iran
+- Must consider international sanctions when selecting third-party services
+
+## Success Metrics
+- Conversion rate of at least 3%
+- Cart abandonment rate below 65%
+- Average order value of 2,000,000 IRR or higher
+- Site load time under 3 seconds
+- User session duration average of 5+ minutes 

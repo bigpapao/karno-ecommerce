@@ -1,0 +1,61 @@
+Product Requirements Document (PRD)
+Project Name: Karno – Auto Parts & Pre-Sale Platform
+1. Project Summary
+Karno is an e-commerce platform dedicated to selling rare and original car parts (e.g., OEM parts from Saipa) and also offering vehicle pre-sale services. Users can log in using their phone number and receive a verification code. To complete a purchase, they must enter full personal and shipping details, and the products will be delivered via postal service.
+2. Project Objectives
+- Launch a professional online store focused on original and hard-to-find car parts
+- Provide a fast and seamless mobile and desktop shopping experience
+- Ensure secure and error-free payment via Zarinpal gateway
+- Achieve strong SEO performance to increase organic traffic
+- Enable full admin control over products, orders, and inventory
+3. Target Audience
+- Individual car owners looking for authentic replacement parts
+- Local mechanics or workshops needing parts for customers
+- Users interested in pre-ordering specific vehicle models
+4. Core Functional Requirements
+Feature	Description
+Phone Number Login	Users log in with their mobile number and receive an SMS verification code
+Checkout Information	Full customer info required during checkout: name, address, postal code, etc.
+Product Search	Filter/search based on car brand and part type
+Shopping Cart & Payment	Integrated with Zarinpal payment gateway
+Admin Dashboard	Full product management, order tracking, and edit features
+Invoice & Tracking	Users can view invoice after purchase, and receive tracking code via SMS
+Language	Persian-only website
+Mobile Responsive	Fully responsive design for smartphones and tablets
+5. Website Pages
+- Homepage
+- Product Listing Page
+- Product Detail Page
+- Brand/Category Pages
+- About Us
+- Contact Page
+- User Account Dashboard
+- Admin Panel
+- Checkout Page
+- Order Success / Invoice Page
+6. Technology Stack
+Component	Technology
+Backend	Node.js (Express.js)
+Frontend	React.js with Tailwind CSS (modern, fast UI)
+Database	MongoDB (optimized for storing products, orders, customer data)
+Hosting	Shared Hosting
+Payment Gateway	Zarinpal
+SMS Service	Local SMS API (e.g., ippanel or sms.ir)
+7. Non-Functional Requirements
+- Strong SEO optimization for Google search visibility
+- Page load speed under 2 seconds on mobile
+- Secure form handling and data validation
+- Professional, modern UI/UX
+- Codebase structured and documented for future updates
+8. Additional Considerations
+
+- User Roles: Define permissions for regular users, admins, and guests.
+- Product Management: Admins can add, edit, delete products, manage categories/brands, and set inventory.
+- Order Management: Users can view/cancel orders; admins can update status and handle returns.
+- Notifications: Email notifications for order confirmation, password reset, etc.
+- Advanced Search: Filters for price, availability, compatibility.
+- Security: Rate limiting, captcha, two-factor authentication for admin panel.
+- Analytics: Admin dashboard for sales and user activity reports.
+- Accessibility: Ensure compliance with accessibility standards.
+- Testing: Automated tests and CI/CD pipeline for quality assurance.
+- Backup: Regular database and file backups.

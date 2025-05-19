@@ -1,0 +1,41 @@
+redirectsOrigin = "config"
+plugins = []
+headers = []
+
+[functions]
+
+[functions."*"]
+
+[build]
+publish = "C:\\Users\\vahid\\OneDrive\\Desktop\\test 1\\karno\\frontend\\build"
+publishOrigin = "config"
+commandOrigin = "config"
+command = "cd frontend && npm install --legacy-peer-deps && npm run build"
+base = "C:\\Users\\vahid\\OneDrive\\Desktop\\test 1\\karno"
+
+[build.environment]
+REACT_APP_API_URL = "https://karno-api.onrender.com"
+
+[build.processing]
+
+[build.processing.css]
+
+[build.processing.html]
+
+[build.processing.images]
+
+[build.processing.js]
+
+[build.services]
+
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200.0
+force = false
+
+[redirects.query]
+
+[redirects.conditions]
+
+[redirects.headers]

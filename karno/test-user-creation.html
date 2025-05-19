@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ایجاد کاربر آزمایشی</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vazirmatn@33.0.3/Vazirmatn-font-face.css">
+    <style>
+        body {
+            font-family: 'Vazirmatn', Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .step {
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        h1, h3 {
+            color: #333;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Vazirmatn', Arial, sans-serif;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0b7dda;
+        }
+        button:disabled {
+            background-color: #cccccc;
+        }
+        input {
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+            font-family: 'Vazirmatn', Arial, sans-serif;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        .success {
+            color: #4CAF50;
+            background-color: #e8f5e9;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .error {
+            color: #f44336;
+            background-color: #ffebee;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .info {
+            background-color: #e3f2fd;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <h1>ایجاد کاربر آزمایشی</h1>
+    <div class="info">
+        این ابزار یک کاربر آزمایشی با شماره موبایل ۰۹۳۰۴۳۱۴۲۴۶ و رمز عبور ۱۲۳۴۵۶۷۸ ایجاد می‌کند.
+        <br>
+        <strong>توجه:</strong> کد تأیید در کنسول سرور بک‌اند نمایش داده می‌شود.
+    </div>
+    
+    <div class="step">
+        <h3>گام ۱: درخواست کد تأیید</h3>
+        <p>برای شماره موبایل ۰۹۳۰۴۳۱۴۲۴۶ کد تأیید درخواست کنید:</p>
+        <button id="requestVerification">درخواست کد تأیید</button>
+        <div id="verificationResult" class="result"></div>
+    </div>
+    
+    <div class="step">
+        <h3>گام ۲: تأیید شماره موبایل و تنظیم رمز عبور</h3>
+        <p>کد تأیید دریافتی را وارد کنید:</p>
+        <input type="text" id="verificationCode" placeholder="کد تأیید">
+        <button id="verifyPhone">تأیید شماره و ایجاد کاربر</button>
+        <div id="verifyResult" class="result"></div>
+    </div>
+    
+    <div class="step">
+        <h3>گام ۳: آزمایش ورود</h3>
+        <p>ورود با شماره موبایل و رمز عبور را آزمایش کنید:</p>
+        <button id="testLogin">آزمایش ورود با رمز عبور</button>
+        <div id="loginResult" class="result"></div>
+    </div>
+    
+    <div class="step">
+        <h3>اطلاعات کاربر آزمایشی</h3>
+        <p><strong>شماره موبایل:</strong> ۰۹۳۰۴۳۱۴۲۴۶</p>
+        <p><strong>رمز عبور:</strong> ۱۲۳۴۵۶۷۸</p>
+        <p><strong>نام:</strong> Test User</p>
+    </div>
+
+    <script>
+        // API base URL
+        const API_URL = 'http://localhost:5000/api';
+        
+        // Test user data
+        const testUser = {
+            phone: '09304314246', // Will be normalized to 10 digits on the server
+            password: '12345678',
+            firstName: 'Test',
+            lastName: 'User'
+        };
+        
+        // Disable test login button initially
+        document.getElementById('testLogin').disabled = true;
+        
+        // Request verification code
+        document.getElementById('requestVerification').addEventListener('click', async () => {
+            const resultElement = document.getElementById('verificationResult');
+            resultElement.innerHTML = 'در حال ارسال درخواست کد تأیید...';
+            const button = document.getElementById('requestVerification');
+            button.disabled = true;
+            
+            try {
+                const response = await fetch(`${API_URL}/auth/request-verification`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ phone: testUser.phone })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultElement.innerHTML = `<div class="success">موفقیت! کد تأیید به شماره ${testUser.phone} ارسال شد.<br>کد تأیید را از کنسول سرور بک‌اند کپی کنید.</div>`;
+                    // Start countdown for button re-enable
+                    let countdown = 60;
+                    const countdownInterval = setInterval(() => {
+                        button.textContent = `درخواست مجدد (${countdown})`;
+                        countdown--;
+                        if (countdown < 0) {
+                            clearInterval(countdownInterval);
+                            button.textContent = 'درخواست کد تأیید';
+                            button.disabled = false;
+                        }
+                    }, 1000);
+                } else {
+                    resultElement.innerHTML = `<div class="error">خطا: ${data.message || 'ارسال کد تأیید با مشکل مواجه شد'}</div>`;
+                    button.disabled = false;
+                }
+            } catch (error) {
+                resultElement.innerHTML = `<div class="error">خطا: ${error.message}</div>`;
+                button.disabled = false;
+            }
+        });
+        
+        // Verify phone and create user
+        document.getElementById('verifyPhone').addEventListener('click', async () => {
+            const code = document.getElementById('verificationCode').value;
+            const resultElement = document.getElementById('verifyResult');
+            const button = document.getElementById('verifyPhone');
+            
+            if (!code) {
+                resultElement.innerHTML = '<div class="error">لطفاً کد تأیید را وارد کنید</div>';
+                return;
+            }
+            
+            resultElement.innerHTML = 'در حال تأیید شماره موبایل و ایجاد کاربر...';
+            button.disabled = true;
+            
+            try {
+                const response = await fetch(`${API_URL}/auth/verify-phone`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        phone: testUser.phone,
+                        code: code,
+                        password: testUser.password,
+                        firstName: testUser.firstName,
+                        lastName: testUser.lastName
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultElement.innerHTML = `<div class="success">موفقیت! کاربر ایجاد/تأیید شد.<br>توکن: ${data.token.substring(0, 20)}...</div>`;
+                    localStorage.setItem('testUserToken', data.token);
+                    // Enable the test login button
+                    document.getElementById('testLogin').disabled = false;
+                } else {
+                    resultElement.innerHTML = `<div class="error">خطا: ${data.message || 'تأیید شماره موبایل با مشکل مواجه شد'}</div>`;
+                }
+            } catch (error) {
+                resultElement.innerHTML = `<div class="error">خطا: ${error.message}</div>`;
+            } finally {
+                button.disabled = false;
+            }
+        });
+        
+        // Test login
+        document.getElementById('testLogin').addEventListener('click', async () => {
+            const resultElement = document.getElementById('loginResult');
+            const button = document.getElementById('testLogin');
+            resultElement.innerHTML = 'در حال آزمایش ورود...';
+            button.disabled = true;
+            
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        phone: testUser.phone,
+                        password: testUser.password
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultElement.innerHTML = `<div class="success">ورود موفقیت‌آمیز! کاربر: ${data.data.user.firstName} ${data.data.user.lastName}</div>`;
+                    
+                    // Show link to frontend app
+                    resultElement.innerHTML += `
+                        <div style="margin-top: 15px; text-align: center;">
+                            <p>اکنون می‌توانید وارد برنامه اصلی شوید:</p>
+                            <a href="http://localhost:3000" target="_blank" style="display: inline-block; padding: 10px 15px; background-color: #2196F3; color: white; text-decoration: none; border-radius: 4px; margin-top: 10px;">ورود به برنامه</a>
+                        </div>
+                    `;
+                } else {
+                    resultElement.innerHTML = `<div class="error">خطا: ${data.message || 'ورود با مشکل مواجه شد'}</div>`;
+                }
+            } catch (error) {
+                resultElement.innerHTML = `<div class="error">خطا: ${error.message}</div>`;
+            } finally {
+                button.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
