@@ -23,10 +23,10 @@ const createIndexes = async () => {
 
     // Create all indexes
     const result = await createAllIndexes();
-    
+
     if (result.success) {
       logger.info('Successfully created all database indexes');
-      
+
       // Get and display index information
       const indexInfo = await getIndexInfo();
       if (indexInfo.success) {
@@ -35,17 +35,17 @@ const createIndexes = async () => {
     } else {
       logger.error('Failed to create indexes:', result.error);
     }
-    
+
     process.exit(0);
   } catch (error) {
     logger.error({
       message: 'Error running index creation script',
       error: error.message,
-      stack: error.stack
+      stack: error.stack,
     });
     process.exit(1);
   }
 };
 
 // Run the function
-createIndexes(); 
+createIndexes();

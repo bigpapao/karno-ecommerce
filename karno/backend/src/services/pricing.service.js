@@ -28,14 +28,14 @@ export const calculateCartPricing = (items, options = {}) => {
   };
 
   // Sum the base prices (without discounts)
-  items.forEach(item => {
+  items.forEach((item) => {
     result.subtotal += item.price * item.quantity;
     result.totalItems += item.quantity;
   });
 
   // Apply bulk discounts (e.g., 10% off when buying 5+ of the same item)
   if (applyDiscounts && bulkDiscount) {
-    items.forEach(item => {
+    items.forEach((item) => {
       if (item.quantity >= 5) {
         const itemDiscount = (item.price * item.quantity) * 0.1; // 10% discount
         result.discount += itemDiscount;
@@ -68,14 +68,14 @@ export const calculateCartPricing = (items, options = {}) => {
   // Calculate shipping (simplified example)
   // Free shipping over 1,000,000 IRR, otherwise 200,000 IRR
   result.shipping = result.subtotal > 1000000 ? 0 : 200000;
-  
+
   // Calculate tax (simplified example - 9% VAT)
   const taxRate = 0.09;
   result.tax = (result.subtotal - result.discount) * taxRate;
-  
+
   // Calculate final total
   result.total = (result.subtotal - result.discount) + result.tax + result.shipping;
-  
+
   return result;
 };
 
@@ -88,7 +88,7 @@ export const validatePromoCode = async (promoCode) => {
   // In a real app, we would validate against a database
   // For this example, we'll hardcode some valid promo codes
   const validPromoCodes = {
-    'WELCOME15': {
+    WELCOME15: {
       code: 'WELCOME15',
       type: 'PERCENTAGE',
       value: 15,
@@ -96,31 +96,31 @@ export const validatePromoCode = async (promoCode) => {
       minOrderValue: 500000, // 500,000 IRR minimum
       expiryDate: new Date('2023-12-31'),
     },
-    'FREESHIPPING': {
+    FREESHIPPING: {
       code: 'FREESHIPPING',
       type: 'FREE_SHIPPING',
       description: 'Free shipping on your order',
       minOrderValue: 800000, // 800,000 IRR minimum
       expiryDate: new Date('2023-12-31'),
     },
-    'BUNDLE25': {
+    BUNDLE25: {
       code: 'BUNDLE25',
       type: 'PERCENTAGE',
-      value: 25, 
+      value: 25,
       description: '25% off when ordering car parts bundle',
       minOrderValue: 1500000, // 1,500,000 IRR minimum
       expiryDate: new Date('2023-12-31'),
       requiredCategories: ['Brakes', 'Oil', 'Filters'], // Must have items from these categories
       requiredCategoryCount: 3, // Must have items from all 3 categories
-    }
+    },
   };
-  
+
   const promo = validPromoCodes[promoCode];
-  
+
   if (!promo) {
     return null;
   }
-  
+
   // Check if promo is expired
   if (promo.expiryDate && promo.expiryDate < new Date()) {
     return {
@@ -129,10 +129,10 @@ export const validatePromoCode = async (promoCode) => {
       error: 'Promotion has expired',
     };
   }
-  
+
   return {
     valid: true,
-    ...promo
+    ...promo,
   };
 };
 
@@ -144,7 +144,7 @@ export const validatePromoCode = async (promoCode) => {
  */
 export const applyPromoCodeToCart = async (cart, promoCode) => {
   const promo = await validatePromoCode(promoCode);
-  
+
   if (!promo || !promo.valid) {
     return {
       success: false,
@@ -152,11 +152,10 @@ export const applyPromoCodeToCart = async (cart, promoCode) => {
       pricing: calculateCartPricing(cart.items),
     };
   }
-  
+
   // Calculate subtotal to check minimum order value
-  const subtotal = cart.items.reduce((total, item) => 
-    total + item.price * item.quantity, 0);
-  
+  const subtotal = cart.items.reduce((total, item) => total + item.price * item.quantity, 0);
+
   if (promo.minOrderValue && subtotal < promo.minOrderValue) {
     return {
       success: false,
@@ -164,21 +163,21 @@ export const applyPromoCodeToCart = async (cart, promoCode) => {
       pricing: calculateCartPricing(cart.items),
     };
   }
-  
+
   // Check for required categories if applicable
   if (promo.requiredCategories && promo.requiredCategories.length > 0) {
     // In a real app, we would check item categories from the database
     // For this example, we'll assume category data is included with items
     // This would require populating product data when returning the cart
-    
+
     // This is simplified logic - in a real app, you would fetch category data
     const uniqueCategories = new Set();
-    cart.items.forEach(item => {
+    cart.items.forEach((item) => {
       if (item.category && promo.requiredCategories.includes(item.category)) {
         uniqueCategories.add(item.category);
       }
     });
-    
+
     if (uniqueCategories.size < promo.requiredCategoryCount) {
       return {
         success: false,
@@ -187,18 +186,18 @@ export const applyPromoCodeToCart = async (cart, promoCode) => {
       };
     }
   }
-  
+
   // Calculate cart pricing with promo code
-  const pricing = calculateCartPricing(cart.items, { 
+  const pricing = calculateCartPricing(cart.items, {
     applyDiscounts: true,
     bulkDiscount: true,
-    promoCode: promoCode,
+    promoCode,
   });
-  
+
   return {
     success: true,
     message: `Promotion code '${promoCode}' applied successfully`,
     pricing,
     promoDetails: promo,
   };
-}; 
+};

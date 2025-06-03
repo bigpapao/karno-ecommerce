@@ -1,10 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Zarinpal Payment Test</title>
-  <style>
+    <style>
+    /* Set text direction for default language */
+    body[dir="ltr"] {
+      text-align: left;
+    }
+    body[dir="rtl"] {
+      text-align: right;
+    }
+    
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       line-height: 1.6;
@@ -39,6 +47,14 @@
       border-radius: 4px;
       font-size: 16px;
       box-sizing: border-box;
+    }
+    /* RTL specific styles */
+    html[dir="rtl"] input, 
+    html[dir="rtl"] select {
+      text-align: right;
+    }
+    html[dir="rtl"] input::placeholder {
+      text-align: right;
     }
     button {
       background-color: #4CAF50;
@@ -83,9 +99,15 @@
       background-color: #f1f1f1;
       border-radius: 4px 4px 0 0;
     }
+    /* Fix tab button direction based on document direction */
+    html[dir="ltr"] .tab button {
+      float: left;
+    }
+    html[dir="rtl"] .tab button {
+      float: right;
+    }
     .tab button {
       background-color: inherit;
-      float: left;
       border: none;
       outline: none;
       cursor: pointer;
@@ -110,6 +132,14 @@
       border-radius: 0 0 4px 4px;
       background-color: white;
     }
+    /* Set initial tab visibility */
+    #CreatePayment {
+      display: block;
+    }
+    /* Hide results by default */
+    #createResult, #statusResult {
+      display: none;
+    }
     .loader {
       border: 5px solid #f3f3f3;
       border-radius: 50%;
@@ -128,19 +158,39 @@
       max-width: 180px;
       margin-bottom: 15px;
     }
+    .language-toggle {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+    .language-toggle button {
+      padding: 5px 10px;
+      margin: 0 5px;
+      background-color: #f1f1f1;
+      color: #333;
+      border: 1px solid #ddd;
+    }
+    .language-toggle button.active {
+      background-color: #4CAF50;
+      color: white;
+    }
   </style>
 </head>
 <body>
   <div class="container">
+    <div class="language-toggle">
+      <button type="button" onclick="setLanguage('en')" id="en-button">English</button>
+      <button type="button" onclick="setLanguage('fa')" id="fa-button">فارسی</button>
+    </div>
+    
     <h1>Zarinpal Payment Gateway Test</h1>
     <p>This page allows administrators to test the Zarinpal payment integration.</p>
     
     <div class="tab">
-      <button class="tablinks active" onclick="openTab(event, 'CreatePayment')">Create Payment</button>
-      <button class="tablinks" onclick="openTab(event, 'CheckStatus')">Check Payment Status</button>
+      <button type="button" class="tablinks active" onclick="openTab(event, 'CreatePayment')">Create Payment</button>
+      <button type="button" class="tablinks" onclick="openTab(event, 'CheckStatus')">Check Payment Status</button>
     </div>
     
-    <div id="CreatePayment" class="tabcontent" style="display: block;">
+    <div id="CreatePayment" class="tabcontent">
       <img src="https://www.zarinpal.com/assets/images/logo-white.svg" alt="Zarinpal Logo" class="zarinpal-logo">
       <h2>Initiate a Test Payment</h2>
       
@@ -152,11 +202,11 @@
       <div class="error" id="createError"></div>
       <div class="success" id="createSuccess"></div>
       
-      <button onclick="initiatePayment()">Initiate Payment</button>
+      <button type="button" onclick="initiatePayment()">Initiate Payment</button>
       
       <div class="loader" id="createLoader"></div>
       
-      <div class="result" id="createResult" style="display: none;"></div>
+      <div class="result" id="createResult"></div>
     </div>
     
     <div id="CheckStatus" class="tabcontent">
@@ -170,15 +220,70 @@
       <div class="error" id="statusError"></div>
       <div class="success" id="statusSuccess"></div>
       
-      <button onclick="checkPaymentStatus()">Check Status</button>
+      <button type="button" onclick="checkPaymentStatus()">Check Status</button>
       
       <div class="loader" id="statusLoader"></div>
       
-      <div class="result" id="statusResult" style="display: none;"></div>
+      <div class="result" id="statusResult"></div>
     </div>
   </div>
   
   <script>
+    // Language handling function
+    function setLanguage(lang) {
+      const htmlElement = document.documentElement;
+      
+      if (lang === 'fa') {
+        htmlElement.setAttribute('lang', 'fa');
+        htmlElement.setAttribute('dir', 'rtl');
+        document.getElementById('fa-button').classList.add('active');
+        document.getElementById('en-button').classList.remove('active');
+        
+        // Update text content for Persian
+        document.querySelector('h1').textContent = 'تست درگاه پرداخت زرین‌پال';
+        document.querySelector('p').textContent = 'این صفحه به مدیران اجازه می‌دهد تا یکپارچه‌سازی پرداخت زرین‌پال را آزمایش کنند.';
+        document.querySelectorAll('.tablinks')[0].textContent = 'ایجاد پرداخت';
+        document.querySelectorAll('.tablinks')[1].textContent = 'بررسی وضعیت پرداخت';
+        document.querySelector('#CreatePayment h2').textContent = 'شروع یک پرداخت آزمایشی';
+        document.querySelector('#CheckStatus h2').textContent = 'بررسی وضعیت پرداخت';
+        document.querySelector('label[for="orderId"]').textContent = 'شناسه سفارش:';
+        document.querySelector('label[for="statusOrderId"]').textContent = 'شناسه سفارش:';
+        document.querySelector('#orderId').placeholder = 'شناسه سفارش را وارد کنید';
+        document.querySelector('#statusOrderId').placeholder = 'شناسه سفارش را وارد کنید';
+        document.querySelector('#CreatePayment button').textContent = 'شروع پرداخت';
+        document.querySelector('#CheckStatus button').textContent = 'بررسی وضعیت';
+        
+      } else {
+        htmlElement.setAttribute('lang', 'en');
+        htmlElement.setAttribute('dir', 'ltr');
+        document.getElementById('en-button').classList.add('active');
+        document.getElementById('fa-button').classList.remove('active');
+        
+        // Update text content for English
+        document.querySelector('h1').textContent = 'Zarinpal Payment Gateway Test';
+        document.querySelector('p').textContent = 'This page allows administrators to test the Zarinpal payment integration.';
+        document.querySelectorAll('.tablinks')[0].textContent = 'Create Payment';
+        document.querySelectorAll('.tablinks')[1].textContent = 'Check Payment Status';
+        document.querySelector('#CreatePayment h2').textContent = 'Initiate a Test Payment';
+        document.querySelector('#CheckStatus h2').textContent = 'Check Payment Status';
+        document.querySelector('label[for="orderId"]').textContent = 'Order ID:';
+        document.querySelector('label[for="statusOrderId"]').textContent = 'Order ID:';
+        document.querySelector('#orderId').placeholder = 'Enter the Order ID';
+        document.querySelector('#statusOrderId').placeholder = 'Enter the Order ID';
+        document.querySelector('#CreatePayment button').textContent = 'Initiate Payment';
+        document.querySelector('#CheckStatus button').textContent = 'Check Status';
+      }
+    }
+    
+    // Initialize language based on browser settings
+    function initLanguage() {
+      const userLang = navigator.language || navigator.userLanguage;
+      setLanguage(userLang.startsWith('fa') ? 'fa' : 'en');
+    }
+    
+    // Call initLanguage on page load
+    window.onload = initLanguage;
+    
     // Function to handle tab switching
     function openTab(evt, tabName) {
       var i, tabcontent, tablinks;
@@ -211,7 +316,9 @@
       createLoader.style.display = 'block';
       
       if (!orderId) {
-        createError.textContent = 'Please enter an Order ID';
+        createError.textContent = document.documentElement.lang === 'fa' ? 
+          'لطفا شناسه سفارش را وارد کنید' : 
+          'Please enter an Order ID';
         createError.style.display = 'block';
         createLoader.style.display = 'none';
         return;
@@ -237,22 +344,32 @@
         const data = await response.json();
         
         if (response.ok) {
-          createSuccess.textContent = 'Payment initiated successfully!';
+          createSuccess.textContent = document.documentElement.lang === 'fa' ? 
+            'پرداخت با موفقیت آغاز شد!' : 
+            'Payment initiated successfully!';
           createSuccess.style.display = 'block';
           
           createResult.textContent = JSON.stringify(data, null, 2);
           createResult.style.display = 'block';
           
           // Ask if they want to redirect to the payment page
-          if (confirm('Do you want to redirect to the Zarinpal payment page?')) {
+          if (confirm(document.documentElement.lang === 'fa' ? 
+              'آیا می‌خواهید به صفحه پرداخت زرین‌پال هدایت شوید؟' : 
+              'Do you want to redirect to the Zarinpal payment page?')) {
             window.open(data.data.paymentUrl, '_blank');
           }
         } else {
-          createError.textContent = data.error?.message || 'Failed to initiate payment';
+          createError.textContent = data.error?.message || 
+            (document.documentElement.lang === 'fa' ? 
+              'خطا در آغاز پرداخت' : 
+              'Failed to initiate payment');
           createError.style.display = 'block';
         }
       } catch (error) {
-        createError.textContent = error.message || 'An error occurred';
+        createError.textContent = error.message || 
+          (document.documentElement.lang === 'fa' ? 
+            'خطایی رخ داد' : 
+            'An error occurred');
         createError.style.display = 'block';
       } finally {
         createLoader.style.display = 'none';
@@ -273,7 +390,9 @@
       statusLoader.style.display = 'block';
       
       if (!orderId) {
-        statusError.textContent = 'Please enter an Order ID';
+        statusError.textContent = document.documentElement.lang === 'fa' ? 
+          'لطفا شناسه سفارش را وارد کنید' : 
+          'Please enter an Order ID';
         statusError.style.display = 'block';
         statusLoader.style.display = 'none';
         return;
@@ -292,21 +411,31 @@
         
         if (response.ok) {
           if (data.data.isPaid) {
-            statusSuccess.textContent = 'Order is paid!';
+            statusSuccess.textContent = document.documentElement.lang === 'fa' ? 
+              'سفارش پرداخت شده است!' : 
+              'Order is paid!';
             statusSuccess.style.display = 'block';
           } else {
-            statusError.textContent = 'Order is not paid yet';
+            statusError.textContent = document.documentElement.lang === 'fa' ? 
+              'سفارش هنوز پرداخت نشده است' : 
+              'Order is not paid yet';
             statusError.style.display = 'block';
           }
           
           statusResult.textContent = JSON.stringify(data, null, 2);
           statusResult.style.display = 'block';
         } else {
-          statusError.textContent = data.error?.message || 'Failed to check payment status';
+          statusError.textContent = data.error?.message || 
+            (document.documentElement.lang === 'fa' ? 
+              'خطا در بررسی وضعیت پرداخت' : 
+              'Failed to check payment status');
           statusError.style.display = 'block';
         }
       } catch (error) {
-        statusError.textContent = error.message || 'An error occurred';
+        statusError.textContent = error.message || 
+          (document.documentElement.lang === 'fa' ? 
+            'خطایی رخ داد' : 
+            'An error occurred');
         statusError.style.display = 'block';
       } finally {
         statusLoader.style.display = 'none';

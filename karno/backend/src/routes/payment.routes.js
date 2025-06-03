@@ -10,17 +10,16 @@ import {
   handleZarinpalCallback,
   getZarinpalPaymentStatus,
 } from '../controllers/zarinpal.controller.js';
-import { protect } from '../middleware/auth.middleware.js';
-import { csrfExclude } from '../middleware/csrf.middleware.js';
+import { authenticate } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 
 // Webhook and callback endpoints don't need authentication or CSRF protection
 router.post('/webhook', express.raw({ type: 'application/json' }), handleStripeWebhook);
-router.get('/zarinpal/callback', csrfExclude(), handleZarinpalCallback);
+router.get('/zarinpal/callback', handleZarinpalCallback);
 
 // Protected routes
-router.use(protect);
+router.use(authenticate);
 
 // Stripe endpoints
 router.post('/create-payment-intent', createPaymentIntent);

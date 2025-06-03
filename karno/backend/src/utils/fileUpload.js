@@ -2,7 +2,7 @@ import multer from 'multer';
 import path, { dirname } from 'path'; // Node.js path module
 import fs from 'fs'; // Node.js file system module
 import { fileURLToPath } from 'url';
-import { AppError } from '../middleware/errorHandler.js'; // Assuming you have this
+import { AppError } from '../middleware/error-handler.middleware.js'; // Assuming you have this
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -47,13 +47,32 @@ const imageFileFilter = (req, file, cb) => {
 
 // Multer upload instance for product images
 // Assuming you want to upload multiple images, max 10, under the field name 'images'
-export const uploadProductImages = multer({
+const multerUpload = multer({
   storage: productStorage,
   fileFilter: imageFileFilter,
   limits: {
     fileSize: 1024 * 1024 * 5, // 5 MB limit per image
   },
 }).array('images', 10); // 'images' is the field name in the form, 10 is max count
+
+// Wrapper middleware to ensure images field is always present
+export const uploadProductImages = (req, res, next) => {
+  multerUpload(req, res, (err) => {
+    if (err) {
+      return next(err);
+    }
+
+    // Convert uploaded files to the format expected by validation
+    if (req.files && req.files.length > 0) {
+      req.body.images = req.files.map(file => `/uploads/products/${file.filename}`);
+    } else {
+      // Ensure images field exists as empty array when no files uploaded
+      req.body.images = [];
+    }
+
+    next();
+  });
+};
 
 // If you need to upload a single image (e.g., for a main product image)
 // export const uploadSingleProductImage = multer({

@@ -1,6 +1,6 @@
 /**
  * Address Routes
- * 
+ *
  * API routes for managing user addresses.
  */
 
@@ -12,35 +12,22 @@ import {
   updateAddress,
   deleteAddress,
   setDefaultAddress,
-  validateAddressData
-} from '../controllers/addressController.js';
-import { validateAddress } from '../middleware/address.middleware.js';
-import { protect } from '../middleware/auth.middleware.js';
+} from '../controllers/address.controller.js';
+import { validateRequest, schemas } from '../middleware/validation.middleware.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
+import { verifyToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Protect all address routes
-router.use(protect);
+// All routes require authentication
+router.use(verifyToken);
 
-// GET /api/addresses - Get all addresses for the authenticated user
-router.get('/', getUserAddresses);
+// Address routes
+router.get('/', asyncHandler(getUserAddresses));
+router.get('/:id', asyncHandler(getAddressById));
+router.post('/', validateRequest(schemas.createAddress), asyncHandler(addAddress));
+router.put('/:id', validateRequest(schemas.updateAddress), asyncHandler(updateAddress));
+router.delete('/:id', asyncHandler(deleteAddress));
+router.put('/:id/default', asyncHandler(setDefaultAddress));
 
-// GET /api/addresses/:id - Get a specific address by ID
-router.get('/:id', getAddressById);
-
-// POST /api/addresses - Add a new address
-router.post('/', validateAddress, addAddress);
-
-// PUT /api/addresses/:id - Update an existing address
-router.put('/:id', validateAddress, updateAddress);
-
-// DELETE /api/addresses/:id - Delete an address
-router.delete('/:id', deleteAddress);
-
-// PATCH /api/addresses/:id/default - Set an address as default
-router.patch('/:id/default', setDefaultAddress);
-
-// POST /api/addresses/validate - Validate an address without saving it
-router.post('/validate', validateAddress, validateAddressData);
-
-export default router; 
+export default router;

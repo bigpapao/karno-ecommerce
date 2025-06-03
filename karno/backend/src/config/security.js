@@ -57,7 +57,17 @@ export const cspConfig = {
     defaultSrc: ["'self'"],
     scriptSrc: ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net'],
     styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://cdn.jsdelivr.net'],
-    imgSrc: ["'self'", 'data:', 'https://res.cloudinary.com'],
+    imgSrc: [
+      "'self'", 
+      'data:', 
+      'https://res.cloudinary.com',
+      // Allow localhost images in development
+      ...(process.env.NODE_ENV === 'development' ? [
+        'http://localhost:3000',
+        'http://localhost:5000',
+        'http://localhost:5001'
+      ] : [])
+    ],
     fontSrc: ["'self'", 'https://fonts.gstatic.com'],
     connectSrc: ["'self'", process.env.CLIENT_URL || 'http://localhost:3000'],
     frameSrc: ["'self'"],

@@ -1,109 +1,91 @@
 import winston from 'winston';
-import 'winston-daily-rotate-file';
-import fs from 'fs';
+import DailyRotateFile from 'winston-daily-rotate-file';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
-// Create logs directory if it doesn't exist
-const logsDir = path.join(process.cwd(), 'logs');
-if (!fs.existsSync(logsDir)) {
-  fs.mkdirSync(logsDir);
-}
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Define log format
 const logFormat = winston.format.combine(
-  winston.format.timestamp({
-    format: 'YYYY-MM-DD HH:mm:ss',
-  }),
+  winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
   winston.format.errors({ stack: true }),
   winston.format.splat(),
-  winston.format.json()
+  winston.format.json(),
 );
 
-// Create file transport for error logs
-const errorFileTransport = new winston.transports.DailyRotateFile({
-  filename: path.join(logsDir, 'error-%DATE%.log'),
-  datePattern: 'YYYY-MM-DD',
-  level: 'error',
-  maxSize: '20m',
-  maxFiles: '14d',
-  format: logFormat,
-});
-
-// Create file transport for all logs
-const combinedFileTransport = new winston.transports.DailyRotateFile({
-  filename: path.join(logsDir, 'combined-%DATE%.log'),
-  datePattern: 'YYYY-MM-DD',
-  maxSize: '20m',
-  maxFiles: '14d',
-  format: logFormat,
-});
-
-// Create console transport for development
-const consoleTransport = new winston.transports.Console({
-  format: winston.format.combine(
-    winston.format.colorize(),
-    winston.format.printf(({ level, message, timestamp, ...meta }) => {
-      // Pretty print for objects
-      let metaStr = '';
-      if (Object.keys(meta).length > 0 && meta.stack) {
-        metaStr = `\n${meta.stack}`;
-      } else if (Object.keys(meta).length > 0) {
-        metaStr = `\n${JSON.stringify(meta, null, 2)}`;
-      }
-      
-      return `${timestamp} ${level}: ${message}${metaStr}`;
-    })
-  ),
-});
-
-// Initialize logger with transports
-const logger = winston.createLogger({
+// Create logger instance
+export const logger = winston.createLogger({
   level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
   format: logFormat,
-  defaultMeta: { service: 'karno-backend' },
+  defaultMeta: { service: 'karno-api' },
   transports: [
-    errorFileTransport,
-    combinedFileTransport
+    // Write all logs to console
+    new winston.transports.Console({
+      format: winston.format.combine(
+        winston.format.colorize(),
+        winston.format.simple(),
+      ),
+    }),
+    // Write all logs with level 'error' and below to error.log
+    new DailyRotateFile({
+      filename: path.join(__dirname, '../../logs', 'error-%DATE%.log'),
+      datePattern: 'YYYY-MM-DD',
+      level: 'error',
+      maxSize: '20m',
+      maxFiles: '14d',
+    }),
+    // Write all logs with level 'info' and below to combined.log
+    new DailyRotateFile({
+      filename: path.join(__dirname, '../../logs', 'combined-%DATE%.log'),
+      datePattern: 'YYYY-MM-DD',
+      maxSize: '20m',
+      maxFiles: '14d',
+    }),
   ],
-  // Handle uncaught exceptions and rejections
-  exceptionHandlers: [
-    new winston.transports.File({ filename: path.join(logsDir, 'exceptions.log') }),
-    consoleTransport
-  ],
-  rejectionHandlers: [
-    new winston.transports.File({ filename: path.join(logsDir, 'rejections.log') }),
-    consoleTransport
-  ],
-  exitOnError: false // Don't exit on handled exceptions
 });
 
-// If we're not in production, log to the console as well
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(consoleTransport);
-}
-
-// Create a stream object with a write function that will be used by morgan
+// Create a stream object for Morgan
 logger.stream = {
   write: (message) => {
     logger.info(message.trim());
   },
 };
 
-// Add custom log functions
-logger.logAPIRequest = (req, res, next) => {
+// API Request logging middleware
+export const logAPIRequest = (req, res, next) => {
+  const start = Date.now();
+
+  // Log the incoming request
   logger.info({
-    message: `API Request: ${req.method} ${req.originalUrl}`,
-    requestInfo: {
-      method: req.method,
-      url: req.originalUrl,
-      ip: req.ip,
-      userId: req.user ? req.user.id : 'unauthenticated',
-      userAgent: req.headers['user-agent']
-    }
+    message: 'API Request',
+    method: req.method,
+    url: req.originalUrl || req.url,
+    ip: req.ip || req.connection.remoteAddress,
+    userAgent: req.get('user-agent'),
+    userId: req.user?.id || 'anonymous',
+    timestamp: new Date().toISOString(),
   });
+
+  // Override res.end to log response
+  const originalEnd = res.end;
+  res.end = function (...args) {
+    const duration = Date.now() - start;
+
+    logger.info({
+      message: 'API Response',
+      method: req.method,
+      url: req.originalUrl || req.url,
+      statusCode: res.statusCode,
+      duration: `${duration}ms`,
+      ip: req.ip || req.connection.remoteAddress,
+      userId: req.user?.id || 'anonymous',
+    });
+
+    originalEnd.apply(this, args);
+  };
+
   next();
 };
-
-export { logger };
 
 export default logger;

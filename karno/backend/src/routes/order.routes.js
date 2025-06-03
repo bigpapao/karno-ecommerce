@@ -1,44 +1,44 @@
 import express from 'express';
 import {
   getOrders,
+  getUserOrders,
   getOrderById,
   createOrder,
   updateOrderStatus,
-  getUserOrders,
   cancelOrder,
   updatePaymentStatus,
   updateOrderTracking,
   getOrderStats,
   bulkUpdateOrderStatus,
   getOrderByTracking,
-  verifyGuestOrder
+  verifyGuestOrder,
 } from '../controllers/order.controller.js';
-import { authenticate, authorize } from '../middleware/auth.middleware.js';
-import { verifyGuestOrderAccess } from '../utils/guestOrderToken.js';
+import { validateRequest, schemas } from '../middleware/validation.middleware.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
+import { verifyToken, isAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Public routes (no authentication required)
-router.post('/guest/verify', verifyGuestOrder);
-router.get('/track/:tracking', getOrderByTracking);
+// Public routes
+router.get('/track/:trackingCode', asyncHandler(getOrderByTracking));
+router.post('/verify-guest', asyncHandler(verifyGuestOrder));
 
-// Routes that support both guest checkout and authenticated users
-router.post('/', createOrder);
-
-// Routes below this middleware require authentication
-router.use(authenticate);
+// Protected routes
+router.use(verifyToken);
 
 // User routes
-router.get('/user', getUserOrders);
-router.get('/:id', getOrderById);
-router.post('/:id/cancel', cancelOrder);
+router.get('/user', asyncHandler(getUserOrders));
+router.get('/:id', asyncHandler(getOrderById));
+router.post('/', validateRequest(schemas.createOrder), asyncHandler(createOrder));
+router.post('/:id/cancel', asyncHandler(cancelOrder));
 
-// Admin only routes
-router.get('/', authorize('admin'), getOrders);
-router.get('/stats', authorize('admin'), getOrderStats);
-router.put('/bulk-status-update', authorize('admin'), bulkUpdateOrderStatus);
-router.put('/:id/status', authorize('admin'), updateOrderStatus);
-router.put('/:id/payment', authorize('admin'), updatePaymentStatus);
-router.put('/:id/tracking', authorize('admin'), updateOrderTracking);
+// Admin routes
+router.use(isAdmin);
+router.get('/', validateRequest(schemas.getOrders, 'query'), asyncHandler(getOrders));
+router.get('/stats', asyncHandler(getOrderStats));
+router.put('/:id/status', validateRequest(schemas.updateOrderStatus), asyncHandler(updateOrderStatus));
+router.put('/:id/payment', validateRequest(schemas.updatePaymentStatus), asyncHandler(updatePaymentStatus));
+router.put('/:id/tracking', validateRequest(schemas.updateOrderTracking), asyncHandler(updateOrderTracking));
+router.put('/bulk-status', validateRequest(schemas.bulkUpdateOrderStatus), asyncHandler(bulkUpdateOrderStatus));
 
 export default router;

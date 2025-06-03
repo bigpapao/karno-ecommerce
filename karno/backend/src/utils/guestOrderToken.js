@@ -1,88 +1,84 @@
 import jwt from 'jsonwebtoken';
-import crypto from 'crypto';
-
-// Secret key for guest order tokens
-const GUEST_ORDER_SECRET = process.env.GUEST_ORDER_SECRET || 
-  crypto.randomBytes(32).toString('hex'); // Generate random if not set in env
+import { AppError } from '../middleware/error-handler.middleware.js';
 
 /**
- * Generate a temporary token for guest users to access their order
- * 
- * @param {string} orderId - The order ID 
- * @param {string} email - The guest email
- * @returns {string} The JWT token
+ * Generate a token for guest order verification
+ * @param {string} orderId - Order ID to encode in token
+ * @param {Object} guestInfo - Guest information (email and phone)
+ * @returns {string} JWT token
  */
-export const generateGuestOrderToken = async (orderId, email) => {
+export const generateGuestOrderToken = (orderId, guestInfo) => {
+  const payload = {
+    orderId,
+    guestInfo,
+    type: 'guest_order',
+  };
+
   return jwt.sign(
-    { 
-      type: 'guest_order',
-      orderId,
-      email
-    },
-    GUEST_ORDER_SECRET,
-    { expiresIn: '1h' } // Token expires in 1 hour
+    payload,
+    process.env.JWT_SECRET || 'fallback_secret_do_not_use_in_production',
+    { expiresIn: '30d' }, // Guest order tokens valid for 30 days
   );
 };
 
 /**
  * Verify a guest order token
- * 
- * @param {string} token - The JWT token to verify
- * @returns {Object|null} The decoded token payload or null if invalid
+ * @param {string} token - JWT token to verify
+ * @returns {Object} Decoded token payload
  */
 export const verifyGuestOrderToken = (token) => {
   try {
-    const decoded = jwt.verify(token, GUEST_ORDER_SECRET);
-    
-    // Ensure it's a guest order token
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || 'fallback_secret_do_not_use_in_production',
+    );
+
     if (decoded.type !== 'guest_order') {
-      return null;
+      throw new AppError('Invalid token type', 400);
     }
-    
+
     return decoded;
   } catch (error) {
-    return null;
+    throw new AppError('Invalid or expired token', 401);
   }
 };
 
 /**
  * Middleware to verify guest order access
- * 
- * This middleware can be used to protect guest order routes
- * It attaches the guest order info to req.guestOrder if valid
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
  */
 export const verifyGuestOrderAccess = (req, res, next) => {
-  // Get token from header
-  const token = req.headers.authorization?.split(' ')[1];
-  
-  if (!token) {
-    return res.status(401).json({
-      success: false,
-      message: 'No token provided'
-    });
+  try {
+    // Get token from headers, query or body
+    const token = req.headers.authorization?.split(' ')[1]
+      || req.query.token
+      || req.body.token;
+
+    if (!token) {
+      return next(new AppError('Authentication token is required', 401));
+    }
+
+    // Verify token
+    const decoded = verifyGuestOrderToken(token);
+
+    // Check if the order ID matches
+    if (decoded.orderId !== req.params.id && decoded.orderId !== req.body.orderId) {
+      return next(new AppError('You do not have permission to access this order', 403));
+    }
+
+    // Attach guest info to request
+    req.guestInfo = decoded.guestInfo;
+
+    next();
+  } catch (error) {
+    next(error);
   }
-  
-  // Verify token
-  const decodedToken = verifyGuestOrderToken(token);
-  
-  if (!decodedToken) {
-    return res.status(401).json({
-      success: false,
-      message: 'Invalid or expired token'
-    });
-  }
-  
-  // Attach guest order info to request
-  req.guestOrder = {
-    orderId: decodedToken.orderId,
-    email: decodedToken.email
-  };
-  
-  next();
 };
 
 export default {
   generateGuestOrderToken,
   verifyGuestOrderToken,
-  verifyGuestOrderAccess
-}; 
+  verifyGuestOrderAccess,
+};

@@ -1,54 +1,37 @@
 import express from 'express';
 import { authenticate } from '../middleware/auth.middleware.js';
 import {
-  verifyCartItemOwnership,
-  validateCartPayload,
-  validateSessionId
-} from '../middleware/cart.middleware.js';
-import {
   getCart,
   addToCart,
   updateCartItem,
   removeCartItem,
   clearCart,
+  // Guest cart operations
   getGuestCart,
   addToGuestCart,
+  updateGuestCartItem,
+  removeFromGuestCart,
+  clearGuestCart,
   mergeGuestCart,
-  getCartPricing,
-  applyPromoCode,
 } from '../controllers/cart.controller.js';
 
 const router = express.Router();
 
+// Authenticated cart routes (require login)
+router.get('/', authenticate, getCart);
+router.post('/add', authenticate, addToCart);
+router.put('/update', authenticate, updateCartItem);
+router.delete('/remove/:productId', authenticate, removeCartItem);
+router.delete('/clear', authenticate, clearCart);
+
 // Guest cart routes (no authentication required)
-router.get('/guest/:sessionId', validateSessionId, getGuestCart);
-router.post('/guest/:sessionId', validateSessionId, validateCartPayload, addToGuestCart);
+router.get('/guest', getGuestCart);
+router.post('/guest/add', addToGuestCart);
+router.put('/guest/update', updateGuestCartItem);
+router.delete('/guest/remove/:productId', removeFromGuestCart);
+router.delete('/guest/clear', clearGuestCart);
 
-// Merge carts after login (requires authentication)
-router.post('/merge/:sessionId', authenticate, validateSessionId, mergeGuestCart);
+// Merge guest cart with user cart after login
+router.post('/merge', authenticate, mergeGuestCart);
 
-// All other cart routes require authentication
-router.use(authenticate);
-
-// Get user's cart
-router.get('/', getCart);
-
-// Add item to cart
-router.post('/', validateCartPayload, addToCart);
-
-// Update cart item quantity
-router.put('/:itemId', verifyCartItemOwnership, validateCartPayload, updateCartItem);
-
-// Remove item from cart
-router.delete('/:itemId', verifyCartItemOwnership, removeCartItem);
-
-// Clear entire cart
-router.delete('/', clearCart);
-
-// Get detailed cart pricing
-router.get('/pricing', getCartPricing);
-
-// Apply promo code to cart
-router.post('/promo', applyPromoCode);
-
-export default router; 
+export default router;

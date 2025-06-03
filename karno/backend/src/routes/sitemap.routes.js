@@ -1,14 +1,14 @@
 /**
  * Sitemap Routes
- * 
+ *
  * These routes provide the data needed for generating a dynamic sitemap
  */
 
 import express from 'express';
-import { 
-  getProductsForSitemap, 
-  getBrandsForSitemap, 
-  getCategoriesForSitemap 
+import {
+  getProductsForSitemap,
+  getBrandsForSitemap,
+  getCategoriesForSitemap,
 } from '../controllers/sitemap.controller.js';
 import { cacheMiddleware } from '../middleware/cache.middleware.js';
 
@@ -23,4 +23,4 @@ router.get('/brands', cacheMiddleware(3600), getBrandsForSitemap);
 // Get data for category pages sitemap
 router.get('/categories', cacheMiddleware(3600), getCategoriesForSitemap);
 
-export default router; 
+export default router;

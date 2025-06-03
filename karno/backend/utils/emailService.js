@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const { verificationEmailTemplate, passwordResetTemplate } = require('../src/utils/emailTemplates');
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
@@ -8,6 +9,11 @@ const transporter = nodemailer.createTransport({
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
+  // Set default charset to UTF-8 for all emails
+  defaults: {
+    charset: 'UTF-8',
+    encoding: 'quoted-printable',
+  },
 });
 
 const sendVerificationEmail = async (email, token) => {
@@ -16,22 +22,11 @@ const sendVerificationEmail = async (email, token) => {
   const mailOptions = {
     from: process.env.EMAIL_FROM,
     to: email,
-    subject: 'Verify Your Email Address',
-    html: `
-      <h1>Welcome to Karno!</h1>
-      <p>Please verify your email address by clicking the link below:</p>
-      <a href="${verificationUrl}" style="
-        display: inline-block;
-        padding: 10px 20px;
-        background-color: #1976d2;
-        color: white;
-        text-decoration: none;
-        border-radius: 5px;
-        margin: 20px 0;
-      ">Verify Email</a>
-      <p>If you did not create an account, please ignore this email.</p>
-      <p>This link will expire in 24 hours.</p>
-    `,
+    subject: 'تأیید آدرس ایمیل', // Persian subject
+    headers: {
+      'Content-Type': 'text/html; charset=UTF-8',
+    },
+    html: verificationEmailTemplate(verificationUrl),
   };
 
   try {
@@ -49,22 +44,11 @@ const sendPasswordResetEmail = async (email, token) => {
   const mailOptions = {
     from: process.env.EMAIL_FROM,
     to: email,
-    subject: 'Reset Your Password',
-    html: `
-      <h1>Password Reset Request</h1>
-      <p>You requested to reset your password. Click the link below to proceed:</p>
-      <a href="${resetUrl}" style="
-        display: inline-block;
-        padding: 10px 20px;
-        background-color: #1976d2;
-        color: white;
-        text-decoration: none;
-        border-radius: 5px;
-        margin: 20px 0;
-      ">Reset Password</a>
-      <p>If you did not request a password reset, please ignore this email.</p>
-      <p>This link will expire in 1 hour.</p>
-    `,
+    subject: 'بازنشانی رمز عبور', // Persian subject
+    headers: {
+      'Content-Type': 'text/html; charset=UTF-8',
+    },
+    html: passwordResetTemplate(resetUrl),
   };
 
   try {

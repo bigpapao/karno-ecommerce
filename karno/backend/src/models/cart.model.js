@@ -25,48 +25,45 @@ const cartItemSchema = new mongoose.Schema({
     url: String,
     alt: String,
   },
-});
+}, { timestamps: true });
 
 const cartSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: true,
+    },
+    sessionId: {
+      type: String,
     },
     items: [cartItemSchema],
-    totalPrice: {
-      type: Number,
-      required: true,
-      default: 0,
-      min: [0, 'Total price cannot be negative'],
-    },
     totalItems: {
       type: Number,
       required: true,
       default: 0,
       min: [0, 'Total items cannot be negative'],
     },
-    // Session ID for guest carts (can be null for logged-in users)
-    sessionId: {
-      type: String,
-      sparse: true, // Allow null values
-      index: true,  // Index for faster lookups
+    totalPrice: {
+      type: Number,
+      required: true,
+      default: 0,
+      min: [0, 'Total price cannot be negative'],
     },
-    // Promo code applied to the cart
     promoCode: {
       type: String,
       default: null,
     },
-    // Time when cart will expire (useful for guest carts)
+    discountAmount: {
+      type: Number,
+      default: 0,
+    },
     expiresAt: {
       type: Date,
-      default: function() {
-        // Set default expiration to 7 days from now
+      default() {
         const now = new Date();
         return new Date(now.setDate(now.getDate() + 7));
       },
-      index: { expires: 0 }, // TTL index for automatic removal
+      index: { expires: 0 },
     },
   },
   {
@@ -75,24 +72,28 @@ const cartSchema = new mongoose.Schema(
 );
 
 // Method to recalculate total price
-cartSchema.methods.recalculateCart = function() {
-  this.totalPrice = this.items.reduce((total, item) => {
-    return total + (item.price * item.quantity);
-  }, 0);
-  
-  this.totalItems = this.items.reduce((total, item) => {
-    return total + item.quantity;
-  }, 0);
-  
+cartSchema.methods.recalculateCart = function () {
+  this.totalPrice = this.items.reduce((total, item) => total + (item.price * item.quantity), 0);
+
+  this.totalItems = this.items.reduce((total, item) => total + item.quantity, 0);
+
   return this;
 };
 
 // Pre-save hook to ensure totals are calculated
-cartSchema.pre('save', function(next) {
-  this.recalculateCart();
-  next();
+cartSchema.pre('save', function (next) {
+  if (!this.user && !this.sessionId) {
+    next(new Error('Either user or sessionId must be provided'));
+  } else {
+    this.recalculateCart();
+    next();
+  }
 });
+
+// Add index for looking up carts by user or sessionId
+cartSchema.index({ user: 1 });
+cartSchema.index({ sessionId: 1 });
 
 const Cart = mongoose.model('Cart', cartSchema);
 
-export default Cart; 
+export default Cart;

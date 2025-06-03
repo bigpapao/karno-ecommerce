@@ -4,10 +4,10 @@ import jwt from 'jsonwebtoken';
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secure-jwt-secret';
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || 'your-refresh-token-secret';
 
-// Access Token duration (shorter lived)
-const ACCESS_TOKEN_EXPIRY = process.env.ACCESS_TOKEN_EXPIRY || '30m'; // 30 minutes
-// Refresh Token duration (longer lived)
-const REFRESH_TOKEN_EXPIRY = process.env.REFRESH_TOKEN_EXPIRY || '14d'; // 14 days
+// Access Token duration (15 minutes)
+const ACCESS_TOKEN_EXPIRY = process.env.ACCESS_TOKEN_EXPIRY || '15m';
+// Refresh Token duration (7 days)
+const REFRESH_TOKEN_EXPIRY = process.env.REFRESH_TOKEN_EXPIRY || '7d';
 
 // Generate JWT access token
 export const generateAccessToken = (user) => {
@@ -23,9 +23,12 @@ export const generateAccessToken = (user) => {
 
 // Generate JWT refresh token
 export const generateRefreshToken = (user) => {
+  // Safely handle passwordChangedAt field - wrap date safely
+  const issuedAt = new Date(user.passwordChangedAt || Date.now()).getTime();
+
   const payload = {
     id: user._id,
-    version: user.passwordChangedAt ? user.passwordChangedAt.getTime() : Date.now(),
+    version: issuedAt,
   };
   return jwt.sign(payload, REFRESH_TOKEN_SECRET, { expiresIn: REFRESH_TOKEN_EXPIRY });
 };
@@ -42,30 +45,39 @@ export const verifyRefreshToken = (token) => {
 // Set tokens in HTTP-only cookies
 export const setTokenCookies = (res, accessToken, refreshToken) => {
   // Calculate cookie expiry dates
-  const accessExpiry = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
-  const refreshExpiry = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000); // 14 days
-  res.cookie('accessToken', accessToken, {
+  const accessExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+  const refreshExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+
+  res.cookie('access_token', accessToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: false, // Set to false for localhost development
     sameSite: 'lax',
     expires: accessExpiry,
+    path: '/',
   });
-  res.cookie('refreshToken', refreshToken, {
+
+  res.cookie('refresh_token', refreshToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: false, // Set to false for localhost development
     sameSite: 'lax',
     expires: refreshExpiry,
+    path: '/',
   });
 };
 
-// Clear auth cookies
+// Clear tokens from cookies
 export const clearTokenCookies = (res) => {
-  res.cookie('accessToken', '', { 
-    httpOnly: true, 
-    expires: new Date(0) 
+  res.clearCookie('access_token', {
+    httpOnly: true,
+    secure: false, // Set to false for localhost development
+    sameSite: 'lax',
+    path: '/',
   });
-  res.cookie('refreshToken', '', { 
-    httpOnly: true, 
-    expires: new Date(0) 
+
+  res.clearCookie('refresh_token', {
+    httpOnly: true,
+    secure: false, // Set to false for localhost development
+    sameSite: 'lax',
+    path: '/',
   });
 };

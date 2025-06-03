@@ -1,6 +1,6 @@
 /**
  * Security Monitoring Middleware
- * 
+ *
  * This middleware monitors and logs security-related events and detects potential attacks.
  * It implements basic intrusion detection features by identifying suspicious requests.
  */
@@ -65,7 +65,7 @@ const checkRequestSignatures = (req) => {
   // Check for path traversal attempts
   const pathTraversalPatterns = [
     /\.\.\//,
-    /\.\.\\/, 
+    /\.\.\\/,
     /etc\/passwd/i,
     /\/etc\/shadow/i,
     /\/proc\/self\/environ/i,
@@ -74,29 +74,29 @@ const checkRequestSignatures = (req) => {
 
   // Check for suspicious parameters in query or body
   const params = { ...req.query, ...req.body, ...req.params };
-  
+
   for (const param of Object.values(params)) {
     if (typeof param !== 'string') continue;
-    
+
     // Check against SQL injection patterns
-    if (sqlInjectionPatterns.some(pattern => pattern.test(param))) {
+    if (sqlInjectionPatterns.some((pattern) => pattern.test(param))) {
       logSecurityEvent(req, 'SQL Injection', param);
       return true;
     }
-    
+
     // Check against XSS patterns
-    if (xssPatterns.some(pattern => pattern.test(param))) {
+    if (xssPatterns.some((pattern) => pattern.test(param))) {
       logSecurityEvent(req, 'XSS', param);
       return true;
     }
-    
+
     // Check against path traversal patterns
-    if (pathTraversalPatterns.some(pattern => pattern.test(param))) {
+    if (pathTraversalPatterns.some((pattern) => pattern.test(param))) {
       logSecurityEvent(req, 'Path Traversal', param);
       return true;
     }
   }
-  
+
   return false;
 };
 
@@ -117,22 +117,22 @@ const logSecurityEvent = (req, type, details = '') => {
     userAgent: req.get('user-agent'),
     details: details.substring(0, 100), // Truncate long details
   };
-  
+
   // Log the event
   logger.warn({
     message: `Security event: ${type}`,
     ...event,
   });
-  
+
   // Add to recent events (keep the last 100 events)
   securityStore.securityEvents.unshift(event);
   if (securityStore.securityEvents.length > 100) {
     securityStore.securityEvents.pop();
   }
-  
+
   // Mark the IP as suspicious
   securityStore.suspicious.add(req.ip);
-  
+
   // Emit event for real-time notification (when implemented)
   // This could connect to a WebSocket or similar for real-time admin alerts
 };
@@ -144,10 +144,10 @@ const logSecurityEvent = (req, type, details = '') => {
  */
 export const recordFailedLogin = (ip, username) => {
   resetCounters();
-  
+
   // Increment failed login count
   securityStore.failedLogins[ip] = (securityStore.failedLogins[ip] || 0) + 1;
-  
+
   // Check if threshold exceeded
   if (securityStore.failedLogins[ip] >= FAILED_LOGIN_THRESHOLD) {
     logger.warn({
@@ -156,10 +156,10 @@ export const recordFailedLogin = (ip, username) => {
       attemptedUsername: username,
       count: securityStore.failedLogins[ip],
     });
-    
+
     // Mark as suspicious
     securityStore.suspicious.add(ip);
-    
+
     // Log security event
     const event = {
       timestamp: new Date().toISOString(),
@@ -167,7 +167,7 @@ export const recordFailedLogin = (ip, username) => {
       ip,
       details: `${securityStore.failedLogins[ip]} failed attempts for user ${username}`,
     };
-    
+
     securityStore.securityEvents.unshift(event);
     if (securityStore.securityEvents.length > 100) {
       securityStore.securityEvents.pop();
@@ -189,17 +189,13 @@ export const recordSuccessfulLogin = (ip) => {
  * @param {Number} limit - Maximum number of events to return
  * @returns {Array} Array of security events
  */
-export const getSecurityEvents = (limit = 100) => {
-  return securityStore.securityEvents.slice(0, limit);
-};
+export const getSecurityEvents = (limit = 100) => securityStore.securityEvents.slice(0, limit);
 
 /**
  * Get list of suspicious IPs
  * @returns {Array} Array of suspicious IP addresses
  */
-export const getSuspiciousIPs = () => {
-  return Array.from(securityStore.suspicious);
-};
+export const getSuspiciousIPs = () => Array.from(securityStore.suspicious);
 
 /**
  * Block an IP address
@@ -211,7 +207,7 @@ export const blockIP = (ip) => {
     message: 'IP address blocked',
     ip,
   });
-  
+
   // Log security event
   const event = {
     timestamp: new Date().toISOString(),
@@ -219,7 +215,7 @@ export const blockIP = (ip) => {
     ip,
     details: 'IP address manually blocked by admin',
   };
-  
+
   securityStore.securityEvents.unshift(event);
 };
 
@@ -247,74 +243,70 @@ export const clearSuspiciousIPs = () => {
  * Express middleware for security monitoring
  * @returns {Function} Express middleware
  */
-export const securityMonitorMiddleware = () => {
-  return (req, res, next) => {
-    resetCounters();
-    
-    // Check if IP is blocked
-    if (securityStore.blockedIPs.has(req.ip)) {
+export const securityMonitorMiddleware = () => (req, res, next) => {
+  resetCounters();
+
+  // Check if IP is blocked
+  if (securityStore.blockedIPs.has(req.ip)) {
+    logger.warn({
+      message: 'Blocked IP attempted access',
+      ip: req.ip,
+      path: req.originalUrl,
+    });
+
+    return res.status(403).json({
+      status: 'error',
+      error: {
+        message: 'Access denied',
+        code: 'ERR_ACCESS_DENIED',
+      },
+    });
+  }
+
+  // Increment request count
+  securityStore.requestCounts[req.ip] = (securityStore.requestCounts[req.ip] || 0) + 1;
+
+  // Check for high request rate
+  if (securityStore.requestCounts[req.ip] > REQUEST_RATE_THRESHOLD) {
+    logSecurityEvent(req, 'High Request Rate', `${securityStore.requestCounts[req.ip]} requests in monitoring window`);
+  }
+
+  // Check for suspicious request patterns
+  if (checkRequestSignatures(req)) {
+    // If suspicious pattern detected, checkRequestSignatures will log it
+
+    // Extra logging for highly suspicious requests
+    if (securityStore.suspicious.has(req.ip)) {
       logger.warn({
-        message: 'Blocked IP attempted access',
+        message: 'Repeated suspicious activity from IP',
         ip: req.ip,
         path: req.originalUrl,
-      });
-      
-      return res.status(403).json({
-        status: 'error',
-        error: {
-          message: 'Access denied',
-          code: 'ERR_ACCESS_DENIED',
-        }
+        method: req.method,
       });
     }
-    
-    // Increment request count
-    securityStore.requestCounts[req.ip] = (securityStore.requestCounts[req.ip] || 0) + 1;
-    
-    // Check for high request rate
-    if (securityStore.requestCounts[req.ip] > REQUEST_RATE_THRESHOLD) {
-      logSecurityEvent(req, 'High Request Rate', `${securityStore.requestCounts[req.ip]} requests in monitoring window`);
-    }
-    
-    // Check for suspicious request patterns
-    if (checkRequestSignatures(req)) {
-      // If suspicious pattern detected, checkRequestSignatures will log it
-      
-      // Extra logging for highly suspicious requests
-      if (securityStore.suspicious.has(req.ip)) {
-        logger.warn({
-          message: 'Repeated suspicious activity from IP',
-          ip: req.ip,
-          path: req.originalUrl,
-          method: req.method,
-        });
-      }
-    }
-    
-    // Continue processing the request
-    next();
-  };
+  }
+
+  // Continue processing the request
+  next();
 };
 
 /**
  * Add security monitoring API to request object
  * @returns {Function} Express middleware
  */
-export const securityMonitorAPI = () => {
-  return (req, res, next) => {
-    // Add security monitoring methods to request
-    req.security = {
-      recordFailedLogin,
-      recordSuccessfulLogin,
-      getSecurityEvents,
-      getSuspiciousIPs,
-      blockIP,
-      unblockIP,
-      clearSuspiciousIPs,
-    };
-    
-    next();
+export const securityMonitorAPI = () => (req, res, next) => {
+  // Add security monitoring methods to request
+  req.security = {
+    recordFailedLogin,
+    recordSuccessfulLogin,
+    getSecurityEvents,
+    getSuspiciousIPs,
+    blockIP,
+    unblockIP,
+    clearSuspiciousIPs,
   };
+
+  next();
 };
 
 export default {

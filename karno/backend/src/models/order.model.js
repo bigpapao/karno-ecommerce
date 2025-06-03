@@ -24,7 +24,7 @@ const orderItemSchema = new mongoose.Schema({
     url: String,
     alt: String,
   },
-});
+}, { _id: true });
 
 // Enhanced shipping address schema
 const shippingAddressSchema = new mongoose.Schema({
@@ -32,6 +32,8 @@ const shippingAddressSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Full name is required'],
   },
+  firstName: String, // For backward compatibility
+  lastName: String, // For backward compatibility
   phoneNumber: {
     type: String,
     required: [true, 'Phone number is required'],
@@ -43,6 +45,10 @@ const shippingAddressSchema = new mongoose.Schema({
       message: 'Invalid phone number format',
     },
   },
+  email: {
+    type: String,
+    required: true,
+  },
   address: {
     type: String,
     required: [true, 'Street address is required'],
@@ -51,17 +57,13 @@ const shippingAddressSchema = new mongoose.Schema({
     type: String,
     required: [true, 'City is required'],
   },
-  state: {
-    type: String,
-    required: [true, 'State/Province is required'],
-  },
-  zipCode: {
-    type: String,
-    required: [true, 'Postal/ZIP code is required'],
-  },
+  state: String, // New field
+  province: String, // Old field (for backward compatibility)
+  postalCode: String, // Old field
+  zipCode: String, // New field
   country: {
     type: String,
-    required: [true, 'Country is required'],
+    default: 'IR',
   },
   addressType: {
     type: String,
@@ -75,12 +77,32 @@ const shippingAddressSchema = new mongoose.Schema({
   },
 });
 
+const guestInfoSchema = new mongoose.Schema({
+  email: {
+    type: String,
+    required: true,
+  },
+  phone: {
+    type: String,
+    required: true,
+  },
+}, { _id: false });
+
 const orderSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
+    },
+    orderNumber: {
+      type: String,
       required: true,
+      unique: true,
+    },
+    trackingCode: {
+      type: String,
+      required: true,
+      unique: true,
     },
     orderItems: [orderItemSchema],
     shippingAddress: shippingAddressSchema,
@@ -93,13 +115,13 @@ const orderSchema = new mongoose.Schema(
     paymentMethod: {
       type: String,
       required: true,
-      enum: ['stripe', 'paypal', 'credit_card', 'cash', 'zarinpal'],
+      enum: ['zarinpal', 'cod', 'bank_transfer'],
     },
-    paymentResult: {
-      id: String,
-      status: String,
-      update_time: String,
-      email_address: String,
+    paymentStatus: {
+      type: String,
+      required: true,
+      enum: ['pending', 'paid', 'failed'],
+      default: 'pending',
     },
     itemsPrice: {
       type: Number,
@@ -148,6 +170,7 @@ const orderSchema = new mongoose.Schema(
       min: [0, 'Discount amount cannot be negative'],
     },
     estimatedDeliveryDate: Date,
+    guestInfo: guestInfoSchema,
   },
   {
     timestamps: true,
@@ -155,10 +178,10 @@ const orderSchema = new mongoose.Schema(
 );
 
 // Pre-save hook to set estimated delivery date based on shipping option
-orderSchema.pre('save', function(next) {
+orderSchema.pre('save', function (next) {
   if (this.isNew || this.isModified('shippingOption')) {
     const today = new Date();
-    
+
     switch (this.shippingOption) {
       case 'same_day':
         // Same day (if ordered before 12 PM)
@@ -179,9 +202,16 @@ orderSchema.pre('save', function(next) {
         break;
     }
   }
-  
+
   next();
 });
+
+// Index for faster lookup
+orderSchema.index({ user: 1, createdAt: -1 });
+// orderSchema.index({ orderNumber: 1 });
+// orderSchema.index({ trackingCode: 1 });
+orderSchema.index({ 'guestInfo.email': 1, 'guestInfo.phone': 1 });
+orderSchema.index({ status: 1 });
 
 const Order = mongoose.model('Order', orderSchema);
 

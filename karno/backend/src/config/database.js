@@ -1,9 +1,10 @@
 import mongoose from 'mongoose';
 import { logger } from '../utils/logger.js';
+import { startMonitoring } from '../utils/db-monitor.js';
 
 /**
  * Connect to MongoDB with optimized connection settings
- * 
+ *
  * These settings are configured for optimal performance in production environments.
  * - maxPoolSize: Controls the maximum number of connections in the MongoDB connection pool
  * - minPoolSize: Sets the minimum number of connections maintained in the connection pool
@@ -14,15 +15,13 @@ import { logger } from '../utils/logger.js';
  * - retryWrites: Automatically retry write operations on network errors
  * - w: Write concern level
  * - readPreference: Preferred read operations distribution
- * 
+ *
  * @returns {Promise<mongoose.Connection>} Mongoose connection object
  */
 export const connectDB = async () => {
   try {
     // Default connection options
     const connectionOptions = {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
       maxPoolSize: 100,
       minPoolSize: 5,
       socketTimeoutMS: 45000,
@@ -30,7 +29,7 @@ export const connectDB = async () => {
       serverSelectionTimeoutMS: 15000,
       heartbeatFrequencyMS: 10000,
     };
-    
+
     // Use different settings for development vs production
     if (process.env.NODE_ENV === 'production') {
       // Optimized for production environments
@@ -47,29 +46,57 @@ export const connectDB = async () => {
       });
     }
 
+    // Set default MongoDB URI if not provided
+    const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/karno';
+
     // Connect to MongoDB with optimized options
-    const conn = await mongoose.connect(process.env.MONGO_URI, connectionOptions);
+    const conn = await mongoose.connect(mongoUri, connectionOptions);
 
     logger.info({
       message: `MongoDB Connected: ${conn.connection.host}`,
       environment: process.env.NODE_ENV,
       mongoVersion: conn.version,
+      database: conn.connection.name,
+      uri: process.env.NODE_ENV === 'production' ? '[HIDDEN]' : mongoUri,
     });
-    
+
+    // Start database monitoring
+    startMonitoring();
+
+    // Handle connection events
+    mongoose.connection.on('error', (err) => {
+      logger.error({
+        message: 'MongoDB connection error',
+        error: err.message,
+        stack: err.stack,
+      });
+    });
+
+    mongoose.connection.on('disconnected', () => {
+      logger.info('MongoDB disconnected');
+    });
+
+    // Handle process termination
+    process.on('SIGINT', async () => {
+      await mongoose.connection.close();
+      logger.info('MongoDB connection closed through app termination');
+      process.exit(0);
+    });
+
     return conn;
   } catch (error) {
     logger.error({
-      message: 'MongoDB connection error',
+      message: 'Error connecting to MongoDB',
       error: error.message,
-      stack: error.stack
+      stack: error.stack,
     });
-    throw error;
+    process.exit(1);
   }
 };
 
 /**
  * Close MongoDB connection gracefully
- * 
+ *
  * @returns {Promise<void>}
  */
 export const closeConnection = async () => {
@@ -80,7 +107,7 @@ export const closeConnection = async () => {
     logger.error({
       message: 'Error closing MongoDB connection',
       error: error.message,
-      stack: error.stack
+      stack: error.stack,
     });
   }
 };

@@ -6,12 +6,10 @@ const brandSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Brand name is required'],
       trim: true,
-      unique: true,
     },
     slug: {
       type: String,
       required: true,
-      unique: true,
       lowercase: true,
     },
     description: {
@@ -37,6 +35,12 @@ const brandSchema = new mongoose.Schema(
     timestamps: true,
   },
 );
+
+// Add indexes (keep only essential ones)
+brandSchema.index({ name: 1 }, { name: 'brand_name_idx', unique: true });
+brandSchema.index({ slug: 1 }, { name: 'brand_slug_idx', unique: true });
+brandSchema.index({ featured: 1 }, { name: 'brand_featured_idx' });
+brandSchema.index({ order: 1 }, { name: 'brand_order_idx' });
 
 const Brand = mongoose.model('Brand', brandSchema);
 

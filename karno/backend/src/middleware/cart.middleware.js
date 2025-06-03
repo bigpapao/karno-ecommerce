@@ -1,4 +1,4 @@
-import { AppError } from './errorHandler.js';
+import { AppError } from './error-handler.middleware.js';
 import Cart from '../models/cart.model.js';
 
 /**
@@ -14,7 +14,7 @@ export const verifyCartOwnership = async (req, res, next) => {
     }
 
     const cart = await Cart.findById(cartId);
-    
+
     if (!cart) {
       return next(new AppError('Cart not found', 404));
     }
@@ -37,14 +37,14 @@ export const verifyCartOwnership = async (req, res, next) => {
 export const verifyCartItemOwnership = async (req, res, next) => {
   try {
     const userId = req.user._id;
-    const itemId = req.params.itemId;
+    const { itemId } = req.params;
 
     if (!itemId) {
       return next(new AppError('Item ID is required', 400));
     }
 
     const cart = await Cart.findOne({ user: userId });
-    
+
     if (!cart) {
       return next(new AppError('Cart not found', 404));
     }
@@ -73,7 +73,7 @@ export const validateCartPayload = (req, res, next) => {
       return next(new AppError('Quantity must be a positive number', 400));
     }
   }
-  
+
   // For updating cart item quantity
   if (req.params.itemId && req.body.quantity) {
     if (typeof req.body.quantity !== 'number' || req.body.quantity < 1) {
@@ -88,7 +88,7 @@ export const validateCartPayload = (req, res, next) => {
  * Middleware to validate session ID for guest carts
  */
 export const validateSessionId = (req, res, next) => {
-  const sessionId = req.params.sessionId;
+  const { sessionId } = req.params;
 
   if (!sessionId) {
     return next(new AppError('Session ID is required', 400));
@@ -100,4 +100,4 @@ export const validateSessionId = (req, res, next) => {
   }
 
   next();
-}; 
+};

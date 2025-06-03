@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import Product from '../models/product.model.js';
-import { AppError } from '../middleware/errorHandler.js';
+import { AppError } from '../middleware/error-handler.middleware.js';
 
 // @desc    Get product analytics
 // @route   GET /api/products/analytics

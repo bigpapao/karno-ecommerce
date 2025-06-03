@@ -1,5 +1,5 @@
 import Category from '../models/category.model.js';
-import { AppError } from '../middleware/errorHandler.js';
+import { AppError } from '../middleware/error-handler.middleware.js';
 
 // @desc    Get all categories
 // @route   GET /api/categories

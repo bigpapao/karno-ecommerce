@@ -1,5 +1,5 @@
 import Product from '../models/product.model.js';
-import { AppError } from '../middleware/errorHandler.js';
+import { AppError } from '../middleware/error-handler.middleware.js';
 
 /**
  * Validate product for cart addition
@@ -31,18 +31,16 @@ export const validateProductForCart = async (productId, quantity) => {
  * @param {number} quantity - Quantity to add to cart
  * @returns {Object} - Formatted cart item
  */
-export const formatProductForCart = (product, quantity) => {
-  return {
-    product: product._id,
-    name: sanitizeText(product.name),
-    quantity: quantity,
-    price: product.discountPrice || product.price,
-    image: product.images && product.images.length > 0 ? {
-      url: sanitizeUrl(product.images[0].url),
-      alt: sanitizeText(product.images[0].alt),
-    } : null,
-  };
-};
+export const formatProductForCart = (product, quantity) => ({
+  product: product._id,
+  name: sanitizeText(product.name),
+  quantity,
+  price: product.discountPrice || product.price,
+  image: product.images && product.images.length > 0 ? {
+    url: sanitizeUrl(product.images[0].url),
+    alt: sanitizeText(product.images[0].alt),
+  } : null,
+});
 
 /**
  * Sanitize text to prevent XSS attacks
@@ -51,7 +49,7 @@ export const formatProductForCart = (product, quantity) => {
  */
 export const sanitizeText = (text) => {
   if (!text) return '';
-  
+
   // Replace HTML special characters to prevent XSS
   return String(text)
     .replace(/&/g, '&amp;')
@@ -68,13 +66,13 @@ export const sanitizeText = (text) => {
  */
 export const sanitizeUrl = (url) => {
   if (!url) return '';
-  
+
   // Basic URL validation - should be improved for production
   // This allows http:// and https:// URLs, relative URLs, and data URLs for images
   if (!/^(https?:\/\/|\/|data:image\/)/.test(url)) {
     return '';
   }
-  
+
   return url;
 };
 
@@ -84,14 +82,10 @@ export const sanitizeUrl = (url) => {
  * @returns {Object} - Cart totals
  */
 export const calculateCartTotals = (items) => {
-  const totalPrice = items.reduce((total, item) => {
-    return total + (item.price * item.quantity);
-  }, 0);
-  
-  const totalItems = items.reduce((total, item) => {
-    return total + item.quantity;
-  }, 0);
-  
+  const totalPrice = items.reduce((total, item) => total + (item.price * item.quantity), 0);
+
+  const totalItems = items.reduce((total, item) => total + item.quantity, 0);
+
   return { totalPrice, totalItems };
 };
 
@@ -102,10 +96,10 @@ export const calculateCartTotals = (items) => {
  */
 export const cartNeedsUpdate = (cart) => {
   const calculatedTotals = calculateCartTotals(cart.items);
-  
+
   return (
-    cart.totalPrice !== calculatedTotals.totalPrice ||
-    cart.totalItems !== calculatedTotals.totalItems
+    cart.totalPrice !== calculatedTotals.totalPrice
+    || cart.totalItems !== calculatedTotals.totalItems
   );
 };
 
@@ -114,14 +108,10 @@ export const cartNeedsUpdate = (cart) => {
  * @param {Object} cart - Cart document
  */
 export const updateCartTotals = (cart) => {
-  cart.totalPrice = cart.items.reduce((total, item) => {
-    return total + (item.price * item.quantity);
-  }, 0);
-  
-  cart.totalItems = cart.items.reduce((total, item) => {
-    return total + item.quantity;
-  }, 0);
-  
+  cart.totalPrice = cart.items.reduce((total, item) => total + (item.price * item.quantity), 0);
+
+  cart.totalItems = cart.items.reduce((total, item) => total + item.quantity, 0);
+
   return cart;
 };
 
@@ -133,7 +123,7 @@ export const updateCartTotals = (cart) => {
  */
 export const detectSuspiciousActivity = (cart, operation) => {
   const { type, quantity, ip } = operation;
-  
+
   // Check for rapid successive operations
   if (cart.lastOperationTime) {
     const timeSinceLastOperation = new Date() - new Date(cart.lastOperationTime);
@@ -141,21 +131,21 @@ export const detectSuspiciousActivity = (cart, operation) => {
       return true;
     }
   }
-  
+
   // Check for unusually large quantities
   if (quantity && quantity > 20) {
     return true;
   }
-  
+
   // Check for excessive items in cart
   if (cart.items.length > 50) {
     return true;
   }
-  
+
   // Check for excessive item quantity
   if (cart.totalItems > 100) {
     return true;
   }
-  
+
   return false;
-}; 
+};

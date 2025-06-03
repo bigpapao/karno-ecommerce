@@ -1,9 +1,12 @@
 import Order from '../models/order.model.js';
 import Product from '../models/product.model.js';
-import { AppError } from '../middleware/errorHandler.js';
+import { AppError } from '../middleware/error-handler.middleware.js';
 import { generateTrackingNumber } from '../utils/trackingNumber.js';
 import User from '../models/user.model.js';
 import { generateGuestOrderToken } from '../utils/guestOrderToken.js';
+import Cart from '../models/cart.model.js';
+import { generateOrderNumber, generateTrackingCode } from '../utils/orderUtils.js';
+import { normalizePhoneNumber } from '../utils/phoneUtils.js';
 
 // @desc    Get all orders
 // @route   GET /api/orders
@@ -47,24 +50,15 @@ export const getOrders = async (req, res, next) => {
 // @access  Private
 export const getUserOrders = async (req, res, next) => {
   try {
-    const { page = 1, limit = 10 } = req.query;
-    const pageNum = parseInt(page, 10);
-    const limitNum = parseInt(limit, 10);
-    const skip = (pageNum - 1) * limitNum;
+    const userId = req.user._id;
 
-    const orders = await Order.find({ user: req.user._id })
+    const orders = await Order.find({ user: userId })
       .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limitNum);
-
-    const total = await Order.countDocuments({ user: req.user._id });
+      .select('orderNumber trackingCode status totalAmount createdAt items');
 
     res.status(200).json({
       status: 'success',
       results: orders.length,
-      total,
-      totalPages: Math.ceil(total / limitNum),
-      currentPage: pageNum,
       data: orders,
     });
   } catch (error) {
@@ -77,21 +71,13 @@ export const getUserOrders = async (req, res, next) => {
 // @access  Private
 export const getOrderById = async (req, res, next) => {
   try {
-    const order = await Order.findById(req.params.id).populate(
-      'user',
-      'firstName lastName email',
-    );
+    const { id } = req.params;
+    const userId = req.user._id;
+
+    const order = await Order.findOne({ _id: id, user: userId });
 
     if (!order) {
       return next(new AppError('Order not found', 404));
-    }
-
-    // Check if user is authorized to view this order
-    if (
-      req.user.role !== 'admin'
-      && order.user._id.toString() !== req.user._id.toString()
-    ) {
-      return next(new AppError('Not authorized to view this order', 403));
     }
 
     res.status(200).json({
@@ -109,134 +95,53 @@ export const getOrderById = async (req, res, next) => {
 export const createOrder = async (req, res, next) => {
   try {
     const {
-      items,
-      shippingAddress,
-      paymentMethod,
-      totalAmount,
-      guestInfo
+      items, totalAmount, shippingInfo, paymentMethod,
     } = req.body;
+    const userId = req.user._id;
 
-    if (!items || items.length === 0) {
-      return next(new AppError('No order items', 400));
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return next(new AppError('Order must contain at least one item', 400));
     }
 
-    let userId = null;
-    let isGuest = false;
-    let guestEmail = null;
-    let guestPhone = null;
-
-    // Handle guest checkout
-    if (guestInfo) {
-      isGuest = true;
-      guestEmail = guestInfo.email;
-      guestPhone = guestInfo.phone;
-      
-      // If guest wants to create an account
-      if (guestInfo.createAccount) {
-        try {
-          // Create a new user with the provided information
-          const newUser = await User.create({
-            email: guestInfo.email,
-            password: guestInfo.password,
-            phone: guestInfo.phone,
-            role: 'user'
-          });
-          
-          userId = newUser._id;
-          isGuest = false; // No longer a guest since they created an account
-        } catch (error) {
-          // If user creation fails, continue as guest
-          console.error('Failed to create user during guest checkout:', error);
-        }
-      }
-    } else if (req.user) {
-      // For authenticated users
-      userId = req.user._id;
-    } else {
-      return next(new AppError('Authentication required', 401));
+    // Basic validation
+    if (!shippingInfo || !paymentMethod) {
+      return next(new AppError('Shipping information and payment method are required', 400));
     }
 
-    // Format order items and verify product availability
-    const orderItems = [];
-    let itemsPrice = 0;
-    
-    for (const item of items) {
-      const product = await Product.findById(item.productId);
-
-      if (!product) {
-        return next(new AppError(`Product not found: ${item.productId}`, 404));
-      }
-
-      if (product.stock < item.quantity) {
-        return next(new AppError(`Product ${product.name} is out of stock`, 400));
-      }
-
-      // Format order item
-      orderItems.push({
-        product: product._id,
-        name: product.name,
-        quantity: item.quantity,
-        image: product.images[0],
-        price: product.price
-      });
-      
-      // Calculate item price
-      itemsPrice += product.price * item.quantity;
-
-      // Update stock
-      product.stock -= item.quantity;
-      await product.save();
-    }
-
-    // Calculate prices
-    const taxPrice = Number((itemsPrice * 0.09).toFixed(2));
-    const shippingPrice = 0; // Free shipping for now
-    const totalPrice = Number((itemsPrice + taxPrice + shippingPrice).toFixed(2));
-
-    // Create order
-    const orderData = {
-      orderItems,
-      shippingAddress,
+    // Create the order
+    const order = new Order({
+      user: userId,
+      orderNumber: generateOrderNumber(),
+      trackingCode: generateTrackingCode(),
+      items,
+      totalAmount,
+      shippingInfo,
       paymentMethod,
-      itemsPrice,
-      taxPrice,
-      shippingPrice,
-      totalPrice,
-      isGuest,
-      guestEmail,
-      guestPhone
-    };
-    
-    // Add user ID if available
-    if (userId) {
-      orderData.user = userId;
-    }
+      status: 'pending',
+    });
 
-    const order = await Order.create(orderData);
-
-    // Generate and assign tracking number after order is created
-    order.trackingNumber = generateTrackingNumber(order._id);
+    // Save the order
     await order.save();
 
-    // If payment method is Zarinpal, initiate payment
-    if (paymentMethod === 'zarinpal') {
-      // Initialize payment gateway (to be implemented in Task 7)
-      // This is a placeholder for now
-      const redirectUrl = `/payment/gateway?orderId=${order._id}`;
-      
-      return res.status(201).json({
-        success: true,
-        message: 'Order created and payment initiated',
-        orderId: order._id,
-        redirectUrl
+    // Clear the user's cart after successful order
+    await Cart.findOneAndUpdate(
+      { user: userId },
+      { $set: { items: [], totalItems: 0, totalPrice: 0 } },
+    );
+
+    // Update user's shipping info if needed
+    if (req.body.saveShippingInfo) {
+      await User.findByIdAndUpdate(userId, {
+        $set: { shippingInfo },
       });
     }
 
-    // For cash on delivery or other payment methods
     res.status(201).json({
-      success: true,
+      status: 'success',
       message: 'Order created successfully',
-      orderId: order._id
+      orderId: order._id,
+      orderNumber: order.orderNumber,
+      trackingCode: order.trackingCode,
     });
   } catch (error) {
     next(error);
@@ -574,17 +479,17 @@ export const bulkUpdateOrderStatus = async (req, res, next) => {
 export const getOrderByTracking = async (req, res, next) => {
   try {
     const { tracking } = req.params;
-    
+
     if (!tracking) {
       return next(new AppError('Tracking number is required', 400));
     }
-    
+
     const order = await Order.findOne({ trackingNumber: tracking });
-    
+
     if (!order) {
       return next(new AppError('Order not found', 404));
     }
-    
+
     // Return limited data for public access
     const publicOrderData = {
       trackingNumber: order.trackingNumber,
@@ -592,12 +497,12 @@ export const getOrderByTracking = async (req, res, next) => {
       createdAt: order.createdAt,
       isDelivered: order.isDelivered,
       deliveredAt: order.deliveredAt,
-      estimatedDelivery: order.estimatedDelivery
+      estimatedDelivery: order.estimatedDelivery,
     };
-    
+
     res.status(200).json({
       success: true,
-      data: publicOrderData
+      data: publicOrderData,
     });
   } catch (error) {
     next(error);
@@ -610,28 +515,28 @@ export const getOrderByTracking = async (req, res, next) => {
 export const verifyGuestOrder = async (req, res, next) => {
   try {
     const { email, orderId } = req.body;
-    
+
     if (!email || !orderId) {
       return next(new AppError('Email and order ID are required', 400));
     }
-    
+
     const order = await Order.findOne({
       _id: orderId,
       isGuest: true,
-      guestEmail: email
+      guestEmail: email,
     });
-    
+
     if (!order) {
       return next(new AppError('Order not found or access denied', 404));
     }
-    
+
     // Generate a temporary access token for this guest to view their order
     const guestAccessToken = await generateGuestOrderToken(orderId, email);
-    
+
     res.status(200).json({
       success: true,
       accessToken: guestAccessToken,
-      expiresIn: '1h'
+      expiresIn: '1h',
     });
   } catch (error) {
     next(error);

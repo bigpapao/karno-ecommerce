@@ -45,70 +45,72 @@ const addressSchema = new mongoose.Schema({
 
 const userSchema = new mongoose.Schema(
   {
-    phone: {
-      type: String,
-      required: [true, 'Phone number is required'],
-      unique: true,
-      trim: true,
-      validate: {
-        validator(v) {
-          // Validate Iranian phone number format (with or without leading zero)
-          return /^(0?9\d{9})$/.test(v);
-        },
-        message: (props) => `${props.value} شماره موبایل باید با 9 شروع شود و 10 رقم باشد`,
-      },
-      // Normalize phone number before saving
-      set(v) {
-        if (!v) return v;
-        // Remove any non-digit characters
-        let phone = v.toString().replace(/\D/g, '');
-        // Remove leading zero or country code if present
-        if (phone.startsWith('98')) {
-          phone = phone.substring(2);
-        } else if (phone.startsWith('0')) {
-          phone = phone.substring(1);
-        }
-        return phone;
-      },
-    },
     firstName: {
       type: String,
+      required: [true, 'First name is required'],
       trim: true,
     },
     lastName: {
       type: String,
+      required: [true, 'Last name is required'],
       trim: true,
+    },
+    phone: {
+      type: String,
+      trim: true,
+      unique: true,
+      sparse: true,
     },
     email: {
       type: String,
+      required: false,
+      match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Please use a valid email address'],
       unique: true,
-      sparse: true, // Allows multiple null values
-      lowercase: true,
+      sparse: true,
       trim: true,
-      match: [/^\S+@\S+\.\S+$/, 'Please use a valid email address'],
+      lowercase: true,
+      index: true,
     },
     password: {
       type: String,
-      select: false,
+      required: [true, 'Password is required'],
+      minlength: 6,
     },
-    passwordChangedAt: Date,
-    passwordResetAttempts: {
-      type: Number,
-      default: 0,
+    // Profile completion fields
+    address: {
+      type: String,
+      default: '',
     },
-    accountLocked: {
+    city: {
+      type: String,
+      default: '',
+    },
+    province: {
+      type: String,
+      default: '',
+    },
+    postalCode: {
+      type: String,
+      default: '',
+    },
+    // Verification fields
+    mobileVerified: {
       type: Boolean,
       default: false,
     },
-    lockUntil: Date,
-    // Legacy single address field (maintained for backward compatibility)
-    address: {
-      street: String,
-      city: String,
-      state: String,
-      zipCode: String,
-      country: String,
+    verificationCode: {
+      type: String,
     },
+    verificationCodeExpires: {
+      type: Date,
+    },
+    // Security and session management
+    refreshToken: String,
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+    lastLogin: Date,
     // New array of addresses
     addresses: [addressSchema],
     role: {
@@ -116,10 +118,41 @@ const userSchema = new mongoose.Schema(
       enum: ['user', 'admin'],
       default: 'user',
     },
-    lastLogin: Date,
     phoneVerified: {
       type: Boolean,
       default: false,
+    },
+    // New verification status field
+    verificationStatus: {
+      type: String,
+      enum: ['unverified', 'phone_verified', 'email_verified', 'fully_verified'],
+      default: 'unverified',
+    },
+    // OAuth connections - for future social logins
+    connections: {
+      google: {
+        id: String,
+        token: String,
+        email: String,
+      },
+      // Other providers can be added later
+    },
+    // For tracking OTP logins
+    otpLoginHistory: [
+      {
+        timestamp: {
+          type: Date,
+          default: Date.now,
+        },
+        ipAddress: String,
+        userAgent: String,
+        device: String,
+      },
+    ],
+    // Password change tracking
+    passwordChangedAt: {
+      type: Date,
+      default: Date.now,
     },
   },
   {
@@ -137,39 +170,66 @@ userSchema.virtual('fullName').get(function () {
   return `User ${this.phone}`;
 });
 
+// Virtual for profile completion check
+userSchema.virtual('isProfileComplete').get(function () {
+  return !!(
+    this.firstName
+    && this.lastName
+    && this.address
+    && this.city
+    && this.province
+    && this.postalCode
+    && this.phone
+  );
+});
+
+// Add this virtual to the object when converting to JSON
+userSchema.set('toJSON', {
+  virtuals: true,
+  transform: function transform(doc, ret) {
+    delete ret.password;
+    delete ret.verificationCode;
+    delete ret.verificationCodeExpires;
+    delete ret.refreshToken;
+    return ret;
+  },
+});
+
 // Hash password before saving (if password exists)
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password') || !this.password) {
     return next();
   }
 
-  const salt = await bcrypt.genSalt(12);
-  this.password = await bcrypt.hash(this.password, salt);
+  try {
+    const salt = await bcrypt.genSalt(12);
+    this.password = await bcrypt.hash(this.password, salt);
 
-  // Update passwordChangedAt when password is modified
-  this.passwordChangedAt = Date.now() - 1000;
+    // Update passwordChangedAt when password is modified
+    this.passwordChangedAt = new Date(Date.now() - 1000);
 
-  next();
+    next();
+  } catch (error) {
+    next(error);
+  }
 });
 
 // Ensure only one default address
 userSchema.pre('save', function (next) {
   if (this.isModified('addresses')) {
     // Check if we're setting a new default
-    const hasNewDefault = this.addresses.some(addr => addr.isDefault && addr.isModified('isDefault'));
-    
+    const hasNewDefault = this.addresses.some((addr) => addr.isDefault && addr.isModified('isDefault'));
+
     if (hasNewDefault) {
       // If setting a new default, make sure no other address is default
-      this.addresses.forEach(addr => {
+      this.addresses.forEach((addr) => {
         if (!addr.isModified('isDefault') || !addr.isDefault) {
           addr.isDefault = false;
         }
       });
-    } else {
+    } else if (this.addresses.length === 1 && this.isNew) {
       // If no default is explicitly set and this is a new address, set the first one as default
-      if (this.addresses.length === 1 && this.isNew) {
-        this.addresses[0].isDefault = true;
-      }
+      this.addresses[0].isDefault = true;
     }
   }
   next();
@@ -178,7 +238,7 @@ userSchema.pre('save', function (next) {
 // Compare passwords
 userSchema.methods.comparePassword = async function (enteredPassword, storedPassword) {
   if (!storedPassword) return false;
-  return await bcrypt.compare(enteredPassword, storedPassword);
+  return bcrypt.compare(enteredPassword, storedPassword);
 };
 
 // Check if password was changed after token was issued
@@ -218,29 +278,41 @@ userSchema.methods.resetPasswordAttempts = async function () {
 };
 
 // Helper method to add a new address
-userSchema.methods.addAddress = async function(addressData) {
+userSchema.methods.addAddress = async function (addressData) {
   // If this is the first address or isDefault is true, set as default
   if (this.addresses.length === 0 || addressData.isDefault) {
     // Set all existing addresses to non-default
     if (this.addresses.length > 0) {
-      this.addresses.forEach(addr => {
+      this.addresses.forEach((addr) => {
         addr.isDefault = false;
       });
     }
     addressData.isDefault = true;
   }
-  
+
   this.addresses.push(addressData);
   return this.save();
 };
 
 // Helper method to get default address
-userSchema.methods.getDefaultAddress = function() {
+userSchema.methods.getDefaultAddress = function () {
   if (!this.addresses || this.addresses.length === 0) {
     return null;
   }
-  
-  return this.addresses.find(addr => addr.isDefault) || this.addresses[0];
+
+  return this.addresses.find((addr) => addr.isDefault) || this.addresses[0];
+};
+
+// Method to generate OTP
+userSchema.methods.generateVerificationCode = function () {
+  // Generate a 5-digit code
+  const code = Math.floor(10000 + Math.random() * 90000).toString();
+
+  // Store the code and set expiry (10 minutes)
+  this.verificationCode = code;
+  this.verificationCodeExpires = Date.now() + 10 * 60 * 1000;
+
+  return code;
 };
 
 const User = mongoose.model('User', userSchema);

@@ -1,175 +1,97 @@
-# Karno E-commerce Platform Sitemap
+# Karno Web Application - Complete Sitemap
 
-This document provides a comprehensive overview of the Karno e-commerce platform's file and directory structure, including both frontend and backend components.
+## Frontend Routes
 
-## Project Root
-- `README.md`
-- `DEPLOYMENT.md`
-- `netlify.toml`
-- `.env.example` - Environment variables template
-- `.gitignore` - Git ignore rules
+### Public Routes
+/                       → frontend/src/pages/Home.js
+/login                  → frontend/src/pages/Login.js
+/register               → frontend/src/pages/Register.js
+/phone-login            → frontend/src/pages/PhoneLogin.js
+/forgot-password        → frontend/src/pages/ForgotPassword.js
+/reset-password/:token  → frontend/src/pages/ResetPassword.js
+/verify-email/:token    → frontend/src/pages/VerifyEmail.js
 
-## Frontend Structure
+### Products & Catalog
+/products               → frontend/src/pages/Products.js
+  /products/:id         → frontend/src/pages/ProductDetail.js
+/brands                 → frontend/src/pages/Brands.js
+  /brands/:brandSlug    → frontend/src/pages/BrandDetail.js
+/models                 → frontend/src/pages/Models.js
+  /models/:id           → frontend/src/pages/ModelDetail.js
 
-### Root Files
-- `frontend/package.json` - Project dependencies and scripts
-- `frontend/package-lock.json` - Dependency lock file
-- `frontend/index.html` - Main HTML entry point
-- `frontend/netlify.toml` - Netlify deployment configuration
+### Shopping Experience
+/cart                   → frontend/src/pages/Cart.js
+/checkout               → frontend/src/pages/Checkout.js (Protected, CheckoutGuard.js)
 
-### Source Files (`frontend/src/`)
+### User Account (Protected)
+/profile                → frontend/src/pages/Profile.js (Protected, ProtectedRoute.js)
+  /profile/edit         → frontend/src/pages/EditProfile.js (Protected)
+/orders                 → frontend/src/pages/Orders.js (Protected)
+  /orders/:orderId      → frontend/src/pages/OrderDetail.js (Protected)
+/addresses              → frontend/src/pages/Addresses.js (Protected)
 
-#### Core Files
-- `index.js` - Main React entry point
-- `index.css` - Global CSS styles
-- `App.js` - Main application component
-- `firebase.js` - Firebase configuration and initialization
+### Other Public Pages
+/contact                → frontend/src/pages/Contact.js
+/500                    → frontend/src/pages/errors/ServerError.js
+/403                    → frontend/src/pages/errors/Forbidden.js
+/* (catchall)           → frontend/src/pages/NotFoundPage.js
 
-#### Assets
-- `assets/` - Static assets directory
+### Admin Panel (Protected)
+/admin                  → frontend/src/pages/admin/Dashboard.js (AdminRoute.js)
+  /admin/products       → frontend/src/pages/admin/Products.js (AdminRoute.js)
+  /admin/orders         → frontend/src/pages/admin/Orders.js (AdminRoute.js)
+  /admin/users          → frontend/src/pages/admin/Users.js (AdminRoute.js)
+  /admin/categories     → frontend/src/pages/admin/Categories.js (AdminRoute.js)
+  /admin/brands         → frontend/src/pages/admin/Brands.js (AdminRoute.js)
+  /admin/settings       → frontend/src/pages/admin/Settings.js (AdminRoute.js)
 
-#### Components
-- `components/AdminHeader.js` - Admin dashboard header component
-- `components/AdminRoute.js` - Route protection for admin pages
-- `components/BrandCard.js` - Brand display card component
-- `components/FeaturedBrands.js` - Featured brands section
-- `components/FeaturedCategories.js` - Featured categories section
-- `components/FilterSidebar.js` - Product filtering sidebar
-- `components/Footer.js` - Site footer component
-- `components/Header.js` - Main site header
-- `components/HeroSection.js` - Homepage hero section
-- `components/LoadingSpinner.js` - Loading indicator
-- `components/MobileMenu.js` - Mobile navigation menu
-- `components/ProductCard.js` - Product display card
-- `components/ProductImageGallery.js` - Product image gallery
-- `components/ProtectedRoute.js` - Route protection for authenticated users
-- `components/RecommendedProducts.js` - Recommended products section
-- `components/RelatedProducts.js` - Related products section
-- `components/ReviewSection.js` - Product reviews section
-- `components/ScrollToTop.js` - Scroll to top utility
-- `components/SearchBar.js` - Search functionality
-- `components/WhyChooseUs.js` - Features/benefits section
+## Backend API Routes
 
-#### Layouts
-- `layouts/AdminLayout.js` - Layout wrapper for admin pages
-- `layouts/MainLayout.js` - Layout wrapper for main site pages
+### Authentication & User
+/api/auth/login                → backend/src/controllers/auth.core.controller.js
+/api/auth/register             → backend/src/controllers/auth.core.controller.js
+/api/auth/request-verification → backend/src/controllers/auth.core.controller.js
+/api/auth/verify-phone         → backend/src/controllers/auth.core.controller.js
+/api/auth/refresh-token        → backend/src/controllers/auth.core.controller.js
+/api/auth/logout               → backend/src/controllers/auth.core.controller.js
+/api/auth/verify-email/:token  → backend/src/controllers/auth.core.controller.js
+/api/auth/profile              → backend/src/controllers/auth.profile.controller.js
+/api/auth/forgot-password      → backend/src/controllers/auth.profile.controller.js
+/api/auth/reset-password       → backend/src/controllers/auth.profile.controller.js
 
-#### Pages
-- `pages/About.js` - About page
-- `pages/Blog.js` - Blog listing page
-- `pages/BlogPost.js` - Individual blog post page
-- `pages/BrandDetail.js` - Brand detail page
-- `pages/Brands.js` - Brands listing page
-- `pages/Cart.js` - Shopping cart page
-- `pages/Checkout.js` - Checkout process page
-- `pages/Contact.js` - Contact page
-- `pages/EditProfile.js` - User profile editing
-- `pages/ForgotPassword.js` - Password recovery page
-- `pages/Home.js` - Homepage
-- `pages/Login.js` - User login page
-- `pages/NotFound.js` - 404 error page
-- `pages/Orders.js` - User orders page
-- `pages/PrivacyPolicy.js` - Privacy policy page
-- `pages/ProductDetail.js` - Product detail page
-- `pages/ProductList.js` - Product listing page
-- `pages/Products.js` - Products browse page
-- `pages/Profile.js` - User profile page
-- `pages/Register.js` - User registration page
-- `pages/ResetPassword.js` - Password reset page
-- `pages/Terms.js` - Terms and conditions page
+### Cart & Checkout
+/api/cart                      → backend/src/controllers/cart.controller.js
+  /api/cart/items              → backend/src/controllers/cart.controller.js
+  /api/cart/guest/:sessionId   → backend/src/controllers/cart.controller.js
+  /api/cart/merge/:sessionId   → backend/src/controllers/cart.controller.js
+  /api/cart/promos             → backend/src/controllers/cart.controller.js
+/api/checkout                  → backend/src/controllers/checkout.controller.js
+  /api/checkout/payment        → backend/src/controllers/payment.controller.js
 
-#### Error Pages
-- `pages/errors/ServerError.js` - 500 server error page
-- `pages/errors/Forbidden.js` - 403 forbidden page
-- `pages/errors/NotFound.js` - 404 not found page
+### Products & Catalog
+/api/products                  → backend/src/controllers/product.controller.js
+  /api/products/:id            → backend/src/controllers/product.controller.js
+  /api/products/featured       → backend/src/controllers/product.controller.js
+  /api/products/search         → backend/src/controllers/product.controller.js
+/api/brands                    → backend/src/controllers/brand.controller.js
+  /api/brands/:id              → backend/src/controllers/brand.controller.js
+/api/categories                → backend/src/controllers/category.controller.js
+  /api/categories/:id          → backend/src/controllers/category.controller.js
+/api/models                    → backend/src/controllers/model.controller.js
+  /api/models/:id              → backend/src/controllers/model.controller.js
 
-#### Admin Pages
-- `pages/admin/Brands.js` - Admin brands management
-- `pages/admin/Categories.js` - Admin categories management
-- `pages/admin/Dashboard.js` - Admin dashboard
-- `pages/admin/Orders.js` - Admin orders management
-- `pages/admin/Products.js` - Admin products management
-- `pages/admin/Users.js` - Admin user management
+### Orders
+/api/orders                    → backend/src/controllers/order.controller.js
+  /api/orders/:id              → backend/src/controllers/order.controller.js
+  /api/orders/:id/status       → backend/src/controllers/order.controller.js
 
-#### Services
-- `services/api.js` - API configuration and base setup
-- `services/auth.service.js` - Authentication service
-- `services/category.service.js` - Category data service
-- `services/index.js` - Services export file
-- `services/order.service.js` - Order management service
-- `services/payment.service.js` - Payment processing service
-- `services/product.service.js` - Product data service
+## Core Layout Components
+- Main Layout: frontend/src/layouts/MainLayout.js (Used for public and user pages)
+- Admin Layout: frontend/src/layouts/AdminLayout.js (Used for admin panel)
 
-#### Store (Redux)
-- `store/index.js` - Redux store configuration
-- `store/slices/authSlice.js` - Authentication state management
-- `store/slices/cartSlice.js` - Shopping cart state management
-- `store/slices/productSlice.js` - Product state management
-- `store/slices/uiSlice.js` - UI state management
-
-#### Styles
-- `styles/global.css` - Global CSS styles
-
-#### Utils
-- `utils/theme.js` - Theme configuration
-
-## Backend Structure
-
-### Root Files
-- `backend/package.json` - Project dependencies and scripts
-- `backend/package-lock.json` - Dependency lock file
-- `backend/.env.example` - Environment variables template
-
-### Source Files (`backend/src/`)
-
-#### Core Files
-- `server.js` - Main Express server entry point
-
-#### Configuration
-- `config/database.js` - MongoDB database configuration
-- `config/security.js` - Security configuration
-- `config/firebase.js` - Firebase configuration using environment variables
-
-#### Controllers
-- `controllers/auth.controller.js` - Authentication controller
-- `controllers/category.controller.js` - Category management
-- `controllers/dashboard.controller.js` - Admin dashboard data
-- `controllers/order.controller.js` - Order management
-- `controllers/payment.controller.js` - Payment processing
-- `controllers/product-analytics.controller.js` - Product analytics
-- `controllers/product.controller.js` - Product management
-- `controllers/user.controller.js` - User management
-
-#### Middleware
-- `middleware/auth.middleware.js` - Authentication middleware
-- `middleware/errorHandler.js` - Error handling middleware
-
-#### Models
-- `models/brand.model.js` - Brand data model
-- `models/category.model.js` - Category data model
-- `models/index.js` - Models export file
-- `models/order.model.js` - Order data model
-- `models/product.model.js` - Product data model
-- `models/user.model.js` - User data model
-
-#### Routes
-- `routes/auth.routes.js` - Authentication routes
-- `routes/category.routes.js` - Category API routes
-- `routes/dashboard.routes.js` - Admin dashboard routes
-- `routes/order.routes.js` - Order management routes
-- `routes/payment.routes.js` - Payment processing routes
-- `routes/product.routes.js` - Product API routes
-- `routes/user.routes.js` - User management routes
-
-#### Utils
-- `utils/adminSeeder.js` - Admin user seeding utility
-- `utils/createAdminUser.js` - Admin user creation utility
-- `utils/email.js` - Email sending utility
-- `utils/fileUpload.js` - File upload handling
-- `utils/logger.js` - Logging utility
-
-#### Public
-- `public/uploads/products/` - Product image uploads directory
-
-#### Logs
-- `logs/` - Application logs directory
+## Authentication & Protection Components
+- ProtectedRoute: frontend/src/components/ProtectedRoute.js
+- AdminRoute: frontend/src/components/AdminRoute.js
+- CheckoutGuard: frontend/src/components/CheckoutGuard.js
+- AuthModal: frontend/src/components/AuthModal.js
+- OTPVerificationModal: frontend/src/components/OTPVerificationModal.js 

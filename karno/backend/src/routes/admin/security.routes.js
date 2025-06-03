@@ -1,28 +1,28 @@
 /**
  * Security Routes for Admin
- * 
+ *
  * These routes provide security monitoring and management capabilities
  * for administrators.
  */
 
 import express from 'express';
-import { protect, restrictTo } from '../../middleware/auth.middleware.js';
+import { authenticate, authorize } from '../../middleware/auth.middleware.js';
 import {
   getSecurityEvents,
   getSuspiciousIPs,
   blockIP,
   unblockIP,
-  clearSuspiciousIPs
+  clearSuspiciousIPs,
 } from '../../middleware/security-monitor.middleware.js';
 import { logger } from '../../utils/logger.js';
-import { AppError } from '../../middleware/errorHandler.js';
-import asyncHandler from '../../utils/asyncHandler.js';
+import { ApiError, ErrorCodes } from '../../utils/api-error.js';
+import { asyncHandler } from '../../utils/asyncHandler.js';
 
 const router = express.Router();
 
 // Apply auth middleware to all security routes
-router.use(protect);
-router.use(restrictTo('admin'));
+router.use(authenticate);
+router.use(authorize('admin'));
 
 /**
  * @route   GET /api/admin/security/events
@@ -32,11 +32,11 @@ router.use(restrictTo('admin'));
 router.get('/events', asyncHandler(async (req, res, next) => {
   const { limit = 100 } = req.query;
   const events = getSecurityEvents(parseInt(limit, 10));
-  
+
   res.status(200).json({
     status: 'success',
     results: events.length,
-    data: events
+    data: events,
   });
 }));
 
@@ -47,11 +47,11 @@ router.get('/events', asyncHandler(async (req, res, next) => {
  */
 router.get('/suspicious-ips', asyncHandler(async (req, res, next) => {
   const ips = getSuspiciousIPs();
-  
+
   res.status(200).json({
     status: 'success',
     results: ips.length,
-    data: ips
+    data: ips,
   });
 }));
 
@@ -62,22 +62,22 @@ router.get('/suspicious-ips', asyncHandler(async (req, res, next) => {
  */
 router.post('/block-ip', asyncHandler(async (req, res, next) => {
   const { ip } = req.body;
-  
+
   if (!ip) {
-    return next(new AppError('IP address is required', 400));
+    return next(new ApiError(400, 'IP address is required', ErrorCodes.BAD_REQUEST));
   }
-  
+
   blockIP(ip);
-  
+
   logger.info({
     message: 'IP address blocked by admin',
     ip,
-    adminId: req.user._id
+    adminId: req.user._id,
   });
-  
+
   res.status(200).json({
     status: 'success',
-    message: `IP address ${ip} has been blocked`
+    message: `IP address ${ip} has been blocked`,
   });
 }));
 
@@ -88,22 +88,22 @@ router.post('/block-ip', asyncHandler(async (req, res, next) => {
  */
 router.post('/unblock-ip', asyncHandler(async (req, res, next) => {
   const { ip } = req.body;
-  
+
   if (!ip) {
-    return next(new AppError('IP address is required', 400));
+    return next(new ApiError(400, 'IP address is required', ErrorCodes.BAD_REQUEST));
   }
-  
+
   unblockIP(ip);
-  
+
   logger.info({
     message: 'IP address unblocked by admin',
     ip,
-    adminId: req.user._id
+    adminId: req.user._id,
   });
-  
+
   res.status(200).json({
     status: 'success',
-    message: `IP address ${ip} has been unblocked`
+    message: `IP address ${ip} has been unblocked`,
   });
 }));
 
@@ -114,15 +114,15 @@ router.post('/unblock-ip', asyncHandler(async (req, res, next) => {
  */
 router.post('/clear-suspicious', asyncHandler(async (req, res, next) => {
   clearSuspiciousIPs();
-  
+
   logger.info({
     message: 'Suspicious IP list cleared by admin',
-    adminId: req.user._id
+    adminId: req.user._id,
   });
-  
+
   res.status(200).json({
     status: 'success',
-    message: 'Suspicious IP list has been cleared'
+    message: 'Suspicious IP list has been cleared',
   });
 }));
 
@@ -236,7 +236,7 @@ router.post('/test-csrf-endpoint', asyncHandler(async (req, res, next) => {
   res.status(200).json({
     status: 'success',
     message: 'CSRF test endpoint accessed successfully',
-    receivedData: req.body
+    receivedData: req.body,
   });
 }));
 
@@ -247,8 +247,9 @@ router.post('/test-csrf-endpoint', asyncHandler(async (req, res, next) => {
  */
 router.get('/test-xss', asyncHandler(async (req, res, next) => {
   const { input } = req.query;
-  
-  res.send(`
+
+  // Build the HTML response without template literals to avoid syntax issues
+  let html = `
     <!DOCTYPE html>
     <html>
     <head>
@@ -270,12 +271,17 @@ router.get('/test-xss', asyncHandler(async (req, res, next) => {
         <form method="GET" action="/api/admin/security/test-xss">
           <input type="text" name="input" value="${input || ''}" placeholder="Enter test string">
           <button type="submit">Test</button>
-        </form>
-        
-        ${input ? `
+        </form>`;
+
+  // Conditionally add output section
+  if (input) {
+    html += `
         <h3>Output (should be sanitized):</h3>
-        <div class="output">${input}</div>
-        ` : ''}
+        <div class="output">${input}</div>`;
+  }
+
+  // Close the first section and add the rest
+  html += `
       </div>
       
       <div class="test-section">
@@ -288,8 +294,9 @@ router.get('/test-xss', asyncHandler(async (req, res, next) => {
         </ul>
       </div>
     </body>
-    </html>
-  `);
+    </html>`;
+
+  res.send(html);
 }));
 
 /**
@@ -398,7 +405,7 @@ router.get('/headers', asyncHandler(async (req, res, next) => {
           
         function checkHeader(id, headerName, headers, validationFn) {
           const value = headers.get(headerName) || 'Not set';
-          document.getElementById(`${id}-value`).textContent = value;
+          document.getElementById(\`\${id}-value\`).textContent = value;
           
           let statusClass = 'bad';
           let statusText = 'Missing';
@@ -413,7 +420,7 @@ router.get('/headers', asyncHandler(async (req, res, next) => {
             }
           }
           
-          const statusCell = document.getElementById(`${id}-status`);
+          const statusCell = document.getElementById(\`\${id}-status\`);
           statusCell.textContent = statusText;
           statusCell.className = statusClass;
         }

@@ -1,0 +1,55 @@
+# Karno Website Improvement Tasks
+
+## 1. Large Files Splitting
+- [ ] Split collaborative-filter.service.js into:
+  - collaborative-filter.service.js (core service)
+  - popular-products.service.js
+  - similar-products.service.js
+  - user-profile.service.js
+  - recommendation-cache.service.js
+
+## 2. Site Structure Improvements
+- [ ] Implement lazy loading for frontend routes
+- [ ] Add route-based code splitting
+- [ ] Implement route guards
+- [ ] Add API versioning (/api/v1/)
+- [ ] Implement rate limiting for sensitive endpoints
+
+## 3. Code Optimization
+Frontend:
+- [ ] Implement code splitting for large components
+- [ ] Add error boundaries
+- [ ] Implement loading states
+- [ ] Add TypeScript types
+
+Backend:
+- [ ] Implement caching strategies
+- [ ] Add request validation middleware
+- [ ] Implement error handling middleware
+- [ ] Add API documentation (Swagger/OpenAPI)
+
+## 4. Security Enhancements
+- [ ] Add CSRF protection
+- [ ] Implement rate limiting
+- [ ] Add input validation
+- [ ] Implement proper session management
+
+## 5. Performance Improvements
+- [ ] Implement caching strategies
+- [ ] Add database indexing
+- [ ] Implement pagination
+- [ ] Add error logging
+
+## 6. Code Organization
+- [ ] Create shared components library
+- [ ] Implement state management
+- [ ] Add testing setup
+- [ ] Implement CI/CD pipeline
+
+## Implementation Order:
+1. Start with splitting large files (Task 1)
+2. Implement security enhancements (Task 4)
+3. Add performance improvements (Task 5)
+4. Optimize code structure (Task 3)
+5. Improve site structure (Task 2)
+6. Finalize with code organization (Task 6) 

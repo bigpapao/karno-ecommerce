@@ -1,6 +1,6 @@
 /**
  * Zarinpal Payment Gateway Service
- * 
+ *
  * This service provides methods to interact with the Zarinpal payment gateway.
  * Contains placeholder functionality that can be replaced with actual Zarinpal API calls.
  */
@@ -29,7 +29,7 @@ const environment = process.env.NODE_ENV === 'production' ? 'PRODUCTION' : 'SAND
 
 /**
  * Create a payment request to Zarinpal
- * 
+ *
  * @param {Object} options - Payment options
  * @param {number} options.amount - Amount in IRR (Toman * 10)
  * @param {string} options.description - Description of the payment
@@ -48,7 +48,7 @@ export const createPaymentRequest = async (options) => {
 
     // PLACEHOLDER: In a real implementation, you would make an API call to Zarinpal
     // For now, we'll simulate a successful response
-    
+
     // Simulated successful response
     const simulatedResponse = {
       Status: 100, // 100 means success in Zarinpal
@@ -87,17 +87,15 @@ export const createPaymentRequest = async (options) => {
 
 /**
  * Get the payment gateway URL for redirecting the user
- * 
+ *
  * @param {string} authority - Authority code from payment request
  * @returns {string} Payment gateway URL
  */
-export const getPaymentURL = (authority) => {
-  return `${ZARINPAL_API[environment].PAYMENT_GATEWAY_URL}${authority}`;
-};
+export const getPaymentURL = (authority) => `${ZARINPAL_API[environment].PAYMENT_GATEWAY_URL}${authority}`;
 
 /**
  * Verify a payment with Zarinpal
- * 
+ *
  * @param {Object} options - Verification options
  * @param {string} options.authority - Authority code from callback
  * @param {number} options.amount - Amount in IRR (Toman * 10) - must match the original payment request
@@ -113,7 +111,7 @@ export const verifyPayment = async (options) => {
 
     // PLACEHOLDER: In a real implementation, you would make an API call to Zarinpal
     // For now, we'll simulate a successful response
-    
+
     // Simulated successful response
     const simulatedResponse = {
       Status: 100, // 100 means success in Zarinpal
@@ -149,34 +147,54 @@ export const verifyPayment = async (options) => {
 
 /**
  * Get Zarinpal status message based on status code
- * 
+ *
  * @param {number} statusCode - Zarinpal status code
  * @returns {string} Status message
  */
 export const getStatusMessage = (statusCode) => {
-  const statusMessages = {
+  // Convert statusCode to string to ensure consistent lookup
+  const code = String(statusCode);
+
+  // Define messages using a switch statement instead of an object literal
+  switch (code) {
     // Success
-    100: 'Payment was successful',
-    101: 'Payment was successful but already verified',
-    
+    case '100':
+      return 'Payment was successful';
+    case '101':
+      return 'Payment was successful but already verified';
+
     // Errors
-    -1: 'Invalid information provided',
-    -2: 'Merchant ID is invalid',
-    -3: 'Amount is too low (minimum 1000 IRR)',
-    -4: 'Amount is higher than the allowed limit',
-    -11: 'Payment request record not found',
-    -12: 'Transaction failed',
-    -21: 'Transaction canceled by user',
-    -22: 'Transaction failed (unknown error)',
-    -33: 'Transaction amount does not match with the payment amount',
-    -34: 'Transaction has already been divided into smaller parts',
-    -40: 'Payment session has expired',
-    -41: 'Payment request information does not match with the payment',
-    -42: 'Your payment initiation request has been previously processed',
-    -54: 'The reference transaction for this transaction was not found or has been settled'
-  };
-  
-  return statusMessages[statusCode] || 'Unknown status code';
+    case '-1':
+      return 'Invalid information provided';
+    case '-2':
+      return 'Merchant ID is invalid';
+    case '-3':
+      return 'Amount is too low (minimum 1000 IRR)';
+    case '-4':
+      return 'Amount is higher than the allowed limit';
+    case '-11':
+      return 'Payment request record not found';
+    case '-12':
+      return 'Transaction failed';
+    case '-21':
+      return 'Transaction canceled by user';
+    case '-22':
+      return 'Transaction failed (unknown error)';
+    case '-33':
+      return 'Transaction amount does not match with the payment amount';
+    case '-34':
+      return 'Transaction has already been divided into smaller parts';
+    case '-40':
+      return 'Payment session has expired';
+    case '-41':
+      return 'Payment request information does not match with the payment';
+    case '-42':
+      return 'Your payment initiation request has been previously processed';
+    case '-54':
+      return 'The reference transaction for this transaction was not found or has been settled';
+    default:
+      return 'Unknown status code';
+  }
 };
 
 export default {
@@ -184,4 +202,4 @@ export default {
   getPaymentURL,
   verifyPayment,
   getStatusMessage,
-}; 
+};

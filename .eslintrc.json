@@ -1,0 +1,14 @@
+{
+  "extends": "eslint:recommended",
+  "rules": {
+    "linebreak-style": 0,
+    "no-underscore-dangle": 0,
+    "no-console": 1,
+    "no-useless-escape": 0,
+    "no-restricted-syntax": 0,
+    "no-use-before-define": 0,
+    "no-shadow": 0,
+    "no-unused-vars": 1,
+    "import/no-named-as-default-member": 0
+  }
+} 

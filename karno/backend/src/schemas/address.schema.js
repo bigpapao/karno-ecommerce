@@ -1,6 +1,6 @@
 /**
  * Address and Shipping Form Fields Schema and Validation Rules
- * 
+ *
  * This file defines all form fields, data types, and validation rules for
  * collecting address and shipping information during checkout.
  */
@@ -23,7 +23,7 @@ export const addressFormFields = [
       required: 'Full name is required',
       minLength: 'Full name must be at least 3 characters',
       maxLength: 'Full name cannot exceed 100 characters',
-      pattern: 'Full name can only contain letters, spaces, and hyphens'
+      pattern: 'Full name can only contain letters, spaces, and hyphens',
     },
     pattern: /^[A-Za-z\s\-]+$/,
     sanitizer: (value) => value.trim(),
@@ -36,7 +36,7 @@ export const addressFormFields = [
     placeholder: 'Enter your phone number',
     errorMessages: {
       required: 'Phone number is required',
-      pattern: 'Invalid phone number format. Please enter an Iranian phone number'
+      pattern: 'Invalid phone number format. Please enter an Iranian phone number',
     },
     pattern: /^(0?9\d{9})$/,
     sanitizer: (value) => {
@@ -63,7 +63,7 @@ export const addressFormFields = [
     errorMessages: {
       required: 'Street address is required',
       minLength: 'Street address must be at least 5 characters',
-      maxLength: 'Street address cannot exceed 200 characters'
+      maxLength: 'Street address cannot exceed 200 characters',
     },
     sanitizer: (value) => value.trim(),
   },
@@ -79,7 +79,7 @@ export const addressFormFields = [
       required: 'City is required',
       minLength: 'City must be at least 2 characters',
       maxLength: 'City cannot exceed 100 characters',
-      pattern: 'City can only contain letters, spaces, and hyphens'
+      pattern: 'City can only contain letters, spaces, and hyphens',
     },
     pattern: /^[A-Za-z\s\-]+$/,
     sanitizer: (value) => value.trim(),
@@ -96,7 +96,7 @@ export const addressFormFields = [
       required: 'State/Province is required',
       minLength: 'State/Province must be at least 2 characters',
       maxLength: 'State/Province cannot exceed 100 characters',
-      pattern: 'State/Province can only contain letters, spaces, and hyphens'
+      pattern: 'State/Province can only contain letters, spaces, and hyphens',
     },
     pattern: /^[A-Za-z\s\-]+$/,
     sanitizer: (value) => value.trim(),
@@ -113,7 +113,7 @@ export const addressFormFields = [
       required: 'Postal/ZIP code is required',
       minLength: 'Postal/ZIP code must be at least 5 characters',
       maxLength: 'Postal/ZIP code cannot exceed 10 characters',
-      pattern: 'Postal/ZIP code can only contain numbers and hyphens'
+      pattern: 'Postal/ZIP code can only contain numbers and hyphens',
     },
     pattern: /^[\d\-]+$/,
     sanitizer: (value) => value.trim(),
@@ -125,7 +125,7 @@ export const addressFormFields = [
     required: true,
     placeholder: 'Select your country',
     errorMessages: {
-      required: 'Country is required'
+      required: 'Country is required',
     },
     options: [
       { value: 'IR', label: 'Iran' },
@@ -136,7 +136,7 @@ export const addressFormFields = [
       { value: 'OM', label: 'Oman' },
       { value: 'KW', label: 'Kuwait' },
       { value: 'SA', label: 'Saudi Arabia' },
-      { value: 'AF', label: 'Afghanistan' }
+      { value: 'AF', label: 'Afghanistan' },
     ],
     sanitizer: (value) => value.trim(),
   },
@@ -146,12 +146,12 @@ export const addressFormFields = [
     type: 'radio',
     required: true,
     errorMessages: {
-      required: 'Address type is required'
+      required: 'Address type is required',
     },
     options: [
       { value: 'home', label: 'Home' },
       { value: 'work', label: 'Work' },
-      { value: 'other', label: 'Other' }
+      { value: 'other', label: 'Other' },
     ],
     defaultValue: 'home',
   },
@@ -170,10 +170,10 @@ export const addressFormFields = [
     maxLength: 500,
     placeholder: 'Additional delivery instructions or notes',
     errorMessages: {
-      maxLength: 'Additional information cannot exceed 500 characters'
+      maxLength: 'Additional information cannot exceed 500 characters',
     },
-    sanitizer: (value) => value ? value.trim() : '',
-  }
+    sanitizer: (value) => (value ? value.trim() : ''),
+  },
 ];
 
 /**
@@ -186,7 +186,7 @@ export const shippingOptions = [
     description: 'Delivery in 3-5 business days',
     price: 200000, // 200,000 IRR
     estimatedDelivery: '3-5 business days',
-    default: true
+    default: true,
   },
   {
     id: 'express',
@@ -194,7 +194,7 @@ export const shippingOptions = [
     description: 'Delivery in 1-2 business days',
     price: 400000, // 400,000 IRR
     estimatedDelivery: '1-2 business days',
-    default: false
+    default: false,
   },
   {
     id: 'same_day',
@@ -203,8 +203,8 @@ export const shippingOptions = [
     price: 600000, // 600,000 IRR
     estimatedDelivery: 'Same day (if ordered before 12 PM)',
     default: false,
-    restrictedTo: ['Tehran', 'Isfahan', 'Shiraz', 'Mashhad', 'Tabriz']
-  }
+    restrictedTo: ['Tehran', 'Isfahan', 'Shiraz', 'Mashhad', 'Tabriz'],
+  },
 ];
 
 /**
@@ -220,17 +220,17 @@ export const addressValidationSchema = Joi.object({
       'string.empty': 'Full name is required',
       'string.min': 'Full name must be at least {#limit} characters',
       'string.max': 'Full name cannot exceed {#limit} characters',
-      'string.pattern.base': 'Full name can only contain letters, spaces, and hyphens'
+      'string.pattern.base': 'Full name can only contain letters, spaces, and hyphens',
     }),
-  
+
   phoneNumber: Joi.string()
     .pattern(/^(0?9\d{9})$/)
     .required()
     .messages({
       'string.empty': 'Phone number is required',
-      'string.pattern.base': 'Invalid phone number format. Please enter an Iranian phone number'
+      'string.pattern.base': 'Invalid phone number format. Please enter an Iranian phone number',
     }),
-  
+
   address: Joi.string()
     .min(5)
     .max(200)
@@ -238,9 +238,9 @@ export const addressValidationSchema = Joi.object({
     .messages({
       'string.empty': 'Street address is required',
       'string.min': 'Street address must be at least {#limit} characters',
-      'string.max': 'Street address cannot exceed {#limit} characters'
+      'string.max': 'Street address cannot exceed {#limit} characters',
     }),
-  
+
   city: Joi.string()
     .pattern(/^[A-Za-z\s\-]+$/)
     .min(2)
@@ -250,9 +250,9 @@ export const addressValidationSchema = Joi.object({
       'string.empty': 'City is required',
       'string.min': 'City must be at least {#limit} characters',
       'string.max': 'City cannot exceed {#limit} characters',
-      'string.pattern.base': 'City can only contain letters, spaces, and hyphens'
+      'string.pattern.base': 'City can only contain letters, spaces, and hyphens',
     }),
-  
+
   state: Joi.string()
     .pattern(/^[A-Za-z\s\-]+$/)
     .min(2)
@@ -262,9 +262,9 @@ export const addressValidationSchema = Joi.object({
       'string.empty': 'State/Province is required',
       'string.min': 'State/Province must be at least {#limit} characters',
       'string.max': 'State/Province cannot exceed {#limit} characters',
-      'string.pattern.base': 'State/Province can only contain letters, spaces, and hyphens'
+      'string.pattern.base': 'State/Province can only contain letters, spaces, and hyphens',
     }),
-  
+
   zipCode: Joi.string()
     .pattern(/^[\d\-]+$/)
     .min(5)
@@ -274,40 +274,40 @@ export const addressValidationSchema = Joi.object({
       'string.empty': 'Postal/ZIP code is required',
       'string.min': 'Postal/ZIP code must be at least {#limit} characters',
       'string.max': 'Postal/ZIP code cannot exceed {#limit} characters',
-      'string.pattern.base': 'Postal/ZIP code can only contain numbers and hyphens'
+      'string.pattern.base': 'Postal/ZIP code can only contain numbers and hyphens',
     }),
-  
+
   country: Joi.string()
     .required()
     .messages({
-      'string.empty': 'Country is required'
+      'string.empty': 'Country is required',
     }),
-  
+
   addressType: Joi.string()
     .valid('home', 'work', 'other')
     .required()
     .messages({
       'string.empty': 'Address type is required',
-      'any.only': 'Address type must be one of: home, work, or other'
+      'any.only': 'Address type must be one of: home, work, or other',
     }),
-  
+
   isDefaultAddress: Joi.boolean()
     .default(false),
-  
+
   additionalInfo: Joi.string()
     .allow('')
     .max(500)
     .messages({
-      'string.max': 'Additional information cannot exceed {#limit} characters'
+      'string.max': 'Additional information cannot exceed {#limit} characters',
     }),
-  
+
   shippingOption: Joi.string()
     .valid('standard', 'express', 'same_day')
     .required()
     .messages({
       'string.empty': 'Shipping option is required',
-      'any.only': 'Shipping option must be one of: standard, express, or same_day'
-    })
+      'any.only': 'Shipping option must be one of: standard, express, or same_day',
+    }),
 });
 
 /**
@@ -315,9 +315,7 @@ export const addressValidationSchema = Joi.object({
  * @param {Object} data - Address form data to validate
  * @returns {Object} - Validation result with error or value
  */
-export const validateAddressData = (data) => {
-  return addressValidationSchema.validate(data, { abortEarly: false });
-};
+export const validateAddressData = (data) => addressValidationSchema.validate(data, { abortEarly: false });
 
 /**
  * Sanitize address data to prevent XSS and injection attacks
@@ -327,9 +325,9 @@ export const validateAddressData = (data) => {
 export const sanitizeAddressData = (data) => {
   const sanitizedData = { ...data };
   const strFields = ['fullName', 'phoneNumber', 'address', 'city', 'state', 'zipCode', 'country', 'additionalInfo'];
-  
+
   // Sanitize string fields
-  strFields.forEach(field => {
+  strFields.forEach((field) => {
     if (sanitizedData[field]) {
       if (typeof sanitizedData[field] === 'string') {
         // Basic sanitization: trim whitespace and remove script tags
@@ -339,13 +337,13 @@ export const sanitizeAddressData = (data) => {
       }
     }
   });
-  
+
   // Apply field-specific sanitizers from addressFormFields
-  addressFormFields.forEach(field => {
+  addressFormFields.forEach((field) => {
     if (field.sanitizer && sanitizedData[field.name]) {
       sanitizedData[field.name] = field.sanitizer(sanitizedData[field.name]);
     }
   });
-  
+
   return sanitizedData;
-}; 
+};

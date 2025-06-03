@@ -1,7 +1,7 @@
 import User from '../models/user.model.js';
 import Product from '../models/product.model.js';
 import Order from '../models/order.model.js';
-import { AppError } from '../middleware/errorHandler.js';
+import { AppError } from '../middleware/error-handler.middleware.js';
 
 // @desc    Get dashboard statistics
 // @route   GET /api/dashboard/stats

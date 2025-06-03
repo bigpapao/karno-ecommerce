@@ -81,9 +81,15 @@ const productSchema = new mongoose.Schema(
     ],
     compatibleVehicles: [
       {
-        make: String,
+        modelId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'VehicleModel'
+        },
+        manufacturer: String,
         model: String,
-        year: Number,
+        year: String,
+        // Keep backward compatibility
+        make: String
       },
     ],
     reviews: [reviewSchema],
@@ -126,6 +132,19 @@ productSchema.pre('save', function (next) {
   }
   next();
 });
+
+// Add indexes
+productSchema.index({ name: 1 }, { name: 'product_name_idx' });
+productSchema.index({ slug: 1 }, { name: 'product_slug_idx', unique: true });
+productSchema.index({ category: 1 }, { name: 'product_category_idx' });
+productSchema.index({ brand: 1 }, { name: 'product_brand_idx' });
+productSchema.index({ price: 1 }, { name: 'product_price_idx' });
+productSchema.index({ stock: 1 }, { name: 'product_stock_idx' });
+productSchema.index({ featured: 1 }, { name: 'product_featured_idx' });
+productSchema.index({ sku: 1 }, { name: 'product_sku_idx', unique: true });
+productSchema.index({ createdAt: -1 }, { name: 'product_created_at_idx' });
+productSchema.index({ rating: -1 }, { name: 'product_rating_idx' });
+productSchema.index({ 'compatibleVehicles.modelId': 1 }, { name: 'product_compatible_vehicles_idx' });
 
 const Product = mongoose.model('Product', productSchema);
 

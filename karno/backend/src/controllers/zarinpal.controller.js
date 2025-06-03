@@ -1,14 +1,14 @@
 /**
  * Zarinpal Payment Gateway Controller
- * 
+ *
  * This controller provides endpoints for integrating with the Zarinpal payment gateway.
  */
 
 import Order from '../models/order.model.js';
-import { AppError } from '../middleware/errorHandler.js';
+import { AppError } from '../middleware/error-handler.middleware.js';
 import { logger } from '../utils/logger.js';
 import zarinpalService from '../services/zarinpal.service.js';
-import asyncHandler from '../utils/asyncHandler.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
 
 /**
  * @desc    Initiate a payment with Zarinpal and redirect to payment gateway
@@ -30,8 +30,8 @@ export const initiateZarinpalPayment = asyncHandler(async (req, res, next) => {
 
   // Check if user is authorized to pay for this order
   if (
-    req.user.role !== 'admin' &&
-    order.user.toString() !== req.user._id.toString()
+    req.user.role !== 'admin'
+    && order.user.toString() !== req.user._id.toString()
   ) {
     return next(new AppError('Not authorized to pay for this order', 403));
   }
@@ -85,8 +85,8 @@ export const initiateZarinpalPayment = asyncHandler(async (req, res, next) => {
       return next(
         new AppError(
           `Zarinpal payment request failed: ${zarinpalService.getStatusMessage(paymentRequest.Status)}`,
-          400
-        )
+          400,
+        ),
       );
     }
   } catch (error) {
@@ -154,28 +154,26 @@ export const handleZarinpalCallback = asyncHandler(async (req, res, next) => {
 
         // Redirect to the frontend success page
         return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/success?orderId=${order._id}`);
-      } else {
-        // Payment verification failed
-        logger.warn({
-          message: 'Payment verification failed',
-          orderId: order._id,
-          authority: Authority,
-          status: verificationResult.Status,
-        });
-
-        return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/failed?orderId=${order._id}&error=${zarinpalService.getStatusMessage(verificationResult.Status)}`);
       }
-    } else {
-      // Payment was canceled or failed
+      // Payment verification failed
       logger.warn({
-        message: 'Payment was canceled or failed',
+        message: 'Payment verification failed',
         orderId: order._id,
         authority: Authority,
-        status: Status,
+        status: verificationResult.Status,
       });
 
-      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/failed?orderId=${order._id}&error=Payment was canceled or failed`);
+      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/failed?orderId=${order._id}&error=${zarinpalService.getStatusMessage(verificationResult.Status)}`);
     }
+    // Payment was canceled or failed
+    logger.warn({
+      message: 'Payment was canceled or failed',
+      orderId: order._id,
+      authority: Authority,
+      status: Status,
+    });
+
+    return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment/failed?orderId=${order._id}&error=Payment was canceled or failed`);
   } catch (error) {
     logger.error({
       message: 'Error handling Zarinpal callback',
@@ -209,8 +207,8 @@ export const getZarinpalPaymentStatus = asyncHandler(async (req, res, next) => {
 
   // Check if user is authorized to view this order
   if (
-    req.user.role !== 'admin' &&
-    order.user.toString() !== req.user._id.toString()
+    req.user.role !== 'admin'
+    && order.user.toString() !== req.user._id.toString()
   ) {
     return next(new AppError('Not authorized to view this order', 403));
   }
@@ -230,4 +228,4 @@ export default {
   initiateZarinpalPayment,
   handleZarinpalCallback,
   getZarinpalPaymentStatus,
-}; 
+};

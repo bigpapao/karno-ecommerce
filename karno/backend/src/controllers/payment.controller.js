@@ -1,6 +1,6 @@
 import Stripe from 'stripe';
 import Order from '../models/order.model.js';
-import { AppError } from '../middleware/errorHandler.js';
+import { AppError } from '../middleware/error-handler.middleware.js';
 import { logger } from '../utils/logger.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -134,7 +134,9 @@ export const getPaymentMethods = async (req, res, next) => {
     // This is a simple example, in a real app you might fetch this from a database
     const paymentMethods = [
       { id: 'stripe', name: 'Credit/Debit Card', icon: 'credit-card' },
-      { id: 'zarinpal', name: 'Zarinpal', icon: 'zarinpal', description: 'پرداخت اینترنتی با درگاه زرین‌پال' },
+      {
+        id: 'zarinpal', name: 'Zarinpal', icon: 'zarinpal', description: 'پرداخت اینترنتی با درگاه زرین‌پال',
+      },
     ];
 
     res.status(200).json({
