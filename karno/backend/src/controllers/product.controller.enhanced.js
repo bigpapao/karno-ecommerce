@@ -72,6 +72,9 @@ export const searchProducts = asyncHandler(async (req, res, next) => {
   const {
     q, page = 1, limit = 10, filter,
   } = req.query;
+  
+  console.log('🔍 SEARCH DEBUG: Search called with query:', q);
+  console.log('🔍 SEARCH DEBUG: All query params:', req.query);
 
   if (!q) {
     return next(new AppError('Search query is required', 400));
@@ -99,39 +102,93 @@ export const searchProducts = asyncHandler(async (req, res, next) => {
     }
   }
 
-  // Build the search query
-  const baseQuery = {
-    $text: { $search: q },
-  };
+  let products = [];
+  let total = 0;
+  let query = {};
 
-  // Combine with additional filters
-  const query = { ...baseQuery, ...additionalFilter };
+  try {
+    // Try text search first
+    const baseQuery = {
+      $text: { $search: q },
+    };
 
-  // Execute query with text score sorting
-  const products = await Product.find(query)
-    .select({
-      name: 1,
-      description: 1,
-      price: 1,
-      discountPrice: 1,
-      images: 1,
-      category: 1,
-      brand: 1,
-      slug: 1,
-      sku: 1,
-      stock: 1,
-      rating: 1,
-      numReviews: 1,
-      score: { $meta: 'textScore' },
-    })
-    .populate('category', 'name slug')
-    .populate('brand', 'name slug')
-    .sort({ score: { $meta: 'textScore' } })
-    .skip(skip)
-    .limit(limitNum)
-    .lean();
+    // Combine with additional filters
+    query = { ...baseQuery, ...additionalFilter };
 
-  const total = await Product.countDocuments(query);
+    // Execute query with text score sorting
+    products = await Product.find(query)
+      .select({
+        name: 1,
+        description: 1,
+        price: 1,
+        discountPrice: 1,
+        images: 1,
+        category: 1,
+        brand: 1,
+        slug: 1,
+        sku: 1,
+        stock: 1,
+        rating: 1,
+        numReviews: 1,
+        score: { $meta: 'textScore' },
+      })
+      .populate('category', 'name slug')
+      .populate('brand', 'name slug')
+      .sort({ score: { $meta: 'textScore' } })
+      .skip(skip)
+      .limit(limitNum)
+      .lean();
+
+    total = await Product.countDocuments(query);
+
+  } catch (error) {
+    // Fallback to regex search if text search fails
+    logger.warn(`Text search failed, falling back to regex search: ${error.message}`);
+    console.log('🔍 SEARCH DEBUG: Text search failed, using regex fallback for query:', q);
+    
+    const regexQuery = new RegExp(q, 'i');
+    const baseQuery = {
+      $or: [
+        { name: regexQuery },
+        { description: regexQuery },
+        { sku: regexQuery },
+        { 'specifications.value': regexQuery }
+      ]
+    };
+
+    // Combine with additional filters
+    query = { ...baseQuery, ...additionalFilter };
+    console.log('🔍 SEARCH DEBUG: Regex query object:', JSON.stringify(query, null, 2));
+
+    // Execute regex query
+    products = await Product.find(query)
+      .select({
+        name: 1,
+        description: 1,
+        price: 1,
+        discountPrice: 1,
+        images: 1,
+        category: 1,
+        brand: 1,
+        slug: 1,
+        sku: 1,
+        stock: 1,
+        rating: 1,
+        numReviews: 1,
+      })
+      .populate('category', 'name slug')
+      .populate('brand', 'name slug')
+      .sort({ name: 1 })
+      .skip(skip)
+      .limit(limitNum)
+      .lean();
+
+    total = await Product.countDocuments(query);
+    console.log('🔍 SEARCH DEBUG: Regex search found', products.length, 'products out of', total, 'total');
+    if (products.length > 0) {
+      console.log('🔍 SEARCH DEBUG: First product found:', products[0].name);
+    }
+  }
 
   // Collect additional information for faceted search
   const facets = await getSearchFacets(query);
@@ -879,5 +936,32 @@ export const deleteProduct = asyncHandler(async (req, res, next) => {
   res.status(200).json({
     status: 'success',
     message: 'Product deleted successfully',
+  });
+});
+
+// Debug endpoint to check products in database
+export const debugListProducts = asyncHandler(async (req, res, next) => {
+  console.log('🔍 DEBUG: Listing all products in database...');
+  
+  const products = await Product.find({})
+    .select('name category brand')
+    .populate('category', 'name')
+    .populate('brand', 'name')
+    .limit(20)
+    .lean();
+  
+  console.log('🔍 DEBUG: Found', products.length, 'products:');
+  products.forEach((p, i) => {
+    console.log(`${i + 1}. "${p.name}" - ${p.brand?.name || 'No Brand'} - ${p.category?.name || 'No Category'}`);
+  });
+  
+  res.status(200).json({
+    status: 'success',
+    count: products.length,
+    products: products.map(p => ({
+      name: p.name,
+      brand: p.brand?.name,
+      category: p.category?.name
+    }))
   });
 });

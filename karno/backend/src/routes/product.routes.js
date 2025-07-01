@@ -14,7 +14,6 @@ import {
   getProductById,
   getProductsByCategory,
   getProductsByBrand,
-  searchProducts,
   getFeaturedProducts,
   clearProductCache,
   createProduct,
@@ -32,7 +31,7 @@ import { uploadProductImages } from '../utils/fileUpload.js';
 import { cacheMiddleware, clearCache } from '../middleware/cache.middleware.js';
 import { trackEvent } from '../middleware/event-tracking.middleware.js';
 import {
-  getSearchSuggestions, searchByVehicle, getVehicleMakes, getVehicleModels, getVehicleYears,
+  searchProducts, getSearchSuggestions, searchByVehicle, getVehicleMakes, getVehicleModels, getVehicleYears, debugListProducts,
 } from '../controllers/product.controller.enhanced.js';
 import { CACHE_KEYS } from '../config/redis.js';
 import { paginationMiddleware } from '../middleware/pagination.middleware.js';
@@ -47,6 +46,9 @@ router.get(
   cacheMiddleware(CACHE_KEYS.PRODUCTS),
   asyncHandler(getProducts),
 );
+
+// Debug endpoint - MUST be before any /:id routes
+router.get('/debug-list', debugListProducts);
 
 router.get(
   '/featured',
