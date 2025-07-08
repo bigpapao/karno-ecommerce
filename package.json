@@ -4,8 +4,12 @@
   "main": "karno/backend/src/server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --ignore-path .eslintignore",
+    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix --ignore-path .eslintignore",
+    "lint:frontend": "cd karno/frontend && npx eslint src/ --ext .js,.jsx,.ts,.tsx",
+    "lint:frontend:fix": "cd karno/frontend && npx eslint src/ --ext .js,.jsx,.ts,.tsx --fix",
+    "lint:backend": "cd karno/backend && npx eslint src/ --ext .js",
+    "lint:backend:fix": "cd karno/backend && npx eslint src/ --ext .js --fix",
     "start": "node karno/backend/src/server.js",
     "dev": "nodemon karno/backend/src/server.js"
   },

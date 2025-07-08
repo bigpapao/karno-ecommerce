@@ -1,7 +1,44 @@
+# Dependencies
 node_modules/
-dist/
+*/node_modules/
+
+# Build outputs
 build/
+dist/
 coverage/
-.next/
+*/build/
+*/dist/
+*/coverage/
+
+# Generated files
+*.min.js
+*.bundle.js
+
+# Public assets
+public/
+*/public/
+
+# Browser tools and extensions
+browser-tools-mcp/
+chrome-extension/
+
+# Logs
+*.log
+logs/
+
+# Config files that shouldn't be linted
 *.config.js
-.eslintrc.js 
+webpack.config.js
+craco.config.js
+config-overrides.js
+
+# Test coverage
+lcov-report/
+
+# Temporary files
+.tmp/
+temp/
+
+# OS generated files
+.DS_Store
+Thumbs.db 

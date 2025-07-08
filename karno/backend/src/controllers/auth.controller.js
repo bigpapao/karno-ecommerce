@@ -3,9 +3,9 @@ import jwt from 'jsonwebtoken';
 import User from '../models/user.model.js';
 
 // Helper functions
-const generateAccessToken = (userId) => jwt.sign({ id: userId }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15m' });
+const generateAccessToken = (userId) => jwt.sign({ id: userId }, process.env.JWT_SECRET || 'your-super-secure-jwt-secret', { expiresIn: '15m' });
 
-const generateRefreshToken = (userId) => jwt.sign({ id: userId }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '7d' });
+const generateRefreshToken = (userId) => jwt.sign({ id: userId }, process.env.REFRESH_TOKEN_SECRET || 'your-super-secure-refresh-secret', { expiresIn: '7d' });
 
 // Register
 export const register = async (req, res) => {
@@ -35,6 +35,14 @@ export const login = async (req, res) => {
 
   const accessToken = generateAccessToken(user._id);
   const refreshToken = generateRefreshToken(user._id);
+
+  // Set both access and refresh tokens as cookies
+  res.cookie('access_token', accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'Strict',
+    maxAge: 15 * 60 * 1000, // 15 minutes (same as JWT expiry)
+  });
 
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
@@ -78,8 +86,17 @@ export const refreshToken = async (req, res) => {
   if (!token) return res.status(401).json({ status: 'error', message: 'رفرش توکن وجود ندارد.' });
 
   try {
-    const decoded = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
+    const decoded = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET || 'your-super-secure-refresh-secret');
     const accessToken = generateAccessToken(decoded.id);
+    
+    // Set the new access token as a cookie
+    res.cookie('access_token', accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'Strict',
+      maxAge: 15 * 60 * 1000, // 15 minutes (same as JWT expiry)
+    });
+    
     return res.status(200).json({ status: 'success', accessToken });
   } catch (err) {
     return res.status(403).json({ status: 'error', message: 'رفرش توکن نامعتبر است.' });
@@ -88,6 +105,7 @@ export const refreshToken = async (req, res) => {
 
 // Logout
 export const logout = async (req, res) => {
+  res.clearCookie('access_token');
   res.clearCookie('refreshToken');
   return res.status(200).json({ status: 'success', message: 'با موفقیت خارج شدید.' });
 };
