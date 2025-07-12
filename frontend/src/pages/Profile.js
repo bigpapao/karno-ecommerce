@@ -7,7 +7,7 @@ import {
   requestPhoneVerification,
   verifyPhone
 } from "../store/slices/authSlice";
-import { isValidIranianMobile, normalizePhoneNumber } from "../utils/phoneUtils";
+import { isValidIranianMobile } from "../utils/phoneUtils";
 
 // -----------------------------------------------------------------------------
 // Form reducer ‑ keeps all profile fields in a single object so we avoid dozens

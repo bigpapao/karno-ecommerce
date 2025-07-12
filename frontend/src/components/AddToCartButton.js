@@ -56,8 +56,7 @@ const AddToCartButton = ({
         );
       }
     } catch (error) {
-      console.error('Error adding to cart:', error);
-      // Could show error message here
+      // TODO: surface error to user via snackbar or toast
     }
   };
 

@@ -21,15 +21,8 @@ import {
   Card,
   CardActionArea,
   CardContent,
-  Fade,
-  CircularProgress,
   Alert,
   Avatar,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemAvatar,
-  Skeleton,
   TextField,
   InputAdornment,
 } from '@mui/material';
@@ -41,7 +34,6 @@ import {
   Clear as ClearIcon,
   Business as BusinessIcon,
   Settings as SettingsIcon,
-  LocalShipping as ShippingIcon,
   CheckCircle as CheckCircleIcon,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -68,7 +60,6 @@ const CarSelector = ({
   const [savedSelection, setSavedSelection] = useState(null);
   
   // UI state
-  const [loading, setLoading] = useState(false);
   const [manufacturersLoading, setManufacturersLoading] = useState(false);
   const [modelsLoading, setModelsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -85,7 +76,7 @@ const CarSelector = ({
           onSelectionChange(parsed);
         }
       } catch (error) {
-        console.error('Error parsing saved vehicle selection:', error);
+        // Failed to parse saved selection; clear it
         localStorage.removeItem('selectedVehicle');
       }
     }
@@ -107,7 +98,6 @@ const CarSelector = ({
         setManufacturers(response.data.manufacturers);
       }
     } catch (err) {
-      console.error('Error loading manufacturers:', err);
       setError('خطا در بارگیری سازندگان خودرو');
     } finally {
       setManufacturersLoading(false);
@@ -123,7 +113,6 @@ const CarSelector = ({
         setModels(response.data.models);
       }
     } catch (err) {
-      console.error('Error loading models:', err);
       setError('خطا در بارگیری مدل‌های خودرو');
       setModels([]);
     } finally {
