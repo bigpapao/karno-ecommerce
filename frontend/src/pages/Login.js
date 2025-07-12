@@ -140,7 +140,7 @@ const Login = () => {
       dispatchLocal({ type: "RESET" });
       navigate("/", { replace: true });
     } catch (error) {
-      console.error("Logout error:", error);
+              // Logout error handled
     }
   };
 

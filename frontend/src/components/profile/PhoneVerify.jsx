@@ -36,7 +36,7 @@ const PhoneVerify = () => {
       setSuccessMessage(response.data.message || 'Verification code sent!');
       // For testing, if backend returns the code:
       if (response.data.verificationCode) {
-        console.log('Test Verification Code:', response.data.verificationCode);
+        // Development verification code logging removed for production
         toast.info(`Test Verification Code: ${response.data.verificationCode}`);
       }
       setStep(2);

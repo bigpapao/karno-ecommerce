@@ -119,7 +119,7 @@ const EnhancedRecommendations = ({
     if (availableTypes.length > 0) {
       loadRecommendations(availableTypes[activeTab]?.id);
     }
-  }, [activeTab, productId, categorySlug, vehicleId]);
+  }, [activeTab, productId, categorySlug, vehicleId, availableTypes, maxItems]);
 
   const loadRecommendations = async (type) => {
     if (!type || loading[type]) return;

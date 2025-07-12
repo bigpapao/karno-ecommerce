@@ -10,7 +10,7 @@ import {
   Paper, 
   TextField, 
   CircularProgress,
-  Avatar,
+  // Removed unused import: Avatar
   InputAdornment,
   IconButton,
   Tabs,
@@ -26,8 +26,7 @@ import {
   Visibility,
   VisibilityOff
 } from '@mui/icons-material';
-import { updateUserProfile } from '../services/user.service';
-import { formatErrorMessage } from '../utils/errorUtils';
+// Removed unused imports: updateUserProfile, formatErrorMessage
 import AlertMessage from '../components/AlertMessage';
 
 // Tab Panel component
@@ -48,7 +47,8 @@ function TabPanel(props) {
 }
 
 const EditProfile = () => {
-  const { user, loading, error } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.auth);
+  // Removed unused variables: loading, error
   const navigate = useNavigate();
   
   const [tabValue, setTabValue] = useState(0);
@@ -184,7 +184,7 @@ const EditProfile = () => {
     };
 
     try {
-      console.log('Updating profile with data:', submissionData);
+      // Updating profile with data
       
       // In a real app, you would dispatch an action to update the profile
       // For now, we'll simulate a successful update
@@ -231,7 +231,7 @@ const EditProfile = () => {
         }, 2000);
       }
     } catch (err) {
-      console.error('Profile update error:', err);
+      // Profile update error handled
       setFormErrors({
         ...formErrors,
         general: err.message || 'Failed to update profile. Please try again.',
@@ -245,7 +245,7 @@ const EditProfile = () => {
     if (!validatePasswordForm()) return;
 
     try {
-      console.log('Updating password');
+      // Updating password
       
       // For registered users in localStorage, update their password
       const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
@@ -276,7 +276,7 @@ const EditProfile = () => {
         });
       }
     } catch (err) {
-      console.error('Password update error:', err);
+      // Password update error handled
       setFormErrors({
         ...formErrors,
         general: err.message || 'Failed to update password. Please try again.',

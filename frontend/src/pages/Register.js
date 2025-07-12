@@ -251,7 +251,7 @@ const Register = () => {
       toast.success('ثبت‌نام با موفقیت انجام شد');
       navigate("/profile", { replace: true });
     } catch (err) {
-      console.error("Registration error:", err);
+      // Registration error handled
       
       // Display detailed error message from the server
       if (err.fieldErrors) {

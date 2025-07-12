@@ -7,7 +7,7 @@ export const cartService = {
       const response = await api.get('/cart');
       return response.data;
     } catch (error) {
-      console.error('Error fetching cart:', error);
+      // Error fetching cart handled by caller
       throw error.response?.data || error;
     }
   },
@@ -18,7 +18,7 @@ export const cartService = {
       const response = await api.post('/cart/add', item);
       return response.data;
     } catch (error) {
-      console.error('Error adding item to cart:', error);
+      // Error adding item to cart handled by caller
       throw error.response?.data || error;
     }
   },
@@ -29,7 +29,7 @@ export const cartService = {
       const response = await api.put(`/cart/update/${productId}`, { quantity });
       return response.data;
     } catch (error) {
-      console.error('Error updating cart quantity:', error);
+      // Error updating cart quantity handled by caller
       throw error.response?.data || error;
     }
   },
@@ -40,7 +40,7 @@ export const cartService = {
       const response = await api.delete(`/cart/remove/${productId}`);
       return response.data;
     } catch (error) {
-      console.error('Error removing item from cart:', error);
+      // Error removing item from cart handled by caller
       throw error.response?.data || error;
     }
   },
@@ -51,7 +51,7 @@ export const cartService = {
       const response = await api.delete('/cart/clear');
       return response.data;
     } catch (error) {
-      console.error('Error clearing cart:', error);
+      // Error clearing cart handled by caller
       throw error.response?.data || error;
     }
   },
@@ -62,7 +62,7 @@ export const cartService = {
       const response = await api.post('/cart/sync', { items: guestCartItems });
       return response.data;
     } catch (error) {
-      console.error('Error syncing cart:', error);
+      // Error syncing cart handled by caller
       throw error.response?.data || error;
     }
   }

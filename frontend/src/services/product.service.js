@@ -345,7 +345,7 @@ export const productService = {
       const response = await api.get('/products', { params });
       return response.data;
     } catch (error) {
-      console.error('Error fetching products:', error);
+      // Error fetching products handled by caller
       throw error;
     }
   },
@@ -365,7 +365,7 @@ export const productService = {
       const response = await api.get(`/products/${id}`);
       return response.data;
     } catch (error) {
-      console.error('Error fetching product:', error);
+      // Error fetching product handled by caller
       throw error;
     }
   },
@@ -394,7 +394,7 @@ export const productService = {
       });
       return response.data;
     } catch (error) {
-      console.error('Error creating product:', error);
+      // Error creating product handled by caller
       throw error;
     }
   },
@@ -423,7 +423,7 @@ export const productService = {
       });
       return response.data;
     } catch (error) {
-      console.error('Error updating product:', error);
+      // Error updating product handled by caller
       throw error;
     }
   },
@@ -444,7 +444,7 @@ export const productService = {
       const response = await api.delete(`/products/${id}`);
       return response.data;
     } catch (error) {
-      console.error('Error deleting product:', error);
+      // Error deleting product handled by caller
       throw error;
     }
   },
@@ -463,7 +463,7 @@ export const productService = {
       });
       return response.data;
     } catch (error) {
-      console.error('Error fetching featured products:', error);
+      // Error fetching featured products handled by caller
       throw error;
     }
   },
@@ -480,7 +480,7 @@ export const productService = {
       });
       return response.data;
     } catch (error) {
-      console.error('Error searching products:', error);
+      // Error searching products handled by caller
       throw error;
     }
   },
@@ -497,7 +497,7 @@ export const productService = {
       });
       return response.data;
     } catch (error) {
-      console.error('Error fetching products by category:', error);
+      // Error fetching products by category handled by caller
       throw error;
     }
   },
@@ -514,7 +514,7 @@ export const productService = {
       });
       return response.data;
     } catch (error) {
-      console.error('Error fetching products by brand:', error);
+      // Error fetching products by brand handled by caller
       throw error;
     }
   },
@@ -535,7 +535,7 @@ export const productService = {
       const response = await api.put(`/products/${id}/stock`, { stock });
       return response.data;
     } catch (error) {
-      console.error('Error updating product stock:', error);
+      // Error updating product stock handled by caller
       throw error;
     }
   },

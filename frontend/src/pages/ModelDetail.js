@@ -20,15 +20,11 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
+  // Removed unused imports: List, ListItem, ListItemText, ListItemIcon
   CircularProgress,
   Alert,
   Pagination,
-  useTheme,
-  useMediaQuery,
+  // Removed unused imports: useTheme, useMediaQuery
 } from '@mui/material';
 import {
   NavigateNext as NavigateNextIcon,
@@ -55,20 +51,7 @@ import { vehicleService } from '../services/vehicle.service';
 import { productService } from '../services/product.service';
 import AddToCartButton from '../components/AddToCartButton';
 
-// TabPanel component for handling tabs
-function TabPanel({ children, value, index, ...other }) {
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`model-tabpanel-${index}`}
-      aria-labelledby={`model-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-    </div>
-  );
-}
+// Removed unused TabPanel component
 
 // Sample parts data (this would come from your API)
 const partsSampleData = [
@@ -297,7 +280,7 @@ const ModelDetail = () => {
         const modelData = await vehicleService.getModelById(id);
         setModel(modelData);
       } catch (err) {
-        console.error('Error fetching model:', err);
+        // Error fetching model handled
         setError('خطا در بارگذاری اطلاعات مدل خودرو');
       } finally {
         setLoading(false);
@@ -332,7 +315,7 @@ const ModelDetail = () => {
           pages: result.pagination?.pages || 0
         }));
       } catch (err) {
-        console.error('Error fetching products:', err);
+        // Error fetching products handled
         setError('خطا در بارگذاری محصولات');
       } finally {
         setProductsLoading(false);

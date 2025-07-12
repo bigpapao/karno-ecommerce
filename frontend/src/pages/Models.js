@@ -140,7 +140,7 @@ const Models = () => {
         setModels(modelsData);
         setManufacturers(manufacturersData);
       } catch (err) {
-        console.error('Error loading data:', err);
+        // Error loading data handled
         setError('خطا در بارگذاری اطلاعات');
       } finally {
         setLoading(false);

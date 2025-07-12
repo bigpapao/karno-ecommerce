@@ -27,10 +27,7 @@ import {
   FormControlLabel,
   Radio,
   RadioGroup,
-  FormLabel,
-  List,
-  ListItem,
-  ListItemText
+  // Removed unused imports: FormLabel, List, ListItem, ListItemText
 } from '@mui/material';
 import { LocalShipping, Payment, Receipt, CheckCircle, Login } from '@mui/icons-material';
 import { clearCart } from '../store/slices/cartSlice';
@@ -49,40 +46,7 @@ const steps = [
   { label: 'تکمیل سفارش', icon: <CheckCircle /> }
 ];
 
-// Iranian provinces for dropdown
-const iranianProvinces = [
-  'تهران',
-  'اصفهان',
-  'فارس',
-  'خراسان رضوی',
-  'آذربایجان شرقی',
-  'آذربایجان غربی',
-  'گیلان',
-  'مازندران',
-  'کرمان',
-  'خوزستان',
-  'البرز',
-  'قم',
-  'کردستان',
-  'همدان',
-  'سیستان و بلوچستان',
-  'کرمانشاه',
-  'هرمزگان',
-  'یزد',
-  'لرستان',
-  'مرکزی',
-  'اردبیل',
-  'گلستان',
-  'قزوین',
-  'سمنان',
-  'زنجان',
-  'چهارمحال و بختیاری',
-  'ایلام',
-  'کهگیلویه و بویراحمد',
-  'بوشهر',
-  'خراسان شمالی',
-  'خراسان جنوبی'
-];
+// Removed unused iranianProvinces array (now handled by AddressForm component)
 
 const Checkout = () => {
   const [activeStep, setActiveStep] = useState(0);
@@ -202,22 +166,7 @@ const Checkout = () => {
     return Object.keys(newErrors).length === 0;
   };
   
-  // Handle address validation completion
-  const handleAddressValidated = (isValid) => {
-    setAddressValidated(isValid);
-    if (!isValid) {
-      setErrors(prev => ({
-        ...prev,
-        address: 'لطفاً آدرس خود را تصحیح کنید'
-      }));
-    } else {
-      setErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors.address;
-        return newErrors;
-      });
-    }
-  };
+  // Removed unused handleAddressValidated function
   
   // Handle next step
   const handleNext = () => {
@@ -333,7 +282,7 @@ const Checkout = () => {
         severity: 'success'
       });
     } catch (error) {
-      console.error('Order placement failed:', error);
+              // Order placement failed - error handled
       setAlert({
         open: true,
         message: 'خطا در ثبت سفارش. لطفا دوباره تلاش کنید',

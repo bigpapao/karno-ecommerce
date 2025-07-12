@@ -17,12 +17,10 @@ import {
   useTheme,
   Divider,
 } from '@mui/material';
-import { formatDistanceToNow } from 'date-fns';
-import { useTranslation } from 'react-i18next';
+// Removed unused imports: formatDistanceToNow, useTranslation
 
 const ReviewSection = ({ productId }) => {
-  const { t } = useTranslation();
-  const theme = useTheme();
+  // Removed unused variables: t, theme
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   
   const [reviews, setReviews] = useState([]);
@@ -38,12 +36,7 @@ const ReviewSection = ({ productId }) => {
     comment: '',
   });
   const [loading, setLoading] = useState(true);
-  const [userReview, setUserReview] = useState(null);
-  const [rating, setRating] = useState(0);
-  const [comment, setComment] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  // Removed unused state variables: userReview, rating, comment, isSubmitting, error, success
 
   useEffect(() => {
     // TODO: Fetch reviews from API

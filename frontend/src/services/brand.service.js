@@ -153,7 +153,7 @@ export const brandService = {
 
     // TEMPORARY FIX: Use fetch instead of axios to avoid redirect loop
     try {
-      console.log('Making brands API call with fetch to avoid redirect loop');
+      // Making brands API call with fetch to avoid redirect loop
       
       // Build query string
       const queryParams = new URLSearchParams();
@@ -164,7 +164,7 @@ export const brandService = {
       });
       
       const url = `http://localhost:5000/api/v1/brands${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
-      console.log('Fetching from URL:', url);
+      // Fetching brands from API endpoint
       
       const response = await fetch(url, {
         method: 'GET',
@@ -179,7 +179,7 @@ export const brandService = {
       }
       
       const data = await response.json();
-      console.log('Fetch brands successful:', data);
+      // Brands fetched successfully
       
       // Return the expected format for the admin component
       return {
@@ -187,7 +187,7 @@ export const brandService = {
         pagination: data.data?.pagination || {}
       };
     } catch (error) {
-      console.error('Error fetching brands with fetch:', error);
+      // Error fetching brands handled by caller
       throw error;
     }
   },
@@ -205,10 +205,10 @@ export const brandService = {
 
     // TEMPORARY FIX: Use fetch instead of axios to avoid redirect loop
     try {
-      console.log('Making brand API call with fetch for ID:', id);
+      // Making brand API call with fetch
       
       const url = `http://localhost:5000/api/v1/brands/${id}`;
-      console.log('Fetching from URL:', url);
+      // Fetching brand from API endpoint
       
       const response = await fetch(url, {
         method: 'GET',
@@ -223,12 +223,12 @@ export const brandService = {
       }
       
       const data = await response.json();
-      console.log('Fetch brand successful:', data);
+      // Brand fetched successfully
       
       // Return the brand data directly
       return data.data || data;
     } catch (error) {
-      console.error('Error fetching brand with fetch:', error);
+      // Error fetching brand handled by caller
       throw error;
     }
   },
@@ -256,7 +256,7 @@ export const brandService = {
       });
       return response.data;
     } catch (error) {
-      console.error('Error creating brand:', error);
+      // Error creating brand handled by caller
       throw error;
     }
   },
@@ -285,7 +285,7 @@ export const brandService = {
       });
       return response.data;
     } catch (error) {
-      console.error('Error updating brand:', error);
+      // Error updating brand handled by caller
       throw error;
     }
   },
@@ -306,7 +306,7 @@ export const brandService = {
       const response = await api.delete(`/brands/${id}`);
       return response.data;
     } catch (error) {
-      console.error('Error deleting brand:', error);
+      // Error deleting brand handled by caller
       throw error;
     }
   },
@@ -325,7 +325,7 @@ export const brandService = {
       });
       return response.data;
     } catch (error) {
-      console.error('Error fetching featured brands:', error);
+      // Error fetching featured brands handled by caller
       throw error;
     }
   },
@@ -344,7 +344,7 @@ export const brandService = {
       const response = await api.get(`/brands/country/${country}`);
       return response.data;
     } catch (error) {
-      console.error('Error fetching brands by country:', error);
+      // Error fetching brands by country handled by caller
       throw error;
     }
   },
@@ -361,7 +361,7 @@ export const brandService = {
       });
       return response.data;
     } catch (error) {
-      console.error('Error searching brands:', error);
+      // Error searching brands handled by caller
       throw error;
     }
   }

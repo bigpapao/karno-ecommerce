@@ -21,12 +21,11 @@ export const authService = {
     } catch (error) {
       if (error.response?.status === 429) {
         // Rate limiting error
-        throw {
-          message: 'محدودیت ارسال کد تأیید. لطفا کمی صبر کنید و دوباره تلاش کنید.',
-          rateLimited: true,
-          rateLimitSeconds: error.response?.data?.rateLimitSeconds || 60,
-          attemptsRemaining: error.response?.data?.attemptsRemaining || 0
-        };
+        const err = new Error('محدودیت ارسال کد تأیید. لطفا کمی صبر کنید و دوباره تلاش کنید.');
+        err.rateLimited = true;
+        err.rateLimitSeconds = error.response?.data?.rateLimitSeconds || 60;
+        err.attemptsRemaining = error.response?.data?.attemptsRemaining || 0;
+        throw err;
       }
       throw error.response?.data?.message || 'خطا در ارسال کد تأیید';
     }
@@ -61,10 +60,9 @@ export const authService = {
       return response.data;
     } catch (error) {
       if (error.response?.data?.attemptsRemaining !== undefined) {
-        throw {
-          message: error.response.data.message || 'کد تأیید نامعتبر است',
-          attemptsRemaining: error.response.data.attemptsRemaining
-        };
+        const err = new Error(error.response.data.message || 'کد تأیید نامعتبر است');
+        err.attemptsRemaining = error.response.data.attemptsRemaining;
+        throw err;
       }
       throw error.response?.data?.message || 'خطا در تأیید کد';
     }
@@ -104,7 +102,7 @@ export const authService = {
       if (sessionId) {
         loginData.sessionId = sessionId;
       }
-      console.log("🔍 Sending login payload:", loginData);
+      // Login payload being sent to server
       
       const response = await api.post('/auth/login', loginData);
       
@@ -152,12 +150,12 @@ export const authService = {
       // The new backend registration flow does NOT accept sessionId
       delete registerData.sessionId;
 
-      console.log('Sending registration data (sanitized):', registerData);
+      // Sending registration data to server
       const response = await api.post('/auth/register', registerData);
       
       return response.data;
     } catch (error) {
-      console.error('Registration error:', error);
+      // Registration error handled by caller
       
       // If we have a response from the server
       if (error.response?.data) {
@@ -306,7 +304,7 @@ export const authService = {
     } catch (error) {
       // If logout fails (e.g., already logged out), just return success
       // The important thing is that we clear the client-side state
-      console.log('Logout API call failed, but continuing with client-side logout');
+      // Logout API call failed, but continuing with client-side logout
       return { status: 'success', message: 'Logged out successfully' };
     }
   },

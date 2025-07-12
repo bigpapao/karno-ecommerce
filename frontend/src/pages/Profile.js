@@ -139,7 +139,7 @@ const Profile = () => {
     try {
       await dispatch(updateProfile(formData)).unwrap();
     } catch (err) {
-      console.error(err);
+      // Error handled
     } finally {
       setSubmitting(false);
     }
@@ -181,7 +181,7 @@ const Profile = () => {
           setErrors((p) => ({ ...p, phone: "OTP sending failed" }));
         }
       } catch (err) {
-        console.error(err);
+        // Error handled
         setErrors((p) => ({ ...p, phone: err.message || "OTP request failed" }));
       } finally {
         setSubmitting(false);

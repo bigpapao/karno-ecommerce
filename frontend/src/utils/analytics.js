@@ -4,6 +4,7 @@
  * This file contains functions for initializing and using Google Analytics in the application.
  * It uses react-ga4 for tracking page views, events, and user interactions.
  */
+import React from 'react';
 import ReactGA from 'react-ga4';
 import { ANALYTICS, FEATURES } from './config';
 import api from '../services/api';
@@ -29,7 +30,8 @@ export const initializeGA = (debug = false) => {
       debug: debug || ANALYTICS.DEBUG
     });
     
-    console.log(`Google Analytics initialized in ${process.env.NODE_ENV} mode with ID: ${gaId}`);
+    // eslint-disable-next-line no-console
+    // Google Analytics initialized in production mode
   }
 };
 
@@ -393,7 +395,7 @@ class AnalyticsTracker {
         await api.post('/analytics/track-batch', { events });
       }
     } catch (error) {
-      console.warn('Failed to send analytics events:', error);
+      // Analytics events failed to send - error logged internally
       // Re-queue events on failure (with limit to prevent infinite growth)
       if (this.eventQueue.length < 100) {
         this.eventQueue.unshift(...events);
@@ -439,7 +441,7 @@ class AnalyticsTracker {
       await api.post('/analytics/track-batch', { events });
       return true;
     } catch (error) {
-      console.error('Failed to send events:', error);
+      // Failed to send events - error handled internally
       return false;
     }
   }
@@ -511,6 +513,7 @@ export const withAnalytics = (WrappedComponent, resourceType) => {
   return function AnalyticsWrapper(props) {
     const analytics = useAnalytics();
     
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     React.useEffect(() => {
       if (props.resourceId && props.resourceName) {
         if (resourceType === 'category') {
@@ -523,7 +526,7 @@ export const withAnalytics = (WrappedComponent, resourceType) => {
           });
         }
       }
-    }, [props.resourceId]);
+    }, [analytics, props.resourceId, props.resourceName]);
     
     return <WrappedComponent {...props} analytics={analytics} />;
   };

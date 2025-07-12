@@ -18,6 +18,7 @@
     "framer-motion": "^12.11.0",
     "i18next": "^23.7.11",
     "idb-keyval": "^6.2.1",
+    "joi": "^17.9.2",
     "jss": "^10.10.0",
     "jss-rtl": "^0.3.0",
     "localforage": "^1.10.0",
@@ -59,11 +60,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "generate-sitemap": "node src/scripts/generateSitemap.mjs",
-    "prebuild": "npm run generate-sitemap",
-    "analyze": "source-map-explorer 'build/static/js/*.js'",
-    "analyze:webpack": "cross-env GENERATE_BUNDLE_REPORT=true react-app-rewired build",
-    "build:analyze": "npm run analyze:webpack"
+    "generate-sitemap": "node src/scripts/generateSitemap.mjs"
   },
   "eslintConfig": {
     "extends": [
@@ -87,18 +84,9 @@
     "@types/node": "^18.16.3",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.1",
-    "@typescript-eslint/eslint-plugin": "^5.59.2",
-    "@typescript-eslint/parser": "^5.59.2",
     "autoprefixer": "^10.4.14",
-    "compression-webpack-plugin": "^11.0.0",
-    "cross-env": "^7.0.3",
-    "customize-cra": "^1.0.0",
-    "image-webpack-loader": "^8.1.0",
     "postcss": "^8.4.27",
-    "react-app-rewired": "^2.2.1",
-    "source-map-explorer": "^2.5.3",
     "tailwindcss": "^3.3.3",
-    "typescript": "^5.0.4",
-    "webpack-bundle-analyzer": "^4.10.1"
+    "typescript": "^4.9.5"
   }
 }

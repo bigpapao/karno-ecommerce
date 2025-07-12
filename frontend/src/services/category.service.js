@@ -108,7 +108,7 @@ export const categoryService = {
     }
 
     try {
-      console.log('Making categories API call with fetch to avoid redirect loop');
+      // Making categories API call with fetch to avoid redirect loop
       
       // Build query string from params
       const queryParams = new URLSearchParams();
@@ -119,7 +119,7 @@ export const categoryService = {
       });
       
       const url = `http://localhost:5000/api/v1/categories${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
-      console.log('Fetching from URL:', url);
+      // Fetching categories from API endpoint
       
       const response = await fetch(url, {
         method: 'GET',
@@ -134,7 +134,7 @@ export const categoryService = {
       }
       
       const data = await response.json();
-      console.log('Fetch categories successful:', data);
+      // Categories fetched successfully
       
       // Return the expected format for the admin component
       return {
@@ -142,7 +142,7 @@ export const categoryService = {
         pagination: data.pagination || { total: data.results || 0 }
       };
     } catch (error) {
-      console.error('Error fetching categories with fetch:', error);
+      // Error fetching categories handled by caller
       throw error;
     }
   },
@@ -162,7 +162,7 @@ export const categoryService = {
       const response = await api.get(`/categories/${id}`);
       return response.data;
     } catch (error) {
-      console.error('Error fetching category:', error);
+      // Error fetching category handled by caller
       throw error;
     }
   },
@@ -186,7 +186,7 @@ export const categoryService = {
       const response = await api.post('/categories', categoryData);
       return response.data;
     } catch (error) {
-      console.error('Error creating category:', error);
+      // Error creating category handled by caller
       throw error;
     }
   },
@@ -211,7 +211,7 @@ export const categoryService = {
       const response = await api.put(`/categories/${id}`, categoryData);
       return response.data;
     } catch (error) {
-      console.error('Error updating category:', error);
+      // Error updating category handled by caller
       throw error;
     }
   },
@@ -232,7 +232,7 @@ export const categoryService = {
       const response = await api.delete(`/categories/${id}`);
       return response.data;
     } catch (error) {
-      console.error('Error deleting category:', error);
+      // Error deleting category handled by caller
       throw error;
     }
   },
@@ -252,7 +252,7 @@ export const categoryService = {
       const response = await api.get('/categories/tree');
       return response.data;
     } catch (error) {
-      console.error('Error fetching category tree:', error);
+      // Error fetching category tree handled by caller
       throw error;
     }
   },
@@ -269,7 +269,7 @@ export const categoryService = {
       const response = await api.get(`/categories/${parentId}/subcategories`);
       return response.data;
     } catch (error) {
-      console.error('Error fetching subcategories:', error);
+      // Error fetching subcategories handled by caller
       throw error;
     }
   }

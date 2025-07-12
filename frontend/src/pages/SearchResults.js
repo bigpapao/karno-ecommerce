@@ -105,7 +105,7 @@ const SearchResults = () => {
 
         setResults(searchResults);
       } catch (err) {
-        console.error('Search error:', err);
+        // Search error handled
         setError('خطا در بارگیری نتایج جستجو');
       } finally {
         setLoading(false);
