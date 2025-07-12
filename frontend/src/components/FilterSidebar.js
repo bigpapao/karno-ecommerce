@@ -4,9 +4,6 @@ import {
   Drawer,
   IconButton,
   Typography,
-  List,
-  ListItem,
-  ListItemText,
   Slider,
   FormGroup,
   FormControlLabel,
@@ -24,7 +21,6 @@ import {
   AccordionDetails,
   Stack,
   Paper,
-  Skeleton,
 } from '@mui/material';
 import { 
   Close as CloseIcon,

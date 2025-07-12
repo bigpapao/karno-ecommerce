@@ -24,7 +24,6 @@ import {
   Lock as LockIcon,
 } from '@mui/icons-material';
 import { updateProfile, login } from '../store/slices/authSlice';
-import { normalizePhoneNumber } from '../utils/phoneUtils';
 
 // ───────────────────────────────── styled ────────────────────────────────────
 const StyledDialog = styled(Dialog)(({ theme }) => ({
