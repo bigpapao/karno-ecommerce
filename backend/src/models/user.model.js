@@ -110,6 +110,15 @@ const userSchema = new mongoose.Schema(
       default: true,
     },
     lastLogin: Date,
+    accountLocked: {
+      type: Boolean,
+      default: false,
+    },
+    lockUntil: Date,
+    passwordResetAttempts: {
+      type: Number,
+      default: 0,
+    },
     // New array of addresses
     addresses: [addressSchema],
     role: {
