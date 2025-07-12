@@ -60,7 +60,6 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "generate-sitemap": "node src/scripts/generateSitemap.mjs",
-    "prebuild": "npm run generate-sitemap",
     "analyze": "source-map-explorer 'build/static/js/*.js'",
     "analyze:webpack": "cross-env GENERATE_BUNDLE_REPORT=true react-app-rewired build",
     "build:analyze": "npm run analyze:webpack"
