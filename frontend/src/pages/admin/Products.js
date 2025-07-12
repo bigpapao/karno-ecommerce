@@ -289,36 +289,63 @@ const Products = () => {
   const handleImageUpload = (event) => {
     const files = Array.from(event.target.files);
     
+    if (files.length === 0) {
+      return;
+    }
+    
+    // Show loading feedback
+    showSnackbar('در حال پردازش تصاویر...', 'info');
+    
     // Validate file types and sizes
-    const validFiles = files.filter(file => {
+    const validFiles = [];
+    const invalidFiles = [];
+    
+    files.forEach(file => {
       if (!file.type.startsWith('image/')) {
-        showSnackbar('فقط فایل‌های تصویری مجاز هستند', 'error');
-        return false;
+        invalidFiles.push(`${file.name}: فقط فایل‌های تصویری مجاز هستند`);
+      } else if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        invalidFiles.push(`${file.name}: حجم فایل نباید بیشتر از 5 مگابایت باشد`);
+      } else {
+        validFiles.push(file);
       }
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        showSnackbar('حجم فایل نباید بیشتر از 5 مگابایت باشد', 'error');
-        return false;
-      }
-      return true;
     });
+
+    // Show validation errors if any
+    if (invalidFiles.length > 0) {
+      showSnackbar(invalidFiles.join('\n'), 'error');
+    }
 
     if (validFiles.length > 0) {
       setImageFiles(prev => [...prev, ...validFiles]);
       
-      // Create preview URLs
+      // Create preview URLs with loading handling
+      let processedCount = 0;
       validFiles.forEach(file => {
         const reader = new FileReader();
         reader.onload = (e) => {
           setImagePreviewUrls(prev => [...prev, e.target.result]);
+          processedCount++;
+          
+          // Show success message when all files are processed
+          if (processedCount === validFiles.length) {
+            showSnackbar(`${validFiles.length} تصویر با موفقیت انتخاب شد`, 'success');
+          }
+        };
+        reader.onerror = () => {
+          showSnackbar(`خطا در خواندن فایل ${file.name}`, 'error');
         };
         reader.readAsDataURL(file);
       });
     }
+    
+    // Clear the input value to allow selecting the same file again
+    event.target.value = '';
   };
 
   const removeImage = (index) => {
     setImageFiles(prev => prev.filter((_, i) => i !== index));
     setImagePreviewUrls(prev => prev.filter((_, i) => i !== index));
+    showSnackbar('تصویر حذف شد', 'info');
   };
 
   const validateForm = () => {
@@ -519,59 +546,90 @@ const Products = () => {
           </Button>
       </Box>
 
-      {/* Filters and Search */}
-      <Paper sx={{ p: 2, mb: 3 }}>
+      {/* Search Section */}
+      <Paper sx={{ p: 2, mb: 2 }}>
         <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} md={4}>
-          <TextField
+          <Grid item xs={12} md={8}>
+            <TextField
               fullWidth
               placeholder="جستجو در محصولات..."
-            value={searchTerm}
-            onChange={handleSearchChange}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            }}
-          />
+              value={searchTerm}
+              onChange={handleSearchChange}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{ '& .MuiOutlinedInput-root': { backgroundColor: 'background.default' } }}
+            />
           </Grid>
-          <Grid item xs={12} md={2}>
+          <Grid item xs={12} md={4}>
+            <Box sx={{ display: 'flex', gap: 1, justifyContent: { xs: 'center', md: 'flex-end' } }}>
+              <ToggleButtonGroup
+                value={viewMode}
+                exclusive
+                onChange={(e, newMode) => newMode && setViewMode(newMode)}
+                size="small"
+              >
+                <ToggleButton value="table" aria-label="نمایش جدولی">
+                  <ViewListIcon />
+                </ToggleButton>
+                <ToggleButton value="grid" aria-label="نمایش کارتی">
+                  <GridViewIcon />
+                </ToggleButton>
+              </ToggleButtonGroup>
+            </Box>
+          </Grid>
+        </Grid>
+      </Paper>
+
+      {/* Filters Section */}
+      <Paper sx={{ p: 2, mb: 3 }}>
+        <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <SearchIcon />
+          فیلترها
+        </Typography>
+        
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} sm={6} md={3}>
             <FormControl fullWidth>
-            <InputLabel>دسته‌بندی</InputLabel>
-            <Select
-              value={filters.category}
-              onChange={(e) => handleFilterChange('category', e.target.value)}
+              <InputLabel>دسته‌بندی</InputLabel>
+              <Select
+                value={filters.category}
+                onChange={(e) => handleFilterChange('category', e.target.value)}
                 label="دسته‌بندی"
-            >
-              <MenuItem value="">همه</MenuItem>
+              >
+                <MenuItem value="">همه دسته‌بندی‌ها</MenuItem>
                 {categories.map((category) => (
                   <MenuItem key={category._id} value={category._id}>
                     {category.name}
                   </MenuItem>
                 ))}
-            </Select>
-          </FormControl>
+              </Select>
+            </FormControl>
           </Grid>
-          <Grid item xs={12} md={2}>
+          
+          <Grid item xs={12} sm={6} md={3}>
             <FormControl fullWidth>
               <InputLabel>برند</InputLabel>
-            <Select
+              <Select
                 value={filters.brand}
                 onChange={(e) => handleFilterChange('brand', e.target.value)}
                 label="برند"
-            >
-              <MenuItem value="">همه</MenuItem>
+              >
+                <MenuItem value="">همه برندها</MenuItem>
                 {brands.map((brand) => (
                   <MenuItem key={brand._id} value={brand._id}>
                     {brand.name}
                   </MenuItem>
                 ))}
-            </Select>
-          </FormControl>
+              </Select>
+            </FormControl>
           </Grid>
-          <Grid item xs={12} md={2}>
+          
+          <Grid item xs={12} sm={6} md={3}>
             <FormControl fullWidth>
               <InputLabel>وضعیت موجودی</InputLabel>
               <Select
@@ -579,34 +637,76 @@ const Products = () => {
                 onChange={(e) => handleFilterChange('stockLevel', e.target.value)}
                 label="وضعیت موجودی"
               >
-                <MenuItem value="">همه</MenuItem>
+                <MenuItem value="">همه محصولات</MenuItem>
                 <MenuItem value="available">موجود</MenuItem>
                 <MenuItem value="low">موجودی کم</MenuItem>
                 <MenuItem value="out">ناموجود</MenuItem>
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} md={2}>
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button onClick={clearFilters} variant="outlined">
-                پاک کردن فیلترها
-              </Button>
-          <ToggleButtonGroup
-            value={viewMode}
-            exclusive
-            onChange={(e, newMode) => newMode && setViewMode(newMode)}
-            size="small"
-          >
-            <ToggleButton value="table">
-              <ViewListIcon />
-            </ToggleButton>
-            <ToggleButton value="grid">
-              <GridViewIcon />
-            </ToggleButton>
-          </ToggleButtonGroup>
-        </Box>
+          
+          <Grid item xs={12} sm={6} md={3}>
+            <Button 
+              onClick={clearFilters} 
+              variant="outlined" 
+              fullWidth
+              sx={{ height: '56px' }}
+            >
+              پاک کردن همه فیلترها
+            </Button>
           </Grid>
         </Grid>
+
+        {/* Active Filters Chips */}
+        {(filters.category || filters.brand || filters.stockLevel || searchTerm) && (
+          <Box sx={{ mt: 2, pt: 2, borderTop: 1, borderColor: 'divider' }}>
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              فیلترهای فعال:
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+              {searchTerm && (
+                <Chip
+                  label={`جستجو: ${searchTerm}`}
+                  onDelete={() => setSearchTerm('')}
+                  variant="filled"
+                  color="primary"
+                  size="small"
+                />
+              )}
+              {filters.category && (
+                <Chip
+                  label={`دسته‌بندی: ${categories.find(c => c._id === filters.category)?.name || 'نامشخص'}`}
+                  onDelete={() => handleFilterChange('category', '')}
+                  variant="filled"
+                  color="secondary"
+                  size="small"
+                />
+              )}
+              {filters.brand && (
+                <Chip
+                  label={`برند: ${brands.find(b => b._id === filters.brand)?.name || 'نامشخص'}`}
+                  onDelete={() => handleFilterChange('brand', '')}
+                  variant="filled"
+                  color="secondary"
+                  size="small"
+                />
+              )}
+              {filters.stockLevel && (
+                <Chip
+                  label={`موجودی: ${
+                    filters.stockLevel === 'available' ? 'موجود' :
+                    filters.stockLevel === 'low' ? 'موجودی کم' :
+                    filters.stockLevel === 'out' ? 'ناموجود' : 'نامشخص'
+                  }`}
+                  onDelete={() => handleFilterChange('stockLevel', '')}
+                  variant="filled"
+                  color="secondary"
+                  size="small"
+                />
+              )}
+            </Box>
+          </Box>
+        )}
       </Paper>
 
       {/* Bulk Actions */}
@@ -911,35 +1011,76 @@ const Products = () => {
                     variant="outlined"
                     component="span"
                     startIcon={<PhotoCameraIcon />}
+                    sx={{ 
+                      mb: 1, 
+                      '&:hover': { 
+                        backgroundColor: 'primary.main', 
+                        color: 'white' 
+                      } 
+                    }}
                   >
                     انتخاب تصاویر
                   </Button>
                 </label>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  حداکثر اندازه فایل: 5 مگابایت | فرمت‌های مجاز: JPG, PNG, WEBP
+                </Typography>
               </Box>
               
               {imagePreviewUrls.length > 0 && (
-                <ImageList sx={{ width: '100%', height: 200 }} cols={4} rowHeight={150}>
-                  {imagePreviewUrls.map((url, index) => (
-                    <ImageListItem key={index}>
-                      <img
-                        src={url}
-                        alt={`Product ${index + 1}`}
-                        loading="lazy"
-                        style={{ objectFit: 'cover' }}
-                      />
-                      <ImageListItemBar
-                        actionIcon={
-                          <IconButton
-                            sx={{ color: 'rgba(255, 255, 255, 0.54)' }}
-                            onClick={() => removeImage(index)}
-                          >
-                            <CloseIcon />
-                          </IconButton>
-                        }
-                      />
-                    </ImageListItem>
-                  ))}
-                </ImageList>
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="subtitle2" gutterBottom>
+                    تصاویر انتخاب شده ({imagePreviewUrls.length})
+                  </Typography>
+                  <ImageList sx={{ width: '100%', height: 200 }} cols={4} rowHeight={150}>
+                    {imagePreviewUrls.map((url, index) => (
+                      <ImageListItem key={index}>
+                        <img
+                          src={url}
+                          alt={`Product ${index + 1}`}
+                          loading="lazy"
+                          style={{ objectFit: 'cover' }}
+                        />
+                        <ImageListItemBar
+                          actionIcon={
+                            <IconButton
+                              sx={{ color: 'rgba(255, 255, 255, 0.8)' }}
+                              onClick={() => removeImage(index)}
+                              title="حذف تصویر"
+                            >
+                              <CloseIcon />
+                            </IconButton>
+                          }
+                        />
+                      </ImageListItem>
+                    ))}
+                  </ImageList>
+                </Box>
+              )}
+              
+              {imagePreviewUrls.length === 0 && (
+                <Box 
+                  sx={{ 
+                    border: '2px dashed', 
+                    borderColor: 'grey.300', 
+                    borderRadius: 2, 
+                    p: 3, 
+                    textAlign: 'center',
+                    backgroundColor: 'grey.50',
+                    '&:hover': {
+                      borderColor: 'primary.main',
+                      backgroundColor: 'primary.50'
+                    }
+                  }}
+                >
+                  <PhotoCameraIcon sx={{ fontSize: 48, color: 'grey.400', mb: 1 }} />
+                  <Typography variant="body1" color="text.secondary">
+                    هنوز هیچ تصویری انتخاب نشده است
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    روی دکمه "انتخاب تصاویر" کلیک کنید
+                  </Typography>
+                </Box>
               )}
             </Grid>
           </Grid>

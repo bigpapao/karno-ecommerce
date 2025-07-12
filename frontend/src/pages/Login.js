@@ -1,7 +1,7 @@
 import React, { useReducer, useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { login, clearError } from "../store/slices/authSlice";
+import { login, clearError, logoutUser } from "../store/slices/authSlice";
 import { isValidIranianMobile } from "../utils/phoneUtils";
 import { getSessionId } from "../utils/sessionUtils";
 
@@ -51,7 +51,7 @@ const Login = () => {
   const reduxDispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, loading, error } = useSelector((s) => s.auth);
+  const { isAuthenticated, loading, error, user } = useSelector((s) => s.auth);
 
   // ───────── clear global error on mount ─────────
   useEffect(() => {
@@ -60,11 +60,12 @@ const Login = () => {
 
   // ───────── redirect on login ─────────
   useEffect(() => {
-    if (isAuthenticated) {
+    // Only redirect if user just logged in (not already authenticated when page loaded)
+    if (isAuthenticated && state.submitting) {
       const redirectPath = location.state?.from?.pathname || "/";
       navigate(redirectPath, { replace: true });
     }
-  }, [isAuthenticated, navigate, location]);
+  }, [isAuthenticated, navigate, location, state.submitting]);
 
   // ───────── sync global error → local errors ─────────
   useEffect(() => {
@@ -132,7 +133,75 @@ const Login = () => {
     }
   };
 
-  // ─────────────────────────── render ───────────────────────────
+  // ───────── logout handler ─────────
+  const handleLogout = async () => {
+    try {
+      await reduxDispatch(logoutUser()).unwrap();
+      dispatchLocal({ type: "RESET" });
+      navigate("/", { replace: true });
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
+
+  // ─────────────────────────── already logged in UI ───────────────────────────
+  if (isAuthenticated && user) {
+    return (
+      <div className="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
+        <div className="sm:mx-auto sm:w-full sm:max-w-sm">
+          <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
+            شما وارد شده‌اید
+          </h2>
+        </div>
+
+        <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
+            <div className="text-center">
+              <p className="font-medium mb-2">خوش آمدید!</p>
+              <p className="text-sm">
+                {user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email || user.phone}
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <Link
+              to="/profile"
+              className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500"
+            >
+              مشاهده پروفایل
+            </Link>
+            
+            <Link
+              to="/"
+              className="flex w-full justify-center rounded-md bg-gray-600 px-3 py-2 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-gray-500"
+            >
+              بازگشت به صفحه اصلی
+            </Link>
+            
+            <button
+              onClick={handleLogout}
+              className="flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-red-500"
+            >
+              خروج از حساب کاربری
+            </button>
+          </div>
+
+          <p className="mt-6 text-center text-sm text-gray-500">
+            کاربر دیگری هستید؟{' '}
+            <button
+              onClick={handleLogout}
+              className="text-indigo-600 hover:text-indigo-500 underline"
+            >
+              ابتدا خروج کنید
+            </button>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ─────────────────────────── login form render ───────────────────────────
   return (
     <div className="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">

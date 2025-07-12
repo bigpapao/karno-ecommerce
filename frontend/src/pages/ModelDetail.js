@@ -53,6 +53,7 @@ import {
 } from '@mui/icons-material';
 import { vehicleService } from '../services/vehicle.service';
 import { productService } from '../services/product.service';
+import AddToCartButton from '../components/AddToCartButton';
 
 // TabPanel component for handling tabs
 function TabPanel({ children, value, index, ...other }) {
@@ -744,15 +745,14 @@ const ModelDetail = () => {
                             )}
                           </Box>
                           
-                          <Button 
-                            variant="contained" 
-                            color="primary"
+                          <AddToCartButton
+                            product={part}
+                            variant="contained"
                             size="small"
+                            customText={part.stock > 0 ? 'افزودن به سبد خرید' : 'ناموجود'}
+                            redirectAfterLogin="/products"
                             disabled={part.stock === 0}
-                            onClick={() => navigate('/contact-us')}
-                          >
-                            {part.stock > 0 ? 'استعلام محصول' : 'ناموجود'}
-                          </Button>
+                          />
                         </Box>
                       </CardContent>
                     </Card>

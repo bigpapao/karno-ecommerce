@@ -1,7 +1,7 @@
 import api from './api';
 import { getOrders, getOrderById, getOrdersByUserId, updateOrderStatus, createOrder } from './mockData';
 
-const USE_MOCK = true; // Toggle this to switch between mock and real API
+const USE_MOCK = false; // Toggle this to switch between mock and real API
 
 export const orderService = {
   /**

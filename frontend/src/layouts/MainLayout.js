@@ -1,13 +1,17 @@
 import React from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import { Box, Container } from '@mui/material';
+import { Box, Container, useTheme, useMediaQuery } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import CartAuthNotification from '../components/CartAuthNotification';
+import MobileBottomNavigation from '../components/MobileBottomNavigation';
+import QuickActionsMenu from '../components/QuickActionsMenu';
 
 const MainLayout = () => {
   const location = useLocation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   // Fixed RTL animations (right-to-left)
   const initialAnimation = {
@@ -39,6 +43,7 @@ const MainLayout = () => {
           flexGrow: 1,
           py: { xs: 4, md: 6 },
           px: { xs: 2, sm: 3, md: 4 },
+          pb: isMobile ? { xs: 10, sm: 10 } : { xs: 4, md: 6 }, // Add bottom padding for mobile nav
         }}
       >
         <AnimatePresence mode="wait">
@@ -55,6 +60,8 @@ const MainLayout = () => {
       </Container>
       <Footer />
       <CartAuthNotification />
+      <MobileBottomNavigation />
+      <QuickActionsMenu />
     </Box>
   );
 };

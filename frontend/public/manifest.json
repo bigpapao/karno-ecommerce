@@ -9,13 +9,13 @@
       "type": "image/x-icon"
     },
     {
-      "src": "images/logo/logo-192.png",
+      "src": "images/logo/Karno.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "any maskable"
     },
     {
-      "src": "images/logo/logo-512.png",
+      "src": "images/logo/Karno.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "any maskable"
@@ -23,7 +23,7 @@
   ],
   "start_url": "/",
   "display": "standalone",
-  "theme_color": "#1976d2",
+  "theme_color": "#2C3E50",
   "background_color": "#ffffff",
   "orientation": "portrait-primary",
   "dir": "rtl",

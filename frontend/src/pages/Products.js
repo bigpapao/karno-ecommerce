@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import SEO from '../components/SEO';
 import { generateBreadcrumbSchema } from '../utils/structuredData';
-import { productService } from '../services/product.service';
+import { productAPI, categoryAPI, brandAPI, vehicleAPI } from '../services/api';
 import CarSelector from '../components/CarSelector';
 import {
   Box,
@@ -12,377 +12,422 @@ import {
   useTheme,
   useMediaQuery,
   Alert,
-  Snackbar,
   Button,
   Paper,
-  Tabs,
-  Tab,
   Chip,
+  CircularProgress,
+  Card,
+  CardContent,
+  Badge,
+  Stack,
 } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import BuildIcon from '@mui/icons-material/Build';
-import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ElectricalServicesIcon from '@mui/icons-material/ElectricalServices';
 import BatteryChargingFullIcon from '@mui/icons-material/BatteryChargingFull';
 import AcUnitIcon from '@mui/icons-material/AcUnit';
-import OilIcon from '@mui/icons-material/Opacity'; // Using a drop icon as a substitute for oil
-import BrakesIcon from '@mui/icons-material/Brightness1'; // Using a circle icon as a substitute for brakes
-import TireIcon from '@mui/icons-material/RadioButtonChecked'; // Using a circle icon as a substitute for tires
+import OilIcon from '@mui/icons-material/Opacity';
+import BrakesIcon from '@mui/icons-material/Brightness1';
+import TireIcon from '@mui/icons-material/RadioButtonChecked';
 import LightbulbIcon from '@mui/icons-material/Lightbulb';
 import FilterSidebar from '../components/FilterSidebar';
 import ProductCard from '../components/ProductCard';
-import Loading from '../components/Loading';
-import RecommendedProducts from '../components/RecommendedProducts';
+import GridViewIcon from '@mui/icons-material/GridView';
+import ViewListIcon from '@mui/icons-material/ViewList';
+import TuneIcon from '@mui/icons-material/Tune';
 
 // Helper function to get category icon based on category name
-const getCategoryIcon = (category) => {
-  switch(category) {
-    case 'Engine':
-    case 'موتور':
-      return <SettingsIcon />;
-    case 'Electrical':
-    case 'برقی':
-      return <ElectricalServicesIcon />;
-    case 'Battery':
-    case 'باتری':
-      return <BatteryChargingFullIcon />;
-    case 'AC':
-    case 'تهویه':
-    case 'Air Conditioning':
-      return <AcUnitIcon />;
-    case 'Oil':
-    case 'روغن':
-      return <OilIcon />;
-    case 'Brakes':
-    case 'ترمز':
-      return <BrakesIcon />;
-    case 'Tires':
-    case 'لاستیک':
-      return <TireIcon />;
-    case 'Lights':
-    case 'چراغ':
-    case 'روشنایی':
-      return <LightbulbIcon />;
-    case 'Suspension':
-    case 'تعلیق':
-      return <DirectionsCarIcon />;
-    default:
+const getCategoryIcon = (categoryName) => {
+  const name = categoryName?.toLowerCase() || '';
+  if (name.includes('موتور') || name.includes('engine')) return <SettingsIcon />;
+  if (name.includes('برق') || name.includes('electrical')) return <ElectricalServicesIcon />;
+  if (name.includes('باتری') || name.includes('battery')) return <BatteryChargingFullIcon />;
+  if (name.includes('تهویه') || name.includes('ac')) return <AcUnitIcon />;
+  if (name.includes('روغن') || name.includes('oil')) return <OilIcon />;
+  if (name.includes('ترمز') || name.includes('brake')) return <BrakesIcon />;
+  if (name.includes('لاستیک') || name.includes('tire')) return <TireIcon />;
+  if (name.includes('چراغ') || name.includes('light')) return <LightbulbIcon />;
+  if (name.includes('تعلیق') || name.includes('suspension')) return <DirectionsCarIcon />;
       return <BuildIcon />;
-  }
-};
-
-// Helper function to get category image based on category name
-const getCategoryImage = (category) => {
-  switch(category) {
-    case 'Engine':
-    case 'موتور':
-      return '/images/categories/engine.jpg';
-    case 'Electrical':
-    case 'برقی':
-      return '/images/categories/electrical.jpg';
-    case 'Battery':
-    case 'باتری':
-      return '/images/categories/battery.jpg';
-    case 'AC':
-    case 'تهویه':
-    case 'Air Conditioning':
-      return '/images/categories/ac.jpg';
-    case 'Oil':
-    case 'روغن':
-      return '/images/categories/oil.jpg';
-    case 'Brakes':
-    case 'ترمز':
-      return '/images/categories/brakes.jpg';
-    case 'Tires':
-    case 'لاستیک':
-      return '/images/categories/tires.jpg';
-    case 'Lights':
-    case 'چراغ':
-    case 'روشنایی':
-      return '/images/categories/lights.jpg';
-    case 'Suspension':
-    case 'تعلیق':
-      return '/images/categories/suspension.jpg';
-    default:
-      return '/images/categories/parts.jpg';
-  }
-};
-
-// Helper function to get category title in Farsi
-const getCategoryTitle = (category) => {
-  switch(category) {
-    case 'Engine':
-      return 'قطعات موتور';
-    case 'Electrical':
-      return 'قطعات برقی';
-    case 'Battery':
-      return 'باتری و متعلقات';
-    case 'AC':
-    case 'Air Conditioning':
-      return 'سیستم تهویه';
-    case 'Oil':
-      return 'روغن و فیلتر';
-    case 'Brakes':
-      return 'سیستم ترمز';
-    case 'Tires':
-      return 'لاستیک و رینگ';
-    case 'Lights':
-      return 'سیستم روشنایی';
-    case 'Suspension':
-      return 'سیستم تعلیق';
-    default:
-      return category;
-  }
-};
-
-// Helper function to get category description in Farsi
-const getCategoryDescription = (category) => {
-  switch(category) {
-    case 'Engine':
-      return 'انواع قطعات موتور با کیفیت بالا برای تمامی خودروهای ایرانی و خارجی. شامل واشر سرسیلندر، پیستون، رینگ، شاتون، یاتاقان و سایر قطعات موتوری.';
-    case 'Electrical':
-      return 'قطعات و تجهیزات برقی خودرو شامل دینام، استارت، کویل، وایر، شمع، سنسورها و سایر قطعات الکتریکی با ضمانت کیفیت.';
-    case 'Battery':
-      return 'انواع باتری خودرو با تضمین کیفیت و طول عمر بالا، مناسب برای انواع خودروهای سبک و سنگین.';
-    case 'AC':
-    case 'Air Conditioning':
-      return 'قطعات سیستم تهویه و کولر خودرو شامل کندانسور، اواپراتور، کمپرسور، فیلتر و سایر متعلقات با کیفیت عالی.';
-    case 'Oil':
-      return 'انواع روغن موتور، گیربکس و فیلترهای روغن، هوا و بنزین از برندهای معتبر داخلی و خارجی.';
-    case 'Brakes':
-      return 'سیستم ترمز شامل دیسک، کاسه چرخ، لنت، کالیپر و سایر قطعات ترمز با کیفیت بالا و ضمانت اصالت.';
-    case 'Tires':
-      return 'انواع لاستیک، رینگ و تایر برای خودروهای سواری، شاسی‌بلند و وانت با گارانتی اصالت و کیفیت.';
-    case 'Lights':
-      return 'سیستم روشنایی خودرو شامل چراغ‌های جلو، عقب، راهنما، مه‌شکن و سایر تجهیزات نورپردازی.';
-    case 'Suspension':
-      return 'قطعات سیستم تعلیق شامل کمک فنر، فنر، سیبک، طبق، لاستیک‌های تعلیق و سایر قطعات با کیفیت بالا.';
-    default:
-      return 'قطعات با کیفیت و اصل برای خودروهای ایرانی و خارجی با ضمانت اصالت و کیفیت.';
-  }
 };
 
 const Products = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const location = useLocation();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [products, setProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [brands, setBrands] = useState([]);
+  const [currentCategory, setCurrentCategory] = useState(null);
+  const [currentBrand, setCurrentBrand] = useState(null);
+  const [error, setError] = useState(null);
   
-  // Add console log for debugging
-  console.log('Products component is rendering', new Date().toISOString());
+  // Debug logging removed for performance
   
-  // Get query parameters from URL for SEO
-  const queryParams = new URLSearchParams(location.search);
-  const categoryParam = queryParams.get('category');
-  const brandParam = queryParams.get('brand');
-  
-  // Create title and description for SEO based on query parameters
-  const getSeoTitle = () => {
-    if (categoryParam && brandParam) {
-      return `${getCategoryTitle(categoryParam)} ${brandParam} | فروشگاه اینترنتی کارنو`;
-    } else if (categoryParam) {
-      return `${getCategoryTitle(categoryParam)} | فروشگاه اینترنتی کارنو`;
-    } else if (brandParam) {
-      return `قطعات و لوازم یدکی ${brandParam} | فروشگاه اینترنتی کارنو`;
-    }
-    return 'فروشگاه آنلاین قطعات یدکی و لوازم جانبی خودرو | کارنو';
-  };
-  
-  const getSeoDescription = () => {
-    if (categoryParam && brandParam) {
-      return `خرید آنلاین ${getCategoryTitle(categoryParam)} ${brandParam} با قیمت مناسب، گارانتی اصالت و ارسال سریع از فروشگاه اینترنتی کارنو`;
-    } else if (categoryParam) {
-      return getCategoryDescription(categoryParam);
-    } else if (brandParam) {
-      return `فروش انواع قطعات و لوازم یدکی اصلی ${brandParam} با بهترین قیمت و کیفیت در فروشگاه اینترنتی کارنو. ضمانت اصالت کالا و ارسال سریع به سراسر ایران.`;
-    }
-    return 'فروشگاه اینترنتی کارنو، عرضه کننده انواع قطعات و لوازم یدکی خودروهای داخلی و خارجی با تضمین اصالت کالا. خرید آنلاین با قیمت مناسب و تحویل سریع.';
-  };
-  
-  // Generate breadcrumb schema
-  const breadcrumbItems = [
-    { name: 'خانه', url: 'https://karno.ir/' },
-    { name: 'فروشگاه', url: 'https://karno.ir/products' }
-  ];
-  
-  // Add category to breadcrumb if present
-  if (categoryParam) {
-    breadcrumbItems.push({
-      name: getCategoryTitle(categoryParam),
-      url: `https://karno.ir/products?category=${encodeURIComponent(categoryParam)}`
-    });
-  }
-  
-  // Add brand to breadcrumb if present
-  if (brandParam) {
-    breadcrumbItems.push({
-      name: brandParam,
-      url: `https://karno.ir/products?brand=${encodeURIComponent(brandParam)}`
-    });
-  }
-  
-  const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbItems);
-  const [activeCategory, setActiveCategory] = useState('all');
-  const [activeBrand, setActiveBrand] = useState(null);
-  const [currentTab, setCurrentTab] = useState('all');
+  // State for filters
   const [filters, setFilters] = useState({
-    category: [],
-    price: [0, 1000],
-    rating: 0,
-    availability: 'all',
-    brand: null,
-  });
-  const [notification, setNotification] = useState({
-    open: false,
-    message: '',
-    severity: 'success',
+    search: '',
+    category: '',
+    brand: '',
+    priceRange: [0, 10000000],
+    sortBy: 'createdAt',
+    sortOrder: 'desc',
+    inStock: true,
+    vehicle: '',
+    make: '',
+    model: '',
   });
 
-  // Get unique categories from products
-  const categories = React.useMemo(() => {
-    const uniqueCategories = new Set();
-    products.forEach(product => {
-      if (product.category) {
-        // Handle both object and string formats
-        const categoryName = product.category?.name || product.category;
-        if (categoryName) {
-          uniqueCategories.add(categoryName);
-        }
-      }
-    });
-    return Array.from(uniqueCategories);
-  }, [products]);
+  // State for pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(0);
 
-  // Get unique brands from products
-  const brands = React.useMemo(() => {
-    const uniqueBrands = new Set();
-    products.forEach(product => {
-      if (product.brand) {
-        // Handle both object and string formats
-        const brandName = product.brand?.name || product.brand;
-        if (brandName) {
-          uniqueBrands.add(brandName);
+  // Default filters for resetting
+  const defaultFilters = {
+    search: '',
+    category: '',
+    brand: '',
+    priceRange: [0, 10000000],
+    sortBy: 'createdAt',
+    sortOrder: 'desc',
+    inStock: true,
+    vehicle: '',
+    make: '',
+    model: '',
+  };
+
+  // Function definitions first
+  const fetchInitialData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const [categoriesRes, brandsRes] = await Promise.all([
+        categoryAPI.getCategories(),
+        brandAPI.getBrands({ limit: 1000 })
+      ]);
+
+      if (categoriesRes.data?.status === 'success') {
+        setCategories(categoriesRes.data.data);
+        
+        // Find current category if specified in URL
+        if (filters.category) {
+          const foundCategory = categoriesRes.data.data.find(
+            cat => cat.slug === filters.category || cat.name === filters.category
+          );
+          setCurrentCategory(foundCategory);
         }
       }
-    });
-    return Array.from(uniqueBrands);
-  }, [products]);
+
+      if (brandsRes.data?.success) {
+        setBrands(brandsRes.data.data.brands);
+        
+        // Find current brand if specified in URL
+        if (filters.brand) {
+          const foundBrand = brandsRes.data.data.brands.find(
+            brand => brand.slug === filters.brand || brand.name === filters.brand
+          );
+          setCurrentBrand(foundBrand);
+        }
+      }
+    } catch (err) {
+      // Error fetching initial data
+      setError('خطا در دریافت اطلاعات اولیه');
+    } finally {
+      setLoading(false);
+    }
+  }, [filters.brand, filters.category]);
+
+  // Enhanced filter application with vehicle support
+  const applyFilters = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Build query parameters
+      const params = {
+        page: currentPage,
+        limit: 12,
+        sortBy: filters.sortBy,
+      };
+
+      // Add category filter
+      if (filters.category) {
+        const selectedCat = categories.find(cat => cat.slug === filters.category);
+        if (selectedCat) {
+          params.category = selectedCat._id;
+        }
+      }
+
+      // Add brand filter
+      if (filters.brand) {
+        const selectedBrand = brands.find(brand => brand.slug === filters.brand);
+        if (selectedBrand) {
+          params.brand = selectedBrand._id;
+        }
+      }
+
+      // Add vehicle filter
+      if (filters.vehicle) {
+        params.vehicle = filters.vehicle;
+      }
+
+      // Add price range filter
+      if (filters.priceRange[0] > 0 || filters.priceRange[1] < 10000000) {
+        params.minPrice = filters.priceRange[0];
+        params.maxPrice = filters.priceRange[1];
+      }
+
+      // Add search filter
+      if (filters.search && filters.search.trim()) {
+        params.search = filters.search.trim();
+      }
+
+      // Use vehicle search if vehicle is selected
+      let response;
+      if (filters.vehicle && filters.make && filters.model) {
+        // Use vehicle-specific search
+        response = await vehicleAPI.searchProductsByVehicle({
+          vehicle: filters.vehicle,
+          make: filters.make,
+          model: filters.model,
+          ...params
+        });
+      } else {
+        // Use regular product search
+        response = await productAPI.getProducts(params);
+      }
+
+      if (response.data?.products) {
+        setProducts(response.data.products);
+        setTotalPages(response.data.pagination?.pages || 1);
+        setTotalProducts(response.data.pagination?.total || 0);
+        
+        // Filters applied successfully
+      }
+    } catch (err) {
+      // Error loading products
+      setError('خطا در بارگیری محصولات. لطفاً دوباره تلاش کنید.');
+    } finally {
+      setLoading(false);
+    }
+  }, [filters, currentPage, categories, brands]);
+
+  // useEffect hooks
+  // Fetch initial data
+  useEffect(() => {
+    fetchInitialData();
+  }, [fetchInitialData]);
+
+  // Fetch products when filters change - optimized to prevent unnecessary calls
+  useEffect(() => {
+    // Only call applyFilters if categories and brands are loaded (prevent empty API calls)
+    if (categories.length > 0 && brands.length > 0) {
+      applyFilters();
+    }
+  }, [filters, currentPage, categories, brands, applyFilters]);
+
+  // URL parameter parsing and state - optimized to batch updates
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const categorySlug = params.get('category');
+    const brandSlug = params.get('brand');
+    const vehicleId = params.get('vehicle');
+    const makeSlug = params.get('make');
+    const modelSlug = params.get('model');
+    const searchQuery = params.get('search');
+    const minPrice = params.get('minPrice');
+    const maxPrice = params.get('maxPrice');
+    const sortParam = params.get('sort');
+
+    // Batch all filter updates to prevent multiple re-renders
+    const newFilters = { ...filters };
+    let hasChanges = false;
+
+    if (categorySlug && categorySlug !== filters.category) {
+      newFilters.category = categorySlug;
+      hasChanges = true;
+    }
+    if (brandSlug && brandSlug !== filters.brand) {
+      newFilters.brand = brandSlug;
+      hasChanges = true;
+    }
+    if (vehicleId && vehicleId !== filters.vehicle) {
+      newFilters.vehicle = vehicleId;
+      newFilters.make = makeSlug || '';
+      newFilters.model = modelSlug || '';
+      hasChanges = true;
+    }
+    if (searchQuery && searchQuery !== filters.search) {
+      newFilters.search = searchQuery;
+      hasChanges = true;
+    }
+    if (minPrice && parseInt(minPrice) !== filters.priceRange[0]) {
+      newFilters.priceRange = [parseInt(minPrice), newFilters.priceRange[1]];
+      hasChanges = true;
+    }
+    if (maxPrice && parseInt(maxPrice) !== filters.priceRange[1]) {
+      newFilters.priceRange = [newFilters.priceRange[0], parseInt(maxPrice)];
+      hasChanges = true;
+    }
+    if (sortParam && sortParam !== filters.sortBy) {
+      newFilters.sortBy = sortParam;
+      hasChanges = true;
+    }
+
+    // Only update if there are actual changes
+    if (hasChanges) {
+      setFilters(newFilters);
+    }
+  }, [location.search, filters]);
+
+  // Get SEO title based on current filters
+  const getSeoTitle = () => {
+    let title = 'قطعات خودرو';
+
+    // Add category to title
+    if (filters.category) {
+      const selectedCat = categories.find(cat => cat.slug === filters.category);
+      if (selectedCat) {
+        title = `${selectedCat.name} - ${title}`;
+      }
+    }
+
+    // Add brand to title
+    if (filters.brand) {
+      const selectedBrand = brands.find(brand => brand.slug === filters.brand);
+      if (selectedBrand) {
+        title = `${selectedBrand.name} - ${title}`;
+      }
+    }
+
+    // Add vehicle info to title
+    if (filters.make && filters.model) {
+      title = `قطعات ${filters.make} ${filters.model} - ${title}`;
+    }
+
+    // Add search term to title
+    if (filters.search) {
+      title = `جستجو: ${filters.search} - ${title}`;
+    }
+
+    return `${title} | کارنو`;
+  };
+
+  // Get SEO description based on current filters
+  const getSeoDescription = () => {
+    let description = 'بهترین قطعات یدکی خودرو با کیفیت بالا و قیمت مناسب';
+
+    // Add category to description
+    if (filters.category) {
+      const selectedCat = categories.find(cat => cat.slug === filters.category);
+      if (selectedCat) {
+        description = `قطعات ${selectedCat.name} با کیفیت بالا و قیمت مناسب`;
+      }
+    }
+
+    // Add brand to description
+    if (filters.brand) {
+      const selectedBrand = brands.find(brand => brand.slug === filters.brand);
+      if (selectedBrand) {
+        description = `قطعات یدکی ${selectedBrand.name} اصل و با کیفیت`;
+      }
+    }
+
+    // Add vehicle info to description
+    if (filters.make && filters.model) {
+      description = `قطعات یدکی مخصوص ${filters.make} ${filters.model} با کیفیت بالا`;
+    }
+
+    return description;
+  };
+
+  // Handle vehicle selection from CarSelector
+  const handleVehicleSelection = (vehicleSelection) => {
+    if (vehicleSelection) {
+      const newFilters = {
+        ...filters,
+        vehicle: vehicleSelection.model._id,
+        make: vehicleSelection.manufacturer.slug,
+        model: vehicleSelection.model.slug
+      };
+      setFilters(newFilters);
+      setCurrentPage(1);
+      
+      // Update URL to reflect vehicle selection
+      const searchParams = new URLSearchParams();
+      searchParams.set('vehicle', vehicleSelection.model._id);
+      searchParams.set('make', vehicleSelection.manufacturer.slug);
+      searchParams.set('model', vehicleSelection.model.slug);
+      
+      // Preserve other filters
+      if (filters.category) searchParams.set('category', filters.category);
+      if (filters.brand) searchParams.set('brand', filters.brand);
+      if (filters.search) searchParams.set('search', filters.search);
+      
+      navigate(`/products?${searchParams.toString()}`, { replace: true });
+    } else {
+      // Vehicle selection cleared
+      const newFilters = { ...filters, vehicle: '', make: '', model: '' };
+      setFilters(newFilters);
+      
+      // Update URL to remove vehicle parameters
+      const searchParams = new URLSearchParams(location.search);
+      searchParams.delete('vehicle');
+      searchParams.delete('make');
+      searchParams.delete('model');
+      
+      const newSearch = searchParams.toString();
+      navigate(newSearch ? `/products?${newSearch}` : '/products', { replace: true });
+    }
+  };
 
   const handleFilterChange = (filterName, value) => {
     setFilters(prev => ({
       ...prev,
-      [filterName]: value,
+      [filterName]: value
     }));
-    
-    // If brand filter is changed, update activeBrand
-    if (filterName === 'brand') {
-      setActiveBrand(value);
-    }
   };
 
   const handleClearFilters = () => {
-    setFilters({
-      category: [],
-      price: [0, 1000],
-      rating: 0,
-      availability: 'all',
-      brand: null,
-    });
-    setActiveCategory('all');
-    setActiveBrand(null);
-    setCurrentTab('all');
+    setFilters(defaultFilters);
+    setCurrentPage(1);
+    navigate('/products', { replace: true });
   };
 
-  // Alias for handleClearFilters for the FilterSidebar component
-  const handleReset = () => handleClearFilters();
+  const handleRetry = () => applyFilters();
 
-  // Filter products based on active filters
-  useEffect(() => {
-    if (!products || products.length === 0) return;
+  const cardAnimationDelay = (index) => index * 0.1;
 
-    let result = [...products];
+  // Create breadcrumb schema for SEO
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: 'خانه', url: '/' },
+    { name: 'محصولات', url: '/products' },
+    ...(currentCategory ? [{ name: currentCategory.name, url: `/products?category=${currentCategory.slug}` }] : []),
+    ...(currentBrand ? [{ name: currentBrand.name, url: `/products?brand=${currentBrand.slug}` }] : []),
+  ]);
 
-    // Filter by category
-    if (activeCategory !== 'all') {
-      result = result.filter(product => {
-        const categoryName = product.category?.name || product.category;
-        return categoryName === activeCategory;
-      });
-    }
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
 
-    // Filter by brand
-    if (filters.brand) {
-      result = result.filter(product => {
-        const brandName = product.brand?.name || product.brand;
-        return brandName === filters.brand;
-      });
-    }
+  // Count active filters
+  const activeFiltersCount = Object.entries(filters).filter(([key, value]) => {
+    if (key === 'priceRange') return value[0] !== 0 || value[1] !== 10000000;
+    if (key === 'sortBy' || key === 'sortOrder' || key === 'inStock') return false;
+    return Boolean(value);
+  }).length;
 
-    // Filter by price range
-    if (filters.price && filters.price.length === 2) {
-      result = result.filter(
-        product => product.price >= filters.price[0] * 10000 && product.price <= filters.price[1] * 10000
-      );
-    }
-
-    // Filter by rating
-    if (filters.rating > 0) {
-      result = result.filter(product => product.rating >= filters.rating);
-    }
-
-    // Filter by availability
-    if (filters.availability !== 'all') {
-      if (filters.availability === 'inStock') {
-        result = result.filter(product => product.inStock);
-      } else if (filters.availability === 'onSale') {
-        result = result.filter(product => product.discountPrice);
-      }
-    }
-
-    setFilteredProducts(result);
-  }, [products, activeCategory, filters]);
-
-  // Sync currentTab with activeCategory for filtering
-  useEffect(() => {
-    setActiveCategory(currentTab);
-  }, [currentTab]);
-
-  // Test component lifecycle
-  useEffect(() => {
-    console.log('Products component mounted');
-    return () => {
-      console.log('Products component unmounted');
-    };
-  }, []);
-
-  // Load products from API
-  useEffect(() => {
-    const loadProducts = async () => {
-      setLoading(true);
-      console.log('Starting to load products from API');
-      try {
-        const response = await productService.getProducts({
-          page: 1,
-          limit: 50, // Load more products for the public page
-        });
-        console.log('Products loaded:', response);
-        setProducts(response.products || []);
-      } catch (error) {
-        console.error('Error loading products:', error);
-        // Fallback to empty array if API fails
-        setProducts([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadProducts();
-  }, []);
+  if (loading && products.length === 0) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+        <CircularProgress size={60} />
+      </Box>
+    );
+  }
 
   return (
     <>
@@ -392,327 +437,314 @@ const Products = () => {
         canonical={`https://karno.ir/products${location.search}`}
         openGraph={{
           type: 'website',
-          title: getSeoTitle(),
-          description: getSeoDescription(),
-          url: `https://karno.ir/products${location.search}`,
-          image: categoryParam 
-            ? getCategoryImage(categoryParam) 
-            : 'https://karno.ir/images/products-og.jpg',
+          image: currentCategory?.image?.url || '/images/products-og.jpg',
         }}
-        schema={[breadcrumbSchema]}
+        structuredData={breadcrumbSchema}
       />
-      {/* Console log to verify SEO component props */}
-      {console.log('SEO schema data:', [breadcrumbSchema])}
-      <Box sx={{ 
-        background: 'linear-gradient(to bottom, #f5f7fa, #ffffff)',
-        minHeight: '100vh',
-        py: 6,
-      }}>
-      <Container maxWidth="lg">
-        {/* Welcome message snackbar */}
-        <Snackbar
-          open={notification.open}
-          autoHideDuration={6000}
-          onClose={() => setNotification(prev => ({ ...prev, open: false }))}
-          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-        >
-          <Alert 
-            onClose={() => setNotification(prev => ({ ...prev, open: false }))}
-            severity={notification.severity} 
-            variant="filled"
-            sx={{ width: '100%' }}
-          >
-            {notification.message}
-          </Alert>
-        </Snackbar>
-        
-        {/* Page Header */}
-        <Paper 
-          elevation={0} 
-          sx={{ 
-            p: 4, 
-            mb: 4, 
-            borderRadius: 2,
-            backgroundImage: 'linear-gradient(to right, #1976d2, #2196f3)',
-            color: 'white',
-            position: 'relative',
-            overflow: 'hidden',
-          }}
-        >
-          <Box sx={{ position: 'absolute', right: -50, top: -50, opacity: 0.1, fontSize: 250 }}>
-            <ShoppingCartIcon fontSize="inherit" />
-          </Box>
-          <Typography 
-            variant="h3" 
-            component="h1" 
-            gutterBottom 
-            sx={{ 
-              fontWeight: 700,
-              textAlign: 'right',
-              direction: 'rtl',
-            }}
-          >
-            قطعات و لوازم یدکی خودرو
-          </Typography>
-          <Typography 
-            variant="subtitle1" 
-            paragraph 
-            sx={{ 
-              textAlign: 'right',
-              direction: 'rtl',
-              mb: 0,
-            }}
-          >
-            مجموعه کاملی از قطعات با کیفیت برای تمامی مدل‌های خودرو
-          </Typography>
-        </Paper>
-        
-        {/* Welcome section for new users */}
-        {location.state && location.state.message && (
-          <Paper 
-            elevation={2}
-            sx={{ 
-              mb: 4, 
-              p: 3, 
-              borderRadius: 2,
-              direction: 'rtl',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'flex-start',
-              backgroundImage: 'linear-gradient(to right, rgba(25, 118, 210, 0.05), rgba(25, 118, 210, 0.1))',
-            }}
-          >
-            <Typography variant="h5" component="h2" sx={{ mb: 1, fontWeight: 'bold', color: theme.palette.primary.main }}>
-              به فروشگاه کارنو خوش آمدید!
-            </Typography>
-            <Typography variant="body1" sx={{ mb: 2 }}>
-              برای شروع، می‌توانید از محصولات زیر دیدن کنید یا از فیلترها برای یافتن محصولات مورد نظر خود استفاده کنید.
-            </Typography>
-            <Button 
-              variant="contained" 
-              color="primary"
-              onClick={() => setNotification(prev => ({ ...prev, open: false }))}
-              sx={{ alignSelf: 'flex-start' }}
-            >
-              شروع خرید
-            </Button>
-          </Paper>
-        )}
-        
-        {/* Car Selector Component */}
-        <CarSelector variant="compact" />
-        
-        {/* Categories Tabs */}
-        <Paper elevation={1} sx={{ p: 3, mb: 4, borderRadius: 2 }}>
-          <Grid container spacing={3} alignItems="center">
-            <Grid item xs={12} md={6}>
-              <Box sx={{ display: 'flex', alignItems: 'center', direction: 'rtl' }}>
-                <Typography variant="h6" sx={{ mr: 2 }}>
-                  دسته‌بندی محصولات:
-                </Typography>
-                {/* Mobile filter button temporarily disabled */}
-                {/* {isMobile && (
-                  <IconButton
-                    onClick={() => setFilterOpen(true)}
-                    sx={{ ml: 'auto' }}
-                    aria-label="نمایش فیلترها"
-                    color="primary"
-                  >
-                    <FilterListIcon />
-                  </IconButton>
-                )} */}
-              </Box>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Box sx={{ overflowX: 'auto' }}>
-                <Tabs
-                  value={currentTab}
-                  onChange={(e, newValue) => setCurrentTab(newValue)}
-                  textColor="primary"
-                  indicatorColor="primary"
-                  variant="scrollable"
-                  scrollButtons="auto"
-                  sx={{ direction: 'rtl' }}
-                >
-                  <Tab 
-                    value="all" 
-                    label="همه قطعات" 
-                    icon={<BuildIcon />} 
-                    iconPosition="start" 
-                  />
-                  {categories.map((category) => (
-                    <Tab 
-                      key={category} 
-                      value={category} 
-                      label={category} 
-                      icon={getCategoryIcon(category)} 
-                      iconPosition="start" 
-                    />
-                  ))}
-                </Tabs>
-              </Box>
-            </Grid>
-          </Grid>
-        </Paper>
-        
-        {/* Product Stats */}
-        <Box sx={{ mb: 4 }}>
-          <Paper 
-            elevation={0} 
-            sx={{ 
-              p: 2, 
-              bgcolor: 'rgba(25, 118, 210, 0.05)', 
-              borderRadius: 2,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              direction: 'rtl',
-            }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <LocalShippingIcon color="primary" sx={{ mr: 1 }} />
-              <Typography variant="body1">
-                ارسال سریع و رایگان برای سفارش‌های بالای ۵۰۰ هزار تومان
-              </Typography>
-            </Box>
-            <Chip 
-              label={`${filteredProducts.length} محصول`} 
-              color="primary" 
-              variant="outlined" 
+
+      <Container maxWidth="xl" sx={{ py: 2 }}>
+        {/* Vehicle Selection */}
+        <Card elevation={2} sx={{ mb: 3, overflow: 'visible' }}>
+          <CardContent sx={{ pb: '16px !important' }}>
+            <CarSelector 
+              variant="compact"
+              onSelectionChange={handleVehicleSelection}
+              showProductsCount={true}
+              autoNavigate={false}
             />
-          </Paper>
+          </CardContent>
+        </Card>
+
+        {/* Page Header */}
+        <Box sx={{ mb: 3 }}>
+          {currentCategory && (
+            <Paper elevation={1} sx={{ p: 3, mb: 3, bgcolor: 'primary.50', border: '1px solid', borderColor: 'primary.100' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
+                {getCategoryIcon(currentCategory.name)}
+                <Typography variant="h3" component="h1" sx={{ mr: 2, direction: 'rtl', color: 'primary.main' }}>
+                  {currentCategory.name}
+                </Typography>
+              </Box>
+              <Typography variant="h6" color="text.secondary" sx={{ direction: 'rtl', maxWidth: '800px', mx: 'auto', textAlign: 'center' }}>
+                {currentCategory.description}
+              </Typography>
+            </Paper>
+          )}
+          
+          {currentBrand && !currentCategory && (
+            <Paper elevation={1} sx={{ p: 3, mb: 3, bgcolor: 'secondary.50', border: '1px solid', borderColor: 'secondary.100' }}>
+              <Typography variant="h3" component="h1" sx={{ mb: 2, direction: 'rtl', textAlign: 'center', color: 'secondary.main' }}>
+                محصولات برند {currentBrand.name}
+              </Typography>
+              <Typography variant="h6" color="text.secondary" sx={{ direction: 'rtl', maxWidth: '800px', mx: 'auto', textAlign: 'center' }}>
+                {currentBrand.description}
+              </Typography>
+            </Paper>
+          )}
+          
+          {filters.search && (
+            <Paper elevation={1} sx={{ p: 3, mb: 3, bgcolor: 'info.50', border: '1px solid', borderColor: 'info.100' }}>
+              <Typography variant="h4" component="h1" sx={{ mb: 2, direction: 'rtl', textAlign: 'center', color: 'info.main' }}>
+                نتایج جستجو برای: "{filters.search}"
+              </Typography>
+              <Typography variant="body1" color="text.secondary" sx={{ direction: 'rtl', textAlign: 'center' }}>
+                {totalProducts} محصول یافت شد
+              </Typography>
+            </Paper>
+          )}
         </Box>
 
-        <Grid container spacing={4}>
-          {/* Filters sidebar - desktop */}
+        {/* Filters and Products Layout */}
+        <Grid container spacing={3}>
+          {/* Filter Sidebar - Desktop */}
           {!isMobile && (
-            <Grid item xs={12} md={3} className="filter-section">
-              <FilterSidebar 
-                categories={categories} 
-                brands={brands}
-                filters={filters}
-                handleFilterChange={handleFilterChange}
-                handleReset={handleReset}
-              />
+            <Grid item xs={12} lg={3}>
+              <Box sx={{ position: 'sticky', top: 90 }}>
+                <Paper elevation={3} sx={{ borderRadius: 2, overflow: 'hidden' }}>
+                  {/* Filter Header */}
+                  <Box sx={{ 
+                    p: 2, 
+                    bgcolor: 'primary.main', 
+                    color: 'white',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                  }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <TuneIcon />
+                      <Typography variant="h6">فیلترها</Typography>
+                    </Box>
+                    {activeFiltersCount > 0 && (
+                      <Badge badgeContent={activeFiltersCount} color="warning">
+                        <Box />
+                      </Badge>
+                    )}
+                  </Box>
+                  
+                  {/* Active Filters Summary */}
+                  {activeFiltersCount > 0 && (
+                    <Box sx={{ p: 2, bgcolor: 'grey.50', borderBottom: '1px solid', borderColor: 'divider' }}>
+                      <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                        فیلترهای فعال:
+                      </Typography>
+                      <Stack direction="row" spacing={1} flexWrap="wrap">
+                        {filters.category && (
+                          <Chip
+                            size="small"
+                            label={categories.find(cat => cat.slug === filters.category)?.name || filters.category}
+                            onDelete={() => handleFilterChange('category', '')}
+                            color="primary"
+                            variant="outlined"
+                          />
+                        )}
+                        {filters.brand && (
+                          <Chip
+                            size="small"
+                            label={brands.find(brand => brand.slug === filters.brand)?.name || filters.brand}
+                            onDelete={() => handleFilterChange('brand', '')}
+                            color="primary"
+                            variant="outlined"
+                          />
+                        )}
+                        {filters.search && (
+                          <Chip
+                            size="small"
+                            label={`جستجو: ${filters.search}`}
+                            onDelete={() => handleFilterChange('search', '')}
+                            color="default"
+                            variant="outlined"
+                          />
+                        )}
+                      </Stack>
+                    </Box>
+                  )}
+                  
+                  <FilterSidebar
+                    open={true}
+                    onClose={() => {}}
+                    filters={filters}
+                    onChange={handleFilterChange}
+                    onClear={handleClearFilters}
+                    mobile={false}
+                    categories={categories}
+                    brands={brands}
+                  />
+                </Paper>
+              </Box>
             </Grid>
           )}
           
-          {/* Products grid */}
-          <Grid item xs={12} md={isMobile ? 12 : 9} className="products-grid">
-            {loading ? (
-              <Loading />
-            ) : (
-              <>
-                {/* Show recommended products for new users */}
-                {location.state && location.state.message && (
-                  <Box sx={{ mb: 5 }}>
-                    <Paper 
-                      elevation={1} 
-                      sx={{ 
-                        p: 3, 
-                        borderRadius: 2,
-                        mb: 3,
-                      }}
+          {/* Products Section */}
+          <Grid item xs={12} lg={isMobile ? 12 : 9}>
+            {/* Mobile Controls */}
+            {isMobile && (
+              <Paper elevation={2} sx={{ p: 2, mb: 3, borderRadius: 2 }}>
+                <Grid container spacing={2} alignItems="center">
+                  <Grid item xs={6}>
+                    <Button
+                      variant="outlined"
+                      fullWidth
+                      onClick={() => setShowMobileFilters(true)}
+                      startIcon={<TuneIcon />}
+                      sx={{ direction: 'rtl' }}
                     >
-                      <Typography 
-                        variant="h5" 
-                        gutterBottom 
-                        sx={{ 
-                          fontWeight: 'bold',
-                          color: theme.palette.primary.main,
-                          textAlign: 'right',
-                          direction: 'rtl',
-                        }}
+                      فیلترها
+                      {activeFiltersCount > 0 && (
+                        <Badge badgeContent={activeFiltersCount} color="primary" sx={{ ml: 1 }}>
+                          <Box />
+                        </Badge>
+                      )}
+                    </Button>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <Button
+                        variant="outlined"
+                        onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+                        startIcon={viewMode === 'grid' ? <ViewListIcon /> : <GridViewIcon />}
                       >
-                        محصولات پرفروش
-                      </Typography>
-                      <RecommendedProducts limit={4} />
-                    </Paper>
+                        {viewMode === 'grid' ? 'لیست' : 'شبکه'}
+                      </Button>
+                    </Box>
+                  </Grid>
+                </Grid>
+              </Paper>
+            )}
+
+            {/* Results Summary */}
+            <Paper elevation={1} sx={{ p: 2, mb: 3, bgcolor: 'grey.50' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
+                <Typography variant="body1" color="text.secondary">
+                  نمایش {products.length} محصول از {totalProducts} محصول
+                </Typography>
+                {!isMobile && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      نمایش:
+                    </Typography>
+                    <Button
+                      size="small"
+                      variant={viewMode === 'grid' ? 'contained' : 'outlined'}
+                      onClick={() => setViewMode('grid')}
+                      startIcon={<GridViewIcon />}
+                    >
+                      شبکه
+                    </Button>
+                    <Button
+                      size="small"
+                      variant={viewMode === 'list' ? 'contained' : 'outlined'}
+                      onClick={() => setViewMode('list')}
+                      startIcon={<ViewListIcon />}
+                    >
+                      لیست
+                    </Button>
                   </Box>
                 )}
-                
-                {/* Category description and image */}
-                {currentTab !== 'all' && (
-                  <Paper 
-                    elevation={1} 
-                    sx={{ 
-                      p: 3, 
-                      mb: 4, 
-                      borderRadius: 2,
-                      backgroundImage: `linear-gradient(to right, rgba(25, 118, 210, 0.7), rgba(25, 118, 210, 0.9))`,
-                      color: 'white',
-                      position: 'relative',
-                      overflow: 'hidden',
-                      direction: 'rtl',
-                    }}
+              </Box>
+            </Paper>
+
+            {/* Error Display */}
+            {error && (
+              <Alert 
+                severity="error" 
+                sx={{ mb: 3, direction: 'rtl' }}
+                action={
+                  <Button color="inherit" size="small" onClick={handleRetry}>
+                    تلاش مجدد
+                  </Button>
+                }
+              >
+                {error}
+              </Alert>
+            )}
+
+            {/* Products Grid */}
+            {loading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+                <CircularProgress size={60} />
+              </Box>
+            ) : products.length === 0 ? (
+              <Paper elevation={2} sx={{ p: 6, textAlign: 'center', borderRadius: 2 }}>
+                <Box sx={{ color: 'text.secondary', mb: 2 }}>
+                  <ShoppingCartIcon sx={{ fontSize: 80 }} />
+                </Box>
+                <Typography variant="h5" sx={{ mb: 2, direction: 'rtl' }}>
+                  محصولی یافت نشد
+                </Typography>
+                <Typography variant="body1" color="text.secondary" sx={{ mb: 3, direction: 'rtl' }}>
+                  لطفاً فیلترهای جستجو را تغییر دهید یا دوباره تلاش کنید
+                </Typography>
+                <Button variant="contained" onClick={handleClearFilters} startIcon={<RefreshIcon />}>
+                  پاک کردن فیلترها
+                </Button>
+              </Paper>
+            ) : (
+              <Grid container spacing={3}>
+                {products.map((product, index) => (
+                  <Grid 
+                    item 
+                    xs={12} 
+                    sm={viewMode === 'list' ? 12 : 6} 
+                    md={viewMode === 'list' ? 12 : 4} 
+                    lg={viewMode === 'list' ? 12 : 4} 
+                    key={product._id}
                   >
-                    <Box sx={{ 
-                      position: 'absolute', 
-                      right: 0, 
-                      top: 0, 
-                      width: '100%', 
-                      height: '100%',
-                      opacity: 0.15,
-                      backgroundImage: `url(${getCategoryImage(currentTab)})`,
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                    }} />
-                    <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1, position: 'relative' }}>
-                      {getCategoryTitle(currentTab)}
+                    <ProductCard
+                      product={product}
+                      index={index}
+                      delay={cardAnimationDelay(index)}
+                      variant={viewMode}
+                    />
+                  </Grid>
+                ))}
+              </Grid>
+            )}
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                <Paper elevation={2} sx={{ p: 2, borderRadius: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Button
+                      variant="outlined"
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                      sx={{ direction: 'rtl' }}
+                    >
+                      قبلی
+                    </Button>
+                    <Typography variant="h6" sx={{ px: 2 }}>
+                      صفحه {currentPage} از {totalPages}
                     </Typography>
-                    <Typography variant="body1" sx={{ position: 'relative' }}>
-                      {getCategoryDescription(currentTab)}
-                    </Typography>
-                  </Paper>
-                )}
-                
-                <Grid container spacing={3}>
-                  {filteredProducts && filteredProducts.length > 0 ? (
-                    filteredProducts.map((product, index) => (
-                      <Grid item xs={12} sm={6} md={4} key={product.id || index}>
-                        <ProductCard product={product} />
-                      </Grid>
-                    ))
-                  ) : (
-                    <Grid item xs={12}>
-                      <Paper 
-                        sx={{
-                          textAlign: 'center',
-                          py: 8,
-                          px: 3,
-                          borderRadius: 2,
-                          direction: 'rtl',
-                        }}
-                      >
-                        <Typography variant="h6" color="text.secondary" gutterBottom>
-                          {activeBrand ? 
-                            `محصولات برند ${activeBrand} در حال حاضر موجود نیست` : 
-                            'هیچ محصولی مطابق با معیارهای شما یافت نشد'}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                          {activeBrand ? 
-                            'به زودی محصولات جدید اضافه خواهند شد' : 
-                            'لطفا فیلترهای خود را تغییر دهید یا همه فیلترها را پاک کنید'}
-                        </Typography>
-                        <Button 
-                          variant="outlined" 
-                          color="primary"
-                          onClick={handleClearFilters}
-                          startIcon={<RefreshIcon />}
-                          sx={{ mt: 2 }}
-                        >
-                          پاک کردن فیلترها
-                        </Button>
-                      </Paper>
-                    </Grid>
-                  )}
-                </Grid>
-              </>
+                    <Button 
+                      variant="outlined" 
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      disabled={currentPage === totalPages}
+                      sx={{ direction: 'rtl' }}
+                    >
+                      بعدی
+                    </Button>
+                  </Box>
+                </Paper>
+              </Box>
             )}
           </Grid>
         </Grid>
+
+        {/* Mobile Filter Drawer */}
+        {isMobile && (
+          <FilterSidebar
+            open={showMobileFilters}
+            onClose={() => setShowMobileFilters(false)}
+            filters={filters}
+            onChange={handleFilterChange}
+            onClear={handleClearFilters}
+            mobile={true}
+            categories={categories}
+            brands={brands}
+          />
+        )}
       </Container>
-    </Box>
     </>
   );
 };

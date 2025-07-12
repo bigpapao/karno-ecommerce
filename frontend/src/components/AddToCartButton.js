@@ -18,7 +18,7 @@ const AddToCartButton = ({
   fullWidth = false,
   showIcon = true,
   iconOnly = false,
-  redirectAfterLogin = '/',
+  redirectAfterLogin = '/products',
   customText = 'افزودن به سبد خرید',
   disabled = false,
   sx = {}
@@ -32,27 +32,32 @@ const AddToCartButton = ({
   const CART_ENABLED = String(process.env.REACT_APP_CART_ENABLED).toLowerCase() === 'true';
   if (!CART_ENABLED) return null;
 
-  const handleAddToCart = () => {
-    const added = addToCart(
-      product, 
-      quantity, 
-      dispatch, 
-      isAuthenticated, 
-      openAuthModal,
-      redirectAfterLogin
-    );
-    
-    // Show success message if product was added to cart
-    if (added) {
-      setSnackbarOpen(true);
+  const handleAddToCart = async () => {
+    // Check if user is authenticated
+    if (!isAuthenticated) {
+      // Open authentication modal with redirect path
+      openAuthModal(redirectAfterLogin);
+      return;
+    }
+
+    try {
+      // Add to cart for authenticated users
+      const result = await addToCart(product, quantity, dispatch, isAuthenticated);
       
-      // Track add to cart event in Google Analytics
-      trackAddToCart(
-        product.id,
-        product.name,
-        product.discountPrice || product.price,
-        quantity
-      );
+      if (result) {
+        setSnackbarOpen(true);
+        
+        // Track add to cart event in Google Analytics
+        trackAddToCart(
+          product.id,
+          product.name,
+          product.discountPrice || product.price,
+          quantity
+        );
+      }
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      // Could show error message here
     }
   };
 
@@ -67,7 +72,7 @@ const AddToCartButton = ({
           <IconButton
             color="primary"
             onClick={handleAddToCart}
-            disabled={disabled || !product?.stockQuantity}
+            disabled={disabled}
             size={size}
           >
             <AddIcon />
@@ -95,12 +100,12 @@ const AddToCartButton = ({
         color="primary"
         size={size}
         fullWidth={fullWidth}
-        disabled={disabled || !product?.stockQuantity}
+        disabled={disabled}
         onClick={handleAddToCart}
         endIcon={showIcon ? <CartIcon /> : null}
         sx={{ direction: 'rtl', ...sx }}
       >
-        {product?.stockQuantity ? customText : 'ناموجود'}
+        {customText}
       </Button>
       
       <Snackbar

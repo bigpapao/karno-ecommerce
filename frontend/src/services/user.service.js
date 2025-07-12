@@ -1,7 +1,7 @@
 import api from './api';
 import { getUsers, getUserById, getUserByEmail, createUser, updateUser, updateUserStatus, addUserAddress } from './mockData';
 
-const USE_MOCK = true; // Toggle this to switch between mock and real API
+const USE_MOCK = false; // Toggle this to switch between mock and real API
 
 export const userService = {
   getUsers: async (params = {}) => {

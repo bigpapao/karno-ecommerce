@@ -30,8 +30,7 @@ import {
   Business as BrandIcon,
   Category as CategoryIcon,
   AutoAwesome as SmartIcon,
-  Mic as MicIcon,
-  Camera as CameraIcon,
+
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toggleSearch } from '../store/slices/uiSlice';
@@ -342,44 +341,6 @@ const SearchBar = ({ variant = 'default', placeholder = 'جستجو در محص�
               endAdornment: (
                 <InputAdornment position="end">
                   <Stack direction="row" spacing={1}>
-                    {/* Voice search button */}
-                    <Tooltip title="جستجوی صوتی">
-                      <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                        <IconButton
-                          size="small"
-                          sx={{
-                            color: variant === 'default' 
-                              ? 'rgba(255, 255, 255, 0.7)' 
-                              : theme.palette.text.secondary,
-                            '&:hover': {
-                              backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                            },
-                          }}
-                        >
-                          <MicIcon fontSize="small" />
-                        </IconButton>
-                      </motion.div>
-                    </Tooltip>
-
-                    {/* Visual search button */}
-                    <Tooltip title="جستجوی تصویری">
-                      <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                        <IconButton
-                          size="small"
-                          sx={{
-                            color: variant === 'default' 
-                              ? 'rgba(255, 255, 255, 0.7)' 
-                              : theme.palette.text.secondary,
-                            '&:hover': {
-                              backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                            },
-                          }}
-                        >
-                          <CameraIcon fontSize="small" />
-                        </IconButton>
-                      </motion.div>
-                    </Tooltip>
-
                     {/* Clear button */}
                     <AnimatePresence>
                       {hasQuery && (

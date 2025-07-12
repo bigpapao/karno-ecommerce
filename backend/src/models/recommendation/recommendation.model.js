@@ -5,19 +5,16 @@ const recommendationSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,
-    index: true,
   },
   sourceProductId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Product',
     sparse: true,
-    index: true,
   },
   recommendationType: {
     type: String,
     enum: ['collaborative', 'content_based', 'popular', 'hybrid', 'personalized', 'trending'],
     required: true,
-    index: true,
   },
   products: [{
     productId: {
@@ -38,11 +35,9 @@ const recommendationSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now,
-    index: true,
   },
   expiresAt: {
     type: Date,
-    index: true,
     expires: 0, // TTL index to automatically delete expired recommendations
   },
 });

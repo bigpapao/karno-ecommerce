@@ -27,6 +27,7 @@ export const updateProfile = async (req, res, next) => {
   try {
     const {
       firstName, lastName, email, address, password, phone,
+      city, province, postalCode
     } = req.body;
     const user = req.user || (await User.findOne({ phone }));
 
@@ -47,7 +48,11 @@ export const updateProfile = async (req, res, next) => {
       user.password = password;
     }
 
-    if (address) user.address = { ...user.address, ...address };
+    // Handle individual address fields (new approach)
+    if (address) user.address = address;
+    if (city) user.city = city;
+    if (province) user.province = province;
+    if (postalCode) user.postalCode = postalCode;
 
     await user.save({ validateBeforeSave: true });
     user.password = undefined;

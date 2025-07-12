@@ -6,6 +6,7 @@
  */
 import ReactGA from 'react-ga4';
 import { ANALYTICS, FEATURES } from './config';
+import api from '../services/api';
 
 /**
  * Initialize Google Analytics
@@ -201,21 +202,413 @@ export const trackBrandView = (brandId, brandName) => {
   trackEvent('Brand', 'View', brandName, brandId);
 };
 
-// Export analytics functions
-const analytics = {
-  trackPageView,
-  trackProductView,
-  trackAddToCart,
-  trackCheckout,
-  trackPurchase,
+class AnalyticsTracker {
+  constructor() {
+    this.eventQueue = [];
+    this.batchSize = 10;
+    this.flushInterval = 5000; // 5 seconds
+    this.sessionId = this.generateSessionId();
+    this.isEnabled = true;
+    
+    // Start auto-flush timer
+    this.startAutoFlush();
+    
+    // Flush on page unload
+    window.addEventListener('beforeunload', () => {
+      this.flush(true);
+    });
+  }
+  
+  // Generate unique session ID
+  generateSessionId() {
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substr(2, 9);
+    return `${timestamp}_${random}`;
+  }
+  
+  // Track a single event
+  track(eventType, resourceType, resourceId, context = {}, metadata = {}) {
+    if (!this.isEnabled) return;
+    
+    const event = {
+      eventType,
+      resourceType,
+      resourceId,
+      sessionId: this.sessionId,
+      context: {
+        ...context,
+        page: window.location.pathname,
+        source: context.source || 'direct',
+        timestamp: new Date().toISOString()
+      },
+      metadata: {
+        ...metadata,
+        userAgent: navigator.userAgent,
+        viewport: {
+          width: window.innerWidth,
+          height: window.innerHeight
+        }
+      }
+    };
+    
+    this.eventQueue.push(event);
+    
+    // Auto-flush if queue is full
+    if (this.eventQueue.length >= this.batchSize) {
+      this.flush();
+    }
+    
+    return event;
+  }
+  
+  // Track category view
+  trackCategoryView(categoryId, categoryName, context = {}) {
+    return this.track('category_view', 'category', categoryId, context, {
+      categoryName,
+      timestamp: Date.now()
+    });
+  }
+  
+  // Track category click
+  trackCategoryClick(categoryId, categoryName, context = {}) {
+    return this.track('category_click', 'category', categoryId, context, {
+      categoryName,
+      clickX: context.clickX,
+      clickY: context.clickY,
+      position: context.position
+    });
+  }
+  
+  // Track category product view (when viewing products in a category)
+  trackCategoryProductView(categoryId, categoryName, productId, context = {}) {
+    return this.track('category_product_view', 'category', categoryId, context, {
+      categoryName,
+      productId,
+      duration: context.duration
+    });
+  }
+  
+  // Track brand view
+  trackBrandView(brandId, brandName, context = {}) {
+    return this.track('brand_view', 'brand', brandId, context, {
+      brandName,
+      timestamp: Date.now()
+    });
+  }
+  
+  // Track brand click
+  trackBrandClick(brandId, brandName, context = {}) {
+    return this.track('brand_click', 'brand', brandId, context, {
+      brandName,
+      clickX: context.clickX,
+      clickY: context.clickY,
+      position: context.position
+    });
+  }
+  
+  // Track brand product view (when viewing products of a brand)
+  trackBrandProductView(brandId, brandName, productId, context = {}) {
+    return this.track('brand_product_view', 'brand', brandId, context, {
+      brandName,
+      productId,
+      duration: context.duration
+    });
+  }
+  
+  // Track search events
+  trackCategorySearch(query, results = [], context = {}) {
+    return this.track('search_category', 'category', null, {
+      ...context,
+      searchQuery: query,
+      resultCount: results.length
+    }, {
+      searchResults: results.slice(0, 10), // Limit to first 10 results
+      searchDuration: context.searchDuration
+    });
+  }
+  
+  trackBrandSearch(query, results = [], context = {}) {
+    return this.track('search_brand', 'brand', null, {
+      ...context,
+      searchQuery: query,
+      resultCount: results.length
+    }, {
+      searchResults: results.slice(0, 10),
+      searchDuration: context.searchDuration
+    });
+  }
+  
+  // Track filter usage
+  trackCategoryFilter(categoryId, filters, context = {}) {
+    return this.track('filter_category', 'category', categoryId, context, {
+      filters,
+      filterCount: Object.keys(filters).length
+    });
+  }
+  
+  trackBrandFilter(brandId, filters, context = {}) {
+    return this.track('filter_brand', 'brand', brandId, context, {
+      filters,
+      filterCount: Object.keys(filters).length
+    });
+  }
+  
+  // Track scroll depth
+  trackScrollDepth(resourceType, resourceId, scrollPercentage) {
+    return this.track(`${resourceType}_scroll`, resourceType, resourceId, {
+      scrollDepth: scrollPercentage
+    }, {
+      scrollPercentage,
+      pageHeight: document.documentElement.scrollHeight,
+      viewportHeight: window.innerHeight
+    });
+  }
+  
+  // Track time spent on page/section
+  trackTimeSpent(resourceType, resourceId, duration, context = {}) {
+    return this.track(`${resourceType}_time`, resourceType, resourceId, context, {
+      duration,
+      engaged: duration > 10000 // Consider 10+ seconds as engaged
+    });
+  }
+  
+  // Flush events to server
+  async flush(synchronous = false) {
+    if (this.eventQueue.length === 0) return;
+    
+    const events = [...this.eventQueue];
+    this.eventQueue = [];
+    
+    try {
+      if (synchronous) {
+        // Use sendBeacon for synchronous sending (on page unload)
+        if (navigator.sendBeacon) {
+          navigator.sendBeacon(
+            '/api/analytics/track-batch',
+            JSON.stringify({ events })
+          );
+        }
+      } else {
+        // Regular async request
+        await api.post('/analytics/track-batch', { events });
+      }
+    } catch (error) {
+      console.warn('Failed to send analytics events:', error);
+      // Re-queue events on failure (with limit to prevent infinite growth)
+      if (this.eventQueue.length < 100) {
+        this.eventQueue.unshift(...events);
+      }
+    }
+  }
+  
+  // Start auto-flush timer
+  startAutoFlush() {
+    this.flushTimer = setInterval(() => {
+      this.flush();
+    }, this.flushInterval);
+  }
+  
+  // Stop tracking
+  disable() {
+    this.isEnabled = false;
+    if (this.flushTimer) {
+      clearInterval(this.flushTimer);
+    }
+  }
+  
+  // Enable tracking
+  enable() {
+    this.isEnabled = true;
+    if (!this.flushTimer) {
+      this.startAutoFlush();
+    }
+  }
+  
+  // Get queue status
+  getQueueStatus() {
+    return {
+      queueSize: this.eventQueue.length,
+      isEnabled: this.isEnabled,
+      sessionId: this.sessionId
+    };
+  }
+  
+  // Manual batch send
+  async sendEvents(events) {
+    try {
+      await api.post('/analytics/track-batch', { events });
+      return true;
+    } catch (error) {
+      console.error('Failed to send events:', error);
+      return false;
+    }
+  }
+}
+
+// Create singleton instance
+const analytics = new AnalyticsTracker();
+
+// React Hook for analytics
+export const useAnalytics = () => {
+  const trackCategoryView = (categoryId, categoryName, context) => 
+    analytics.trackCategoryView(categoryId, categoryName, context);
+    
+  const trackCategoryClick = (categoryId, categoryName, context) => 
+    analytics.trackCategoryClick(categoryId, categoryName, context);
+    
+  const trackCategoryProductView = (categoryId, categoryName, productId, context) => 
+    analytics.trackCategoryProductView(categoryId, categoryName, productId, context);
+    
+  const trackBrandView = (brandId, brandName, context) => 
+    analytics.trackBrandView(brandId, brandName, context);
+    
+  const trackBrandClick = (brandId, brandName, context) => 
+    analytics.trackBrandClick(brandId, brandName, context);
+    
+  const trackBrandProductView = (brandId, brandName, productId, context) => 
+    analytics.trackBrandProductView(brandId, brandName, productId, context);
+    
+  const trackSearch = (type, query, results, context) => {
+    if (type === 'category') {
+      return analytics.trackCategorySearch(query, results, context);
+    } else if (type === 'brand') {
+      return analytics.trackBrandSearch(query, results, context);
+    }
+  };
+  
+  const trackFilter = (type, resourceId, filters, context) => {
+    if (type === 'category') {
+      return analytics.trackCategoryFilter(resourceId, filters, context);
+    } else if (type === 'brand') {
+      return analytics.trackBrandFilter(resourceId, filters, context);
+    }
+  };
+  
+  const trackScrollDepth = (resourceType, resourceId, scrollPercentage) => 
+    analytics.trackScrollDepth(resourceType, resourceId, scrollPercentage);
+    
+  const trackTimeSpent = (resourceType, resourceId, duration, context) => 
+    analytics.trackTimeSpent(resourceType, resourceId, duration, context);
+  
+  return {
+    trackCategoryView,
+    trackCategoryClick,
+    trackCategoryProductView,
+    trackBrandView,
+    trackBrandClick,
+    trackBrandProductView,
   trackSearch,
-  trackUserRegistration,
-  trackUserLogin,
-  trackError,
-  trackFilterUse,
-  trackBrandView,
-  initialize: initializeGA,
-  event: trackEvent
+    trackFilter,
+    trackScrollDepth,
+    trackTimeSpent,
+    flush: () => analytics.flush(),
+    getQueueStatus: () => analytics.getQueueStatus()
+  };
+};
+
+// Higher-order component for automatic view tracking
+export const withAnalytics = (WrappedComponent, resourceType) => {
+  return function AnalyticsWrapper(props) {
+    const analytics = useAnalytics();
+    
+    React.useEffect(() => {
+      if (props.resourceId && props.resourceName) {
+        if (resourceType === 'category') {
+          analytics.trackCategoryView(props.resourceId, props.resourceName, {
+            source: 'page_load'
+          });
+        } else if (resourceType === 'brand') {
+          analytics.trackBrandView(props.resourceId, props.resourceName, {
+            source: 'page_load'
+          });
+        }
+      }
+    }, [props.resourceId]);
+    
+    return <WrappedComponent {...props} analytics={analytics} />;
+  };
+};
+
+// Utility functions for tracking specific interactions
+export const trackElementClick = (element, resourceType, resourceId, resourceName) => {
+  element.addEventListener('click', (event) => {
+    const context = {
+      clickX: event.clientX,
+      clickY: event.clientY,
+      source: 'element_click'
+    };
+    
+    if (resourceType === 'category') {
+      analytics.trackCategoryClick(resourceId, resourceName, context);
+    } else if (resourceType === 'brand') {
+      analytics.trackBrandClick(resourceId, resourceName, context);
+    }
+  });
+};
+
+// Scroll tracking utility
+export const setupScrollTracking = (resourceType, resourceId) => {
+  let maxScrollDepth = 0;
+  let scrollTimeout;
+  
+  const handleScroll = () => {
+    clearTimeout(scrollTimeout);
+    
+    scrollTimeout = setTimeout(() => {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const scrollPercent = Math.round((scrollTop / docHeight) * 100);
+      
+      if (scrollPercent > maxScrollDepth && scrollPercent % 25 === 0) {
+        maxScrollDepth = scrollPercent;
+        analytics.trackScrollDepth(resourceType, resourceId, scrollPercent);
+      }
+    }, 250);
+  };
+  
+  window.addEventListener('scroll', handleScroll, { passive: true });
+  
+  return () => {
+    window.removeEventListener('scroll', handleScroll);
+    clearTimeout(scrollTimeout);
+  };
+};
+
+// Time tracking utility
+export const setupTimeTracking = (resourceType, resourceId) => {
+  const startTime = Date.now();
+  let isActive = true;
+  
+  const handleVisibilityChange = () => {
+    if (document.hidden) {
+      isActive = false;
+      const duration = Date.now() - startTime;
+      analytics.trackTimeSpent(resourceType, resourceId, duration, {
+        active: false,
+        endReason: 'visibility_hidden'
+      });
+    } else {
+      isActive = true;
+    }
+  };
+  
+  const handleBeforeUnload = () => {
+    if (isActive) {
+      const duration = Date.now() - startTime;
+      analytics.trackTimeSpent(resourceType, resourceId, duration, {
+        active: true,
+        endReason: 'page_unload'
+      });
+    }
+  };
+  
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+  window.addEventListener('beforeunload', handleBeforeUnload);
+  
+  return () => {
+    document.removeEventListener('visibilitychange', handleVisibilityChange);
+    window.removeEventListener('beforeunload', handleBeforeUnload);
+  };
 };
 
 export default analytics; 

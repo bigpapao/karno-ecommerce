@@ -14,12 +14,15 @@ import {
   getProductById,
   getProductsByCategory,
   getProductsByBrand,
-  searchProducts,
   getFeaturedProducts,
   clearProductCache,
   createProduct,
   updateProduct,
   deleteProduct,
+  getProductReviews,
+  addProductReview,
+  updateProductReview,
+  deleteProductReview,
 } from '../controllers/product.controller.js';
 import {
   getProductAnalytics,
@@ -32,7 +35,7 @@ import { uploadProductImages } from '../utils/fileUpload.js';
 import { cacheMiddleware, clearCache } from '../middleware/cache.middleware.js';
 import { trackEvent } from '../middleware/event-tracking.middleware.js';
 import {
-  getSearchSuggestions, searchByVehicle, getVehicleMakes, getVehicleModels, getVehicleYears,
+  searchProducts, getSearchSuggestions, searchByVehicle, getVehicleMakes, getVehicleModels, getVehicleYears, debugListProducts,
 } from '../controllers/product.controller.enhanced.js';
 import { CACHE_KEYS } from '../config/redis.js';
 import { paginationMiddleware } from '../middleware/pagination.middleware.js';
@@ -47,6 +50,9 @@ router.get(
   cacheMiddleware(CACHE_KEYS.PRODUCTS),
   asyncHandler(getProducts),
 );
+
+// Debug endpoint - MUST be before any /:id routes
+router.get('/debug-list', debugListProducts);
 
 router.get(
   '/featured',
@@ -163,6 +169,37 @@ router.get('/vehicle-search', searchByVehicle);
 router.get('/vehicle-makes', cacheMiddleware(86400), getVehicleMakes); // Cache for 1 day
 router.get('/vehicle-models', cacheMiddleware(86400), getVehicleModels);
 router.get('/vehicle-years', cacheMiddleware(86400), getVehicleYears);
+
+// Review routes
+router.get(
+  '/:id/reviews',
+  validateRequest(schemas.id, 'params'),
+  paginationMiddleware,
+  asyncHandler(getProductReviews),
+);
+
+router.post(
+  '/:id/reviews',
+  authenticate,
+  validateRequest(schemas.id, 'params'),
+  validateRequest(schemas.createReview, 'body'),
+  asyncHandler(addProductReview),
+);
+
+router.put(
+  '/:id/reviews/:reviewId',
+  authenticate,
+  validateRequest(schemas.id, 'params'),
+  validateRequest(schemas.updateReview, 'body'),
+  asyncHandler(updateProductReview),
+);
+
+router.delete(
+  '/:id/reviews/:reviewId',
+  authenticate,
+  validateRequest(schemas.id, 'params'),
+  asyncHandler(deleteProductReview),
+);
 
 // Protected routes (admin only)
 router.use(authenticate, authorize('admin'));

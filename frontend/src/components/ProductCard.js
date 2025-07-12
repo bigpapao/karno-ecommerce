@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { motion, useInView } from 'framer-motion';
 import {
   Card,
   CardActionArea,
@@ -17,6 +18,7 @@ import {
   Skeleton,
   useTheme,
   alpha,
+  Avatar,
 } from '@mui/material';
 import {
   Favorite as FavoriteIcon,
@@ -26,100 +28,46 @@ import {
   ElectricalServices as ElectricalServicesIcon,
   BatteryChargingFull as BatteryChargingFullIcon,
   AcUnit as AcUnitIcon,
-  Opacity as OilIcon, // Using a drop icon as a substitute for oil
-  Brightness1 as BrakesIcon, // Using a circle icon as a substitute for brakes
-  RadioButtonChecked as TireIcon, // Using a circle icon as a substitute for tires
+  Opacity as OilIcon,
+  Brightness1 as BrakesIcon,
+  RadioButtonChecked as TireIcon,
   Lightbulb as LightbulbIcon,
   DirectionsCar as DirectionsCarIcon,
   Phone as PhoneIcon,
   Visibility as ViewIcon,
+  Category as CategoryIcon,
+  Storefront as StorefrontIcon,
+  CheckCircle as CheckCircleIcon,
+  LocalShipping as LocalShippingIcon,
 } from '@mui/icons-material';
-import { motion, useInView } from 'framer-motion';
-import { addToCart } from '../store/slices/cartSlice';
 import { toPersianCurrency, toPersianNumber } from '../utils/persianUtils';
 import { getProductImageUrl } from '../utils/imageUtils';
 import { useNavigate } from 'react-router-dom';
+import AddToCartButton from './AddToCartButton';
 
 // Default placeholder image for products
 const placeholderImage = '/images/products/placeholder.jpg';
 
 // Helper function to get category icon based on category name
-const getCategoryIcon = (category) => {
-  switch(category) {
-    case 'Engine':
-    case 'موتور':
-      return <SettingsIcon fontSize="small" className="no-flip" />;
-    case 'Electrical':
-    case 'برقی':
-      return <ElectricalServicesIcon fontSize="small" className="no-flip" />;
-    case 'Battery':
-    case 'باتری':
-      return <BatteryChargingFullIcon fontSize="small" className="no-flip" />;
-    case 'AC':
-    case 'تهویه':
-    case 'Air Conditioning':
-      return <AcUnitIcon fontSize="small" className="no-flip" />;
-    case 'Oil':
-    case 'روغن':
-      return <OilIcon fontSize="small" className="no-flip" />;
-    case 'Brakes':
-    case 'ترمز':
-      return <BrakesIcon fontSize="small" className="no-flip" />;
-    case 'Tires':
-    case 'لاستیک':
-      return <TireIcon fontSize="small" className="no-flip" />;
-    case 'Lights':
-    case 'چراغ':
-    case 'روشنایی':
-      return <LightbulbIcon fontSize="small" className="no-flip" />;
-    case 'Suspension':
-    case 'تعلیق':
-      return <DirectionsCarIcon fontSize="small" className="no-flip" />;
-    default:
-      return <BuildIcon fontSize="small" className="no-flip" />;
-  }
-};
-
-// Helper function to get category image based on category name
-const getCategoryImage = (category) => {
-  switch(category) {
-    case 'Engine':
-    case 'موتور':
-      return '/images/categories/engine.jpg';
-    case 'Electrical':
-    case 'برقی':
-      return '/images/categories/electrical.jpg';
-    case 'Battery':
-    case 'باتری':
-      return '/images/categories/battery.jpg';
-    case 'AC':
-    case 'تهویه':
-    case 'Air Conditioning':
-      return '/images/categories/ac.jpg';
-    case 'Oil':
-    case 'روغن':
-      return '/images/categories/oil.jpg';
-    case 'Brakes':
-    case 'ترمز':
-      return '/images/categories/brakes.jpg';
-    case 'Tires':
-    case 'لاستیک':
-      return '/images/categories/tires.jpg';
-    case 'Lights':
-    case 'چراغ':
-    case 'روشنایی':
-      return '/images/categories/lights.jpg';
-    case 'Suspension':
-    case 'تعلیق':
-      return '/images/categories/suspension.jpg';
-    default:
-      return '/images/categories/parts.jpg';
-  }
+const getCategoryIcon = (categoryName) => {
+  if (!categoryName) return <BuildIcon fontSize="small" className="no-flip" />;
+  
+  const name = categoryName.toLowerCase();
+  if (name.includes('موتور') || name.includes('engine')) return <SettingsIcon fontSize="small" className="no-flip" />;
+  if (name.includes('برق') || name.includes('electrical')) return <ElectricalServicesIcon fontSize="small" className="no-flip" />;
+  if (name.includes('باتری') || name.includes('battery')) return <BatteryChargingFullIcon fontSize="small" className="no-flip" />;
+  if (name.includes('تهویه') || name.includes('ac')) return <AcUnitIcon fontSize="small" className="no-flip" />;
+  if (name.includes('روغن') || name.includes('oil')) return <OilIcon fontSize="small" className="no-flip" />;
+  if (name.includes('ترمز') || name.includes('brake')) return <BrakesIcon fontSize="small" className="no-flip" />;
+  if (name.includes('لاستیک') || name.includes('tire')) return <TireIcon fontSize="small" className="no-flip" />;
+  if (name.includes('چراغ') || name.includes('light')) return <LightbulbIcon fontSize="small" className="no-flip" />;
+  if (name.includes('تعلیق') || name.includes('suspension')) return <DirectionsCarIcon fontSize="small" className="no-flip" />;
+  return <BuildIcon fontSize="small" className="no-flip" />;
 };
 
 const CART_ENABLED = String(process.env.REACT_APP_CART_ENABLED).toLowerCase() === 'true';
 
-const ProductCard = ({ product, index = 0, variant = 'grid' }) => {
+const ProductCard = ({ product, index = 0, variant = 'grid', delay = 0 }) => {
   const dispatch = useDispatch();
   const [favorite, setFavorite] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
@@ -130,6 +78,50 @@ const ProductCard = ({ product, index = 0, variant = 'grid' }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-50px" });
   const contactRoute = process.env.REACT_APP_CONTACT_ROUTE || '/contact-us';
+
+  // Safely extract product data
+  const {
+    _id,
+    name = 'محصول نام‌گذاری نشده',
+    price = 0,
+    discountPrice,
+    description = '',
+    images = [],
+    category,
+    brand,
+    rating = 0,
+    reviewsCount = 0,
+    inStock = false,
+    stockQuantity = 0,
+    features = [],
+    compatibleVehicles = [],
+  } = product || {};
+
+  // Get category information
+  const categoryInfo = {
+    name: category?.name || 'عمومی',
+    slug: category?.slug || 'general',
+    image: category?.image?.url,
+  };
+
+  // Get brand information
+  const brandInfo = {
+    name: brand?.name || 'نامشخص',
+    slug: brand?.slug || 'unknown',
+    logo: brand?.logo?.url,
+    country: brand?.country,
+  };
+
+  // Get main product image
+  const mainImage = images?.[0]?.url || placeholderImage;
+  
+  // Calculate discount percentage
+  const discountPercentage = discountPrice && price > discountPrice 
+    ? Math.round(((price - discountPrice) / price) * 100)
+    : 0;
+
+  // Final display price
+  const displayPrice = discountPrice || price;
 
   // Determine layout based on variant
   const isListView = variant === 'list';
@@ -150,7 +142,19 @@ const ProductCard = ({ product, index = 0, variant = 'grid' }) => {
   };
 
   const handleViewProduct = () => {
-    navigate(`/products/${product._id}`);
+    navigate(`/products/${_id}`);
+  };
+
+  const handleCategoryClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate(`/products?category=${categoryInfo.slug}`);
+  };
+
+  const handleBrandClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate(`/products?brand=${brandInfo.slug}`);
   };
 
   const cardVariants = {
@@ -165,7 +169,7 @@ const ProductCard = ({ product, index = 0, variant = 'grid' }) => {
       scale: 1,
       transition: {
         duration: 0.4,
-        delay: index * 0.1,
+        delay: delay,
         ease: [0.4, 0, 0.2, 1],
       }
     }
@@ -188,6 +192,19 @@ const ProductCard = ({ product, index = 0, variant = 'grid' }) => {
     }
   };
 
+  if (!product) {
+    return (
+      <Card sx={{ maxWidth: 345, m: 1 }}>
+        <Skeleton variant="rectangular" width="100%" height={200} />
+        <CardContent>
+          <Skeleton variant="text" sx={{ fontSize: '1.5rem' }} />
+          <Skeleton variant="text" sx={{ fontSize: '1rem' }} />
+          <Skeleton variant="text" sx={{ fontSize: '1rem', width: '60%' }} />
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <motion.div
       ref={ref}
@@ -198,262 +215,352 @@ const ProductCard = ({ product, index = 0, variant = 'grid' }) => {
       transition={{ duration: 0.3 }}
     >
       <Card
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
         sx={{
-          borderRadius: 4,
-          boxShadow: theme.shadows[2],
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          maxWidth: isListView ? '100%' : 345,
+          height: isListView ? 'auto' : '100%',
+          display: 'flex',
+          flexDirection: isListView ? 'row' : 'column',
+          position: 'relative',
+          transition: 'all 0.3s ease-in-out',
+          borderRadius: 2,
+          overflow: 'hidden',
           '&:hover': {
-            boxShadow: theme.shadows[8],
+            boxShadow: theme.shadows[12],
+            '& .product-image': {
+              transform: 'scale(1.05)',
+            },
           },
           direction: 'rtl',
-          maxWidth: isListView ? '100%' : 345,
-          m: 'auto',
-          position: 'relative',
-          overflow: 'hidden',
-          background: 'linear-gradient(145deg, #ffffff 0%, #fafafa 100%)',
-          display: isListView ? 'flex' : 'block',
-          flexDirection: isListView ? 'row' : 'column',
-          height: isListView ? 200 : 'auto',
         }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
-        {/* Image Container with Overlay */}
-        <Box 
-          sx={{ 
-            position: 'relative', 
-            overflow: 'hidden',
-            borderRadius: isListView ? '16px 0 0 16px' : '16px 16px 0 0',
-            width: isListView ? 250 : '100%',
-            minWidth: isListView ? 250 : 'auto',
-            height: isListView ? '100%' : 'auto',
+        {/* Discount Badge */}
+        {discountPercentage > 0 && (
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              bgcolor: 'error.main',
+              color: 'white',
+              px: 1,
+              py: 0.5,
+              borderRadius: 1,
+              fontSize: '0.75rem',
+              fontWeight: 'bold',
+              zIndex: 1,
+            }}
+          >
+            {toPersianNumber(discountPercentage)}% تخفیف
+          </Box>
+        )}
+
+        {/* Stock Status Badge */}
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 8,
+            left: 8,
+            zIndex: 1,
           }}
         >
-          {imageLoading && (
-            <Skeleton
-              variant="rectangular"
-              sx={{
-                aspectRatio: '4/3',
-                borderRadius: 2,
-              }}
-              animation="wave"
-            />
+          <Chip
+            icon={inStock ? <CheckCircleIcon /> : undefined}
+            label={inStock ? 'موجود' : 'ناموجود'}
+            color={inStock ? 'success' : 'error'}
+            size="small"
+            variant="filled"
+          />
+        </Box>
+
+        {/* Favorite Button */}
+        <IconButton
+          onClick={handleToggleFavorite}
+          sx={{
+            position: 'absolute',
+            top: 8,
+            left: isListView ? 8 : 45,
+            zIndex: 2,
+            bgcolor: alpha(theme.palette.background.paper, 0.8),
+            '&:hover': {
+              bgcolor: alpha(theme.palette.background.paper, 0.9),
+            },
+          }}
+          size="small"
+        >
+          {favorite ? (
+            <FavoriteIcon color="error" fontSize="small" />
+          ) : (
+            <FavoriteBorderIcon fontSize="small" />
           )}
-          
-          <motion.div
-            variants={imageVariants}
-            animate={isHovered ? "hover" : ""}
-          >
+        </IconButton>
+
+        {/* Product Image */}
+        <CardActionArea
+          onClick={handleViewProduct}
+          sx={{
+            width: isListView ? 200 : '100%',
+            height: isListView ? 200 : 250,
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+        >
+          <motion.div variants={imageVariants} whileHover="hover">
             <CardMedia
               component="img"
-              image={imageError ? placeholderImage : getProductImageUrl(product)}
-              alt={product?.images?.[0]?.alt || product.name}
+              className="product-image"
+              height={isListView ? "200" : "250"}
+              image={imageError ? placeholderImage : mainImage}
+              alt={name}
               onLoad={handleImageLoad}
               onError={handleImageError}
               sx={{
-                aspectRatio: isListView ? '4/3' : '4/3',
                 objectFit: 'cover',
-                display: imageLoading ? 'none' : 'block',
-                transition: 'transform 0.3s ease',
+                transition: 'transform 0.3s ease-in-out',
                 width: '100%',
-                height: isListView ? '100%' : 'auto',
+                height: '100%',
               }}
             />
           </motion.div>
-
-          {/* Overlay with Actions */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: isHovered ? 1 : 0 }}
-            transition={{ duration: 0.2 }}
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.3) 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 2,
-            }}
-          >
-            <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-              <IconButton
-                onClick={handleViewProduct}
-                sx={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                  color: theme.palette.primary.main,
-                  '&:hover': {
-                    backgroundColor: 'white',
-                  },
-                }}
-              >
-                <ViewIcon />
-              </IconButton>
-            </motion.div>
-          </motion.div>
-
-          {/* Favorite Button */}
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ 
-              scale: isHovered || favorite ? 1 : 0.8, 
-              opacity: isHovered || favorite ? 1 : 0 
-            }}
-            transition={{ duration: 0.2 }}
-            style={{
-              position: 'absolute',
-              top: 12,
-              right: 12,
-            }}
-          >
-            <IconButton
-              onClick={handleToggleFavorite}
+          
+          {imageLoading && (
+            <Skeleton
+              variant="rectangular"
+              width="100%"
+              height="100%"
               sx={{
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                backdropFilter: 'blur(8px)',
-                '&:hover': {
-                  backgroundColor: 'white',
-                  transform: 'scale(1.1)',
-                },
-                transition: 'all 0.2s ease',
-              }}
-            >
-              {favorite ? (
-                <FavoriteIcon sx={{ color: '#e91e63' }} />
-              ) : (
-                <FavoriteBorderIcon sx={{ color: '#666' }} />
-              )}
-            </IconButton>
-          </motion.div>
-
-          {/* Category Badge */}
-          {product.category && (
-            <motion.div
-              initial={{ x: -20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ duration: 0.3, delay: 0.2 }}
-              style={{
                 position: 'absolute',
-                bottom: 12,
-                left: 12,
+                top: 0,
+                left: 0,
               }}
-            >
-              <Chip
-                icon={getCategoryIcon(product.category?.name || product.category)}
-                label={product.category?.name || product.category}
-                size="small"
-                sx={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                  backdropFilter: 'blur(8px)',
-                  fontWeight: 500,
-                  '& .MuiChip-icon': {
-                    color: theme.palette.primary.main,
-                  },
-                }}
-              />
-            </motion.div>
+            />
           )}
-        </Box>
+        </CardActionArea>
 
-        <CardContent sx={{ p: 3 }}>
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.1 }}
-          >
-            <Typography
-              variant="h6"
+        {/* Product Content */}
+        <CardContent
+          sx={{
+            flex: 1,
+            p: 2,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 1.5,
+          }}
+        >
+          {/* Category and Brand */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+            <Chip
+              icon={getCategoryIcon(categoryInfo.name)}
+              label={categoryInfo.name}
+              size="small"
+              variant="outlined"
+              color="primary"
+              onClick={handleCategoryClick}
               sx={{ 
-                fontFamily: 'IRANSans, Vazir, sans-serif', 
-                fontWeight: 600,
-                mb: 2,
-                fontSize: '1.1rem',
-                lineHeight: 1.3,
+                cursor: 'pointer',
+                '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.1) }
+              }}
+            />
+            
+            <Chip
+              avatar={
+                brandInfo.logo ? (
+                  <Avatar src={brandInfo.logo} sx={{ width: 16, height: 16 }}>
+                    <StorefrontIcon fontSize="small" />
+                  </Avatar>
+                ) : (
+                  <Avatar sx={{ width: 16, height: 16, bgcolor: 'secondary.main' }}>
+                    <StorefrontIcon fontSize="small" />
+                  </Avatar>
+                )
+              }
+              label={brandInfo.name}
+              size="small"
+              variant="outlined"
+              color="secondary"
+              onClick={handleBrandClick}
+              sx={{ 
+                cursor: 'pointer',
+                '&:hover': { bgcolor: alpha(theme.palette.secondary.main, 0.1) }
+              }}
+            />
+          </Box>
+
+          {/* Product Name */}
+          <Typography
+            variant="h6"
+            component="h3"
+            sx={{
+              fontWeight: 600,
+              fontSize: '1.1rem',
+              lineHeight: 1.3,
+              overflow: 'hidden',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              minHeight: '2.6em',
+              direction: 'rtl',
+            }}
+          >
+            {name}
+          </Typography>
+
+          {/* Description */}
+          {description && (
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{
+                overflow: 'hidden',
                 display: '-webkit-box',
                 WebkitLineClamp: 2,
                 WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
+                direction: 'rtl',
               }}
             >
-              {product.name}
+              {description}
             </Typography>
-          </motion.div>
+          )}
 
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.2 }}
-          >
-            <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
-              {product.brand && (
-                <Chip 
-                  label={product.brand?.name || product.brand} 
-                  size="small" 
+          {/* Features */}
+          {features && features.length > 0 && (
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+              {features.slice(0, 3).map((feature, idx) => (
+                <Chip
+                  key={idx}
+                  label={feature}
+                  size="small"
                   variant="outlined"
-                  sx={{ 
-                    borderColor: alpha(theme.palette.primary.main, 0.3),
-                    color: theme.palette.primary.main,
-                    fontWeight: 500,
-                  }} 
+                  sx={{ fontSize: '0.7rem' }}
+                />
+              ))}
+              {features.length > 3 && (
+                <Chip
+                  label={`+${toPersianNumber(features.length - 3)}`}
+                  size="small"
+                  variant="outlined"
+                  sx={{ fontSize: '0.7rem' }}
                 />
               )}
             </Box>
-          </motion.div>
+          )}
 
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.3 }}
-          >
-            <Typography
-              variant="h5"
-              sx={{ 
-                fontWeight: 700, 
-                color: theme.palette.primary.main,
-                mb: 3,
-                fontSize: '1.25rem',
-              }}
-            >
-              {toPersianCurrency(product.price)}
-            </Typography>
-          </motion.div>
+          {/* Compatible Vehicles */}
+          {compatibleVehicles && compatibleVehicles.length > 0 && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <DirectionsCarIcon fontSize="small" color="action" />
+              <Typography variant="caption" color="text.secondary">
+                مناسب برای {toPersianNumber(compatibleVehicles.length)} خودرو
+              </Typography>
+            </Box>
+          )}
 
-          <motion.div
-            variants={buttonVariants}
-            whileHover="hover"
-            whileTap="tap"
-          >
-            <Button
-              fullWidth
-              variant="contained"
-              startIcon={<PhoneIcon />}
-              onClick={() => navigate(contactRoute)}
-              sx={{
-                borderRadius: 3,
-                py: 1.5,
-                fontWeight: 600,
-                fontSize: '0.95rem',
-                background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.primary.light} 90%)`,
-                boxShadow: `0 3px 12px ${alpha(theme.palette.primary.main, 0.3)}`,
-                '&:hover': {
-                  background: `linear-gradient(45deg, ${theme.palette.primary.dark} 30%, ${theme.palette.primary.main} 90%)`,
-                  boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`,
-                },
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-              }}
-            >
-              برای خرید تماس بگیرید
-            </Button>
-          </motion.div>
+          {/* Rating */}
+          {rating > 0 && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Rating
+                value={rating}
+                precision={0.5}
+                size="small"
+                readOnly
+                sx={{ direction: 'ltr' }}
+              />
+              <Typography variant="caption" color="text.secondary">
+                ({toPersianNumber(reviewsCount)} نظر)
+              </Typography>
+            </Box>
+          )}
+
+          {/* Stock Info */}
+          {inStock && stockQuantity > 0 && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <LocalShippingIcon fontSize="small" color="success" />
+              <Typography variant="caption" color="success.main">
+                {stockQuantity > 10 ? 'موجود در انبار' : `فقط ${toPersianNumber(stockQuantity)} عدد باقی مانده`}
+              </Typography>
+            </Box>
+          )}
+
+          {/* Price Section */}
+          <Box sx={{ mt: 'auto', pt: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, direction: 'rtl' }}>
+              {discountPrice && (
+                <Typography
+                  variant="body2"
+                  sx={{
+                    textDecoration: 'line-through',
+                    color: 'text.secondary',
+                    fontSize: '0.9rem',
+                  }}
+                >
+                  {toPersianCurrency(price)}
+                </Typography>
+              )}
+              <Typography
+                variant="h6"
+                component="span"
+                sx={{
+                  fontWeight: 700,
+                  color: discountPrice ? 'error.main' : 'text.primary',
+                  fontSize: '1.1rem',
+                }}
+              >
+                {displayPrice > 0 ? toPersianCurrency(displayPrice) : 'تماس بگیرید'}
+              </Typography>
+            </Box>
+          </Box>
         </CardContent>
+
+        {/* Actions */}
+        <CardActions sx={{ p: 2, pt: 0, justifyContent: 'space-between' }}>
+          <Box sx={{ display: 'flex', gap: 1, width: '100%' }}>
+            {CART_ENABLED ? (
+              <AddToCartButton
+                product={product}
+                variant="contained"
+                size="small"
+                fullWidth
+                disabled={false}
+                customText={inStock ? 'افزودن به سبد خرید' : 'افزودن به سبد خرید'}
+                sx={{ flex: 1 }}
+              />
+            ) : (
+              <Button
+                variant="outlined"
+                size="small"
+                fullWidth
+                component={RouterLink}
+                to={contactRoute}
+                startIcon={<PhoneIcon />}
+                sx={{ flex: 1 }}
+              >
+                استعلام قیمت
+              </Button>
+            )}
+            
+            <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
+              <Tooltip title="مشاهده جزئیات">
+                <IconButton
+                  onClick={handleViewProduct}
+                  color="primary"
+                  size="small"
+                  sx={{
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.5)}`,
+                    '&:hover': {
+                      bgcolor: alpha(theme.palette.primary.main, 0.1),
+                    },
+                  }}
+                >
+                  <ViewIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </motion.div>
+          </Box>
+        </CardActions>
       </Card>
     </motion.div>
   );
 };
 
-// ENV: REACT_APP_CONTACT_ROUTE sets the contact page route
-// Responsive: 3 columns lg, 2 md, 1 sm/xs; gap 24px between cards
 export default ProductCard;

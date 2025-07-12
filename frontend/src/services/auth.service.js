@@ -291,7 +291,7 @@ export const authService = {
     }
   },
 
-  logout: () => {
+  logout: async () => {
     // Only remove remember me preference
     localStorage.removeItem('rememberMe');
     
@@ -299,7 +299,16 @@ export const authService = {
       return Promise.resolve({ status: 'success', message: 'Logged out successfully' });
     }
     
-    return api.post('/auth/logout'); // Use POST instead of GET for logout
+    try {
+      // Try to logout on server, but don't fail if it doesn't work
+      await api.post('/auth/logout');
+      return { status: 'success', message: 'Logged out successfully' };
+    } catch (error) {
+      // If logout fails (e.g., already logged out), just return success
+      // The important thing is that we clear the client-side state
+      console.log('Logout API call failed, but continuing with client-side logout');
+      return { status: 'success', message: 'Logged out successfully' };
+    }
   },
 
   isAuthenticated: () => {

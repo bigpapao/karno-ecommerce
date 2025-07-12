@@ -326,55 +326,127 @@ const Orders = () => {
         </Grid>
       </Grid>
 
-      {/* Filters and Search */}
+      {/* Search Section */}
       <Paper sx={{ p: 2, mb: 2 }}>
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
-          <TextField
-            placeholder="جستجو بر اساس شماره سفارش، نام مشتری، تلفن یا ایمیل..."
-            value={searchTerm}
-            onChange={handleSearchChange}
-            size="small"
-            sx={{ minWidth: 350, flexGrow: 1 }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-              sx: { direction: 'rtl' }
-            }}
-          />
-          
-          <FormControl size="small" sx={{ minWidth: 150 }}>
-            <InputLabel>وضعیت سفارش</InputLabel>
-            <Select
-              value={filters.status}
-              label="وضعیت سفارش"
-              onChange={(e) => handleFilterChange('status', e.target.value)}
-            >
-              <MenuItem value="">همه</MenuItem>
-              <MenuItem value="در حال پردازش">در حال پردازش</MenuItem>
-              <MenuItem value="تکمیل شده">تکمیل شده</MenuItem>
-              <MenuItem value="ارسال شده">ارسال شده</MenuItem>
-              <MenuItem value="در انتظار پرداخت">در انتظار پرداخت</MenuItem>
-              <MenuItem value="لغو شده">لغو شده</MenuItem>
-            </Select>
-          </FormControl>
+        <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <SearchIcon />
+          جستجو در سفارشات
+        </Typography>
+        <TextField
+          fullWidth
+          placeholder="جستجو بر اساس شماره سفارش، نام مشتری، تلفن یا ایمیل..."
+          value={searchTerm}
+          onChange={handleSearchChange}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+            sx: { direction: 'rtl' }
+          }}
+          sx={{ '& .MuiOutlinedInput-root': { backgroundColor: 'background.default' } }}
+        />
+        
+        {/* Active Search Chip */}
+        {searchTerm && (
+          <Box sx={{ mt: 2, pt: 2, borderTop: 1, borderColor: 'divider' }}>
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              جستجوی فعال:
+            </Typography>
+            <Chip
+              label={`جستجو: ${searchTerm}`}
+              onDelete={() => setSearchTerm('')}
+              variant="filled"
+              color="primary"
+              size="small"
+            />
+          </Box>
+        )}
+      </Paper>
 
-          <FormControl size="small" sx={{ minWidth: 150 }}>
-            <InputLabel>وضعیت پرداخت</InputLabel>
-            <Select
-              value={filters.paymentStatus}
-              label="وضعیت پرداخت"
-              onChange={(e) => handleFilterChange('paymentStatus', e.target.value)}
+      {/* Filters Section */}
+      <Paper sx={{ p: 2, mb: 2 }}>
+        <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <SearchIcon />
+          فیلترها
+        </Typography>
+        
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} sm={6} md={4}>
+            <FormControl fullWidth>
+              <InputLabel>وضعیت سفارش</InputLabel>
+              <Select
+                value={filters.status}
+                label="وضعیت سفارش"
+                onChange={(e) => handleFilterChange('status', e.target.value)}
+              >
+                <MenuItem value="">همه سفارشات</MenuItem>
+                <MenuItem value="در حال پردازش">در حال پردازش</MenuItem>
+                <MenuItem value="تکمیل شده">تکمیل شده</MenuItem>
+                <MenuItem value="ارسال شده">ارسال شده</MenuItem>
+                <MenuItem value="در انتظار پرداخت">در انتظار پرداخت</MenuItem>
+                <MenuItem value="لغو شده">لغو شده</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={4}>
+            <FormControl fullWidth>
+              <InputLabel>وضعیت پرداخت</InputLabel>
+              <Select
+                value={filters.paymentStatus}
+                label="وضعیت پرداخت"
+                onChange={(e) => handleFilterChange('paymentStatus', e.target.value)}
+              >
+                <MenuItem value="">همه پرداخت‌ها</MenuItem>
+                <MenuItem value="پرداخت شده">پرداخت شده</MenuItem>
+                <MenuItem value="پرداخت نشده">پرداخت نشده</MenuItem>
+                <MenuItem value="بازگشت وجه">بازگشت وجه</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          
+          <Grid item xs={12} sm={6} md={4}>
+            <Button 
+              onClick={() => setFilters({ status: '', paymentStatus: '', dateRange: '' })} 
+              variant="outlined" 
+              fullWidth
+              sx={{ height: '56px' }}
             >
-              <MenuItem value="">همه</MenuItem>
-              <MenuItem value="پرداخت شده">پرداخت شده</MenuItem>
-              <MenuItem value="پرداخت نشده">پرداخت نشده</MenuItem>
-              <MenuItem value="بازگشت وجه">بازگشت وجه</MenuItem>
-            </Select>
-          </FormControl>
-        </Box>
+              پاک کردن همه فیلترها
+            </Button>
+          </Grid>
+        </Grid>
+
+        {/* Active Filters Chips */}
+        {(filters.status || filters.paymentStatus) && (
+          <Box sx={{ mt: 2, pt: 2, borderTop: 1, borderColor: 'divider' }}>
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              فیلترهای فعال:
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+              {filters.status && (
+                <Chip
+                  label={`وضعیت سفارش: ${filters.status}`}
+                  onDelete={() => handleFilterChange('status', '')}
+                  variant="filled"
+                  color="secondary"
+                  size="small"
+                />
+              )}
+              {filters.paymentStatus && (
+                <Chip
+                  label={`وضعیت پرداخت: ${filters.paymentStatus}`}
+                  onDelete={() => handleFilterChange('paymentStatus', '')}
+                  variant="filled"
+                  color="secondary"
+                  size="small"
+                />
+              )}
+            </Box>
+          </Box>
+        )}
       </Paper>
 
       {/* Orders Table */}

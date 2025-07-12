@@ -101,9 +101,18 @@ const AuthModal = ({ open, onClose, redirectAfterLogin = '/' }) => {
     }
     setSubmitting(true);
     try {
+      // Format phone number for backend (09xxxxxxxxx format)
+      let backendPhone = phone.toString().replace(/\D/g, '');
+      if (backendPhone.startsWith('98')) {
+        backendPhone = backendPhone.substring(2);
+      }
+      if (!backendPhone.startsWith('0')) {
+        backendPhone = '0' + backendPhone;
+      }
+      
       await dispatch(
         login({
-          phone: normalizePhoneNumber(phone),
+          phone: backendPhone,
           password,
           sessionId: localStorage.getItem('sessionId'),
         }),
@@ -131,9 +140,18 @@ const AuthModal = ({ open, onClose, redirectAfterLogin = '/' }) => {
     if (isSubmitting || !validatePassword()) return;
     setSubmitting(true);
     try {
+      // Format phone number for backend (09xxxxxxxxx format)
+      let backendPhone = phone.toString().replace(/\D/g, '');
+      if (backendPhone.startsWith('98')) {
+        backendPhone = backendPhone.substring(2);
+      }
+      if (!backendPhone.startsWith('0')) {
+        backendPhone = '0' + backendPhone;
+      }
+      
       /* فرض: updateProfile({ phone, password }) کاربر تازه می‌سازد */
       await dispatch(
-        updateProfile({ phone: normalizePhoneNumber(phone), password }),
+        updateProfile({ phone: backendPhone, password }),
       ).unwrap();
       setStep('profile');
     } catch (err) {

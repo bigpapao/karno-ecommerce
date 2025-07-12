@@ -8,10 +8,10 @@ export const fetchCart = createAsyncThunk(
   async (_, { rejectWithValue, getState }) => {
     try {
       const { auth } = getState();
-      if (auth.isAuthenticated && auth.token) {
+      if (auth.isAuthenticated) {
         // Fetch cart from server for authenticated users
         const response = await cartService.getCart();
-        return response.data;
+        return response.data.items || [];
       } else {
         // Load cart from localStorage for guest users
         const guestCart = localStorage.getItem('cart');
@@ -29,10 +29,10 @@ export const addToCart = createAsyncThunk(
     try {
       const { auth } = getState();
       
-      if (auth.isAuthenticated && auth.token) {
+      if (auth.isAuthenticated) {
         // Add to server cart for authenticated users
         const response = await cartService.addItem(item);
-        return response.data;
+        return response.data.items || [];
       } else {
         // Add to localStorage for guest users
         const guestCart = JSON.parse(localStorage.getItem('cart') || '[]');
@@ -63,10 +63,10 @@ export const updateCartQuantity = createAsyncThunk(
     try {
       const { auth } = getState();
       
-      if (auth.isAuthenticated && auth.token) {
+      if (auth.isAuthenticated) {
         // Update server cart for authenticated users
         const response = await cartService.updateQuantity(productId, quantity);
-        return response.data;
+        return response.data.items || [];
       } else {
         // Update localStorage for guest users
         const guestCart = JSON.parse(localStorage.getItem('cart') || '[]');
@@ -95,10 +95,10 @@ export const removeFromCart = createAsyncThunk(
     try {
       const { auth } = getState();
       
-      if (auth.isAuthenticated && auth.token) {
+      if (auth.isAuthenticated) {
         // Remove from server cart for authenticated users
         const response = await cartService.removeItem(productId);
-        return response.data;
+        return response.data.items || [];
       } else {
         // Remove from localStorage for guest users
         const guestCart = JSON.parse(localStorage.getItem('cart') || '[]');
@@ -119,7 +119,7 @@ export const clearCart = createAsyncThunk(
     try {
       const { auth } = getState();
       
-      if (auth.isAuthenticated && auth.token) {
+      if (auth.isAuthenticated) {
         // Clear server cart for authenticated users
         await cartService.clearCart();
         return [];

@@ -38,6 +38,8 @@ import AdminRoute from './components/AdminRoute';
 // Lazy-loaded pages for better performance
 const Products = lazy(() => import('./pages/Products'));
 const ProductDetail = lazy(() => import('./pages/ProductDetail'));
+const Categories = lazy(() => import('./pages/Categories'));
+const CategoryDemo = lazy(() => import('./pages/CategoryDemo'));
 const SearchResults = lazy(() => import('./pages/SearchResults'));
 const Brands = lazy(() => import('./pages/Brands'));
 const BrandDetail = lazy(() => import('./pages/BrandDetail'));
@@ -61,7 +63,7 @@ const AdminUsers = lazy(() => import('./pages/admin/Users'));
 const AdminCategories = lazy(() => import('./pages/admin/Categories'));
 const AdminBrands = lazy(() => import('./pages/admin/Brands'));
 const AdminSettings = lazy(() => import('./pages/admin/Settings'));
-
+const AdminAnalytics = lazy(() => import('./pages/admin/Analytics'));
 
 
 // Service worker registration for PWA capabilities
@@ -106,6 +108,16 @@ function App() {
                       <Route path="products/:id" element={
                         <Suspense fallback={<LoadingSpinner />}>
                           <ProductDetail />
+                        </Suspense>
+                      } />
+                      <Route path="categories" element={
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <Categories />
+                        </Suspense>
+                      } />
+                      <Route path="category-demo" element={
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <CategoryDemo />
                         </Suspense>
                       } />
                       <Route path="search" element={
@@ -232,6 +244,11 @@ function App() {
                       <Route path="settings" element={
                         <Suspense fallback={<LoadingSpinner />}>
                           <AdminSettings />
+                        </Suspense>
+                      } />
+                      <Route path="analytics" element={
+                        <Suspense fallback={<LoadingSpinner />}>
+                          <AdminAnalytics />
                         </Suspense>
                       } />
                     </Route>

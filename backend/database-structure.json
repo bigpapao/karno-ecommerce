@@ -1,0 +1,2187 @@
+{
+  "timestamp": "2025-07-05T04:25:53.945Z",
+  "database": "karno",
+  "collections": {
+    "users": {
+      "count": 26,
+      "schema": {
+        "firstName": {
+          "type": "SchemaString",
+          "required": true,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "lastName": {
+          "type": "SchemaString",
+          "required": true,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "phone": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": true,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "email": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": true,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "password": {
+          "type": "SchemaString",
+          "required": true,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "address": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "city": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "province": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "postalCode": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "mobileVerified": {
+          "type": "SchemaBoolean",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "verificationCode": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "verificationCodeExpires": {
+          "type": "SchemaDate",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "refreshToken": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "isActive": {
+          "type": "SchemaBoolean",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": true
+        },
+        "lastLogin": {
+          "type": "SchemaDate",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "addresses": {
+          "type": "SchemaDocumentArray",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null
+        },
+        "role": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [
+            "user",
+            "admin"
+          ],
+          "default": "user"
+        },
+        "phoneVerified": {
+          "type": "SchemaBoolean",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "verificationStatus": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [
+            "unverified",
+            "phone_verified",
+            "email_verified",
+            "fully_verified"
+          ],
+          "default": "unverified"
+        },
+        "connections.google.id": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "connections.google.token": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "connections.google.email": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "otpLoginHistory": {
+          "type": "SchemaDocumentArray",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null
+        },
+        "passwordChangedAt": {
+          "type": "SchemaDate",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null
+        },
+        "createdAt": {
+          "type": "SchemaDate",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "updatedAt": {
+          "type": "SchemaDate",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        }
+      },
+      "indexes": {
+        "_id_": [
+          [
+            "_id",
+            1
+          ]
+        ],
+        "email_idx": [
+          [
+            "email",
+            1
+          ]
+        ],
+        "phone_idx": [
+          [
+            "phone",
+            1
+          ]
+        ],
+        "firebaseId_idx": [
+          [
+            "firebaseId",
+            1
+          ]
+        ],
+        "role_idx": [
+          [
+            "role",
+            1
+          ]
+        ],
+        "createdAt_idx": [
+          [
+            "createdAt",
+            -1
+          ]
+        ],
+        "lastLogin_idx": [
+          [
+            "lastLogin",
+            -1
+          ]
+        ]
+      },
+      "samples": [
+        {
+          "_id": "681f9878235aedc3f2baa93a",
+          "firstName": "sima",
+          "lastName": "koki",
+          "firebaseUid": "YcmrQfRaougwFWTZkAUgJRPyEBf1",
+          "email": "vahid3@gmail.com",
+          "passwordResetAttempts": 0,
+          "accountLocked": false,
+          "phone": "+989305415257",
+          "role": "user",
+          "createdAt": "2025-05-10T18:18:32.877Z",
+          "updatedAt": "2025-05-10T18:18:32.877Z",
+          "passwordChangedAt": "2025-05-10T18:18:32.416Z",
+          "__v": 0
+        },
+        {
+          "_id": "681f991bbb7345c9140afe5c",
+          "firstName": "Test",
+          "lastName": "User",
+          "email": "testuser@example.com",
+          "passwordResetAttempts": 0,
+          "accountLocked": false,
+          "role": "user",
+          "createdAt": "2025-05-10T18:21:15.441Z",
+          "updatedAt": "2025-05-10T18:21:15.441Z",
+          "passwordChangedAt": "2025-05-10T18:21:14.688Z",
+          "__v": 0,
+          "phone": "placeholder-681f991bbb7345c9140afe5c"
+        },
+        {
+          "_id": "681f9979bb7345c9140afe5f",
+          "firstName": "simaa",
+          "lastName": "saaa",
+          "firebaseUid": "i6ejmRyTlAbvupg93QJucW5Vz5j2",
+          "email": "sima4@gmail.com",
+          "passwordResetAttempts": 0,
+          "accountLocked": false,
+          "phone": "+989301203812",
+          "role": "user",
+          "createdAt": "2025-05-10T18:22:49.731Z",
+          "updatedAt": "2025-05-10T18:22:49.731Z",
+          "passwordChangedAt": "2025-05-10T18:22:49.310Z",
+          "__v": 0
+        }
+      ]
+    },
+    "products": {
+      "count": 10,
+      "schema": {
+        "name": {
+          "type": "SchemaString",
+          "required": true,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "slug": {
+          "type": "SchemaString",
+          "required": true,
+          "unique": true,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "description": {
+          "type": "SchemaString",
+          "required": true,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "price": {
+          "type": "SchemaNumber",
+          "required": true,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "discountPrice": {
+          "type": "SchemaNumber",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "category": {
+          "type": "SchemaObjectId",
+          "required": true,
+          "unique": false,
+          "ref": "Category",
+          "enum": null,
+          "default": null
+        },
+        "brand": {
+          "type": "SchemaObjectId",
+          "required": true,
+          "unique": false,
+          "ref": "Brand",
+          "enum": null,
+          "default": null
+        },
+        "stock": {
+          "type": "SchemaNumber",
+          "required": true,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "images": {
+          "type": "SchemaDocumentArray",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null
+        },
+        "featured": {
+          "type": "SchemaBoolean",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "specifications": {
+          "type": "SchemaDocumentArray",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null
+        },
+        "compatibleVehicles": {
+          "type": "SchemaDocumentArray",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null
+        },
+        "reviews": {
+          "type": "SchemaDocumentArray",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null
+        },
+        "rating": {
+          "type": "SchemaNumber",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "numReviews": {
+          "type": "SchemaNumber",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "sku": {
+          "type": "SchemaString",
+          "required": true,
+          "unique": true,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "weight": {
+          "type": "SchemaNumber",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "dimensions.length": {
+          "type": "SchemaNumber",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "dimensions.width": {
+          "type": "SchemaNumber",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "dimensions.height": {
+          "type": "SchemaNumber",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "createdAt": {
+          "type": "SchemaDate",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "updatedAt": {
+          "type": "SchemaDate",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        }
+      },
+      "indexes": {
+        "_id_": [
+          [
+            "_id",
+            1
+          ]
+        ],
+        "name_idx": [
+          [
+            "name",
+            1
+          ]
+        ],
+        "slug_idx": [
+          [
+            "slug",
+            1
+          ]
+        ],
+        "price_idx": [
+          [
+            "price",
+            1
+          ]
+        ],
+        "category_idx": [
+          [
+            "category",
+            1
+          ]
+        ],
+        "brand_idx": [
+          [
+            "brand",
+            1
+          ]
+        ],
+        "featured_idx": [
+          [
+            "featured",
+            1
+          ]
+        ],
+        "inStock_idx": [
+          [
+            "inStock",
+            1
+          ]
+        ],
+        "createdAt_idx": [
+          [
+            "createdAt",
+            -1
+          ]
+        ],
+        "score_idx": [
+          [
+            "score",
+            -1
+          ]
+        ],
+        "views_idx": [
+          [
+            "views",
+            -1
+          ]
+        ],
+        "discount_idx": [
+          [
+            "discount",
+            -1
+          ]
+        ],
+        "text_search_idx": [
+          [
+            "_fts",
+            "text"
+          ],
+          [
+            "_ftsx",
+            1
+          ]
+        ],
+        "sku_1": [
+          [
+            "sku",
+            1
+          ]
+        ],
+        "product_stock_idx": [
+          [
+            "stock",
+            1
+          ]
+        ],
+        "product_rating_idx": [
+          [
+            "rating",
+            -1
+          ]
+        ],
+        "product_compatible_vehicles_idx": [
+          [
+            "compatibleVehicles.modelId",
+            1
+          ]
+        ],
+        "category_price_idx": [
+          [
+            "category",
+            1
+          ],
+          [
+            "price",
+            1
+          ]
+        ],
+        "brand_price_idx": [
+          [
+            "brand",
+            1
+          ],
+          [
+            "price",
+            1
+          ]
+        ],
+        "featured_inStock_idx": [
+          [
+            "featured",
+            1
+          ],
+          [
+            "inStock",
+            1
+          ]
+        ]
+      },
+      "samples": [
+        {
+          "_id": "683dfb576fbad9a693c7cc1c",
+          "name": "لنت ترمز جلو پراید",
+          "slug": "bp-pride-001",
+          "description": "لنت ترمز جلو مناسب برای خودرو پراید، ساخت ایران",
+          "price": 180000,
+          "category": "683dfb566fbad9a693c7cc0d",
+          "brand": "683dfb566fbad9a693c7cc14",
+          "stock": 50,
+          "images": [
+            {
+              "url": "/images/products/placeholder.jpg",
+              "alt": "لنت ترمز جلو پراید",
+              "_id": "683dfb576fbad9a693c7cc1d"
+            }
+          ],
+          "featured": true,
+          "compatibleVehicles": [
+            {
+              "model": "پراید",
+              "year": "1990-2020",
+              "make": "سایپا",
+              "_id": "683dfb576fbad9a693c7cc1e"
+            }
+          ],
+          "rating": 4.716603607026078,
+          "numReviews": 25,
+          "sku": "BP-PRIDE-001",
+          "weight": 0,
+          "createdAt": "2025-06-02T19:28:23.000Z",
+          "updatedAt": "2025-06-02T19:28:23.000Z",
+          "specifications": [],
+          "reviews": [],
+          "__v": 0
+        },
+        {
+          "_id": "683dfb576fbad9a693c7cc1f",
+          "name": "لنت ترمز جلو پژو 206",
+          "slug": "bp-p206-001",
+          "description": "لنت ترمز جلو بوش مناسب برای پژو 206",
+          "price": 320000,
+          "category": "683dfb566fbad9a693c7cc0d",
+          "brand": "683dfb566fbad9a693c7cc15",
+          "stock": 30,
+          "images": [
+            {
+              "url": "/images/products/placeholder.jpg",
+              "alt": "لنت ترمز جلو پژو 206",
+              "_id": "683dfb576fbad9a693c7cc20"
+            }
+          ],
+          "featured": false,
+          "compatibleVehicles": [
+            {
+              "model": "پژو 206",
+              "year": "2001-2015",
+              "make": "ایران خودرو",
+              "_id": "683dfb576fbad9a693c7cc21"
+            }
+          ],
+          "rating": 4.072351271680501,
+          "numReviews": 12,
+          "sku": "BP-P206-001",
+          "weight": 0,
+          "createdAt": "2025-06-02T19:28:23.000Z",
+          "updatedAt": "2025-06-02T19:28:23.000Z",
+          "specifications": [],
+          "reviews": [],
+          "__v": 0
+        },
+        {
+          "_id": "683dfb576fbad9a693c7cc22",
+          "name": "فیلتر روغن پراید",
+          "slug": "of-pride-001",
+          "description": "فیلتر روغن موتور مناسب برای پراید",
+          "price": 45000,
+          "category": "683dfb566fbad9a693c7cc0e",
+          "brand": "683dfb566fbad9a693c7cc14",
+          "stock": 100,
+          "images": [
+            {
+              "url": "/images/products/placeholder.jpg",
+              "alt": "فیلتر روغن پراید",
+              "_id": "683dfb576fbad9a693c7cc23"
+            }
+          ],
+          "featured": false,
+          "compatibleVehicles": [
+            {
+              "model": "پراید",
+              "year": "1990-2020",
+              "make": "سایپا",
+              "_id": "683dfb576fbad9a693c7cc24"
+            }
+          ],
+          "rating": 3.7762050051356475,
+          "numReviews": 9,
+          "sku": "OF-PRIDE-001",
+          "weight": 0,
+          "createdAt": "2025-06-02T19:28:23.000Z",
+          "updatedAt": "2025-06-02T19:28:23.000Z",
+          "specifications": [],
+          "reviews": [],
+          "__v": 0
+        }
+      ]
+    },
+    "categories": {
+      "count": 5,
+      "schema": {
+        "name": {
+          "type": "SchemaString",
+          "required": true,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "slug": {
+          "type": "SchemaString",
+          "required": true,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "description": {
+          "type": "SchemaString",
+          "required": true,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "image.url": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "image.alt": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "featured": {
+          "type": "SchemaBoolean",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "parent": {
+          "type": "SchemaObjectId",
+          "required": false,
+          "unique": false,
+          "ref": "Category",
+          "enum": null,
+          "default": null
+        },
+        "order": {
+          "type": "SchemaNumber",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "createdAt": {
+          "type": "SchemaDate",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "updatedAt": {
+          "type": "SchemaDate",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        }
+      },
+      "indexes": {
+        "_id_": [
+          [
+            "_id",
+            1
+          ]
+        ],
+        "parent_idx": [
+          [
+            "parent",
+            1
+          ]
+        ],
+        "order_idx": [
+          [
+            "order",
+            1
+          ]
+        ],
+        "name_idx": [
+          [
+            "name",
+            1
+          ]
+        ],
+        "slug_idx": [
+          [
+            "slug",
+            1
+          ]
+        ],
+        "featured_idx": [
+          [
+            "featured",
+            1
+          ]
+        ],
+        "category_name_idx": [
+          [
+            "name",
+            1
+          ]
+        ]
+      },
+      "samples": [
+        {
+          "_id": "683dfb566fbad9a693c7cc0d",
+          "name": "لنت ترمز",
+          "slug": "brake-pads",
+          "description": "انواع لنت ترمز برای خودروهای مختلف",
+          "featured": false,
+          "parent": null,
+          "order": 0,
+          "__v": 0,
+          "createdAt": "2025-06-02T19:28:22.988Z",
+          "updatedAt": "2025-06-02T19:28:22.988Z"
+        },
+        {
+          "_id": "683dfb566fbad9a693c7cc0e",
+          "name": "فیلتر روغن",
+          "slug": "oil-filter",
+          "description": "فیلترهای روغن موتور",
+          "featured": false,
+          "parent": null,
+          "order": 0,
+          "__v": 0,
+          "createdAt": "2025-06-02T19:28:22.989Z",
+          "updatedAt": "2025-06-02T19:28:22.989Z"
+        },
+        {
+          "_id": "683dfb566fbad9a693c7cc0f",
+          "name": "شمع خودرو",
+          "slug": "spark-plugs",
+          "description": "شمع‌های احتراق برای موتورهای مختلف",
+          "featured": false,
+          "parent": null,
+          "order": 0,
+          "__v": 0,
+          "createdAt": "2025-06-02T19:28:22.989Z",
+          "updatedAt": "2025-06-02T19:28:22.989Z"
+        }
+      ]
+    },
+    "brands": {
+      "count": 5,
+      "schema": {
+        "name": {
+          "type": "SchemaString",
+          "required": true,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "slug": {
+          "type": "SchemaString",
+          "required": true,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "description": {
+          "type": "SchemaString",
+          "required": true,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "logo.url": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "logo.alt": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "featured": {
+          "type": "SchemaBoolean",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "country": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "website": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "order": {
+          "type": "SchemaNumber",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "createdAt": {
+          "type": "SchemaDate",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "updatedAt": {
+          "type": "SchemaDate",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        }
+      },
+      "indexes": {
+        "_id_": [
+          [
+            "_id",
+            1
+          ]
+        ],
+        "name_idx": [
+          [
+            "name",
+            1
+          ]
+        ],
+        "slug_idx": [
+          [
+            "slug",
+            1
+          ]
+        ],
+        "featured_idx": [
+          [
+            "featured",
+            1
+          ]
+        ],
+        "order_idx": [
+          [
+            "order",
+            1
+          ]
+        ],
+        "brand_name_idx": [
+          [
+            "name",
+            1
+          ]
+        ]
+      },
+      "samples": [
+        {
+          "_id": "683dfb566fbad9a693c7cc14",
+          "name": "ایرانی",
+          "slug": "iranian",
+          "description": "برند ایرانی",
+          "featured": false,
+          "country": "ایران",
+          "order": 0,
+          "__v": 0,
+          "createdAt": "2025-06-02T19:28:22.996Z",
+          "updatedAt": "2025-06-02T19:28:22.996Z"
+        },
+        {
+          "_id": "683dfb566fbad9a693c7cc15",
+          "name": "بوش",
+          "slug": "bosch",
+          "description": "برند آلمانی بوش",
+          "featured": false,
+          "country": "آلمان",
+          "order": 0,
+          "__v": 0,
+          "createdAt": "2025-06-02T19:28:22.996Z",
+          "updatedAt": "2025-06-02T19:28:22.996Z"
+        },
+        {
+          "_id": "683dfb566fbad9a693c7cc16",
+          "name": "وارتا",
+          "slug": "varta",
+          "description": "برند آلمانی وارتا",
+          "featured": false,
+          "country": "آلمان",
+          "order": 0,
+          "__v": 0,
+          "createdAt": "2025-06-02T19:28:22.996Z",
+          "updatedAt": "2025-06-02T19:28:22.996Z"
+        }
+      ]
+    },
+    "carts": {
+      "count": 1,
+      "schema": {
+        "user": {
+          "type": "SchemaObjectId",
+          "required": false,
+          "unique": false,
+          "ref": "User",
+          "enum": null,
+          "default": null
+        },
+        "sessionId": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "items": {
+          "type": "SchemaDocumentArray",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null
+        },
+        "totalItems": {
+          "type": "SchemaNumber",
+          "required": true,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "totalPrice": {
+          "type": "SchemaNumber",
+          "required": true,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "promoCode": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "discountAmount": {
+          "type": "SchemaNumber",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "expiresAt": {
+          "type": "SchemaDate",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null
+        },
+        "createdAt": {
+          "type": "SchemaDate",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "updatedAt": {
+          "type": "SchemaDate",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        }
+      },
+      "indexes": {
+        "_id_": [
+          [
+            "_id",
+            1
+          ]
+        ],
+        "user_idx": [
+          [
+            "user",
+            1
+          ]
+        ],
+        "sessionId_idx": [
+          [
+            "sessionId",
+            1
+          ]
+        ],
+        "updatedAt_idx": [
+          [
+            "updatedAt",
+            1
+          ]
+        ],
+        "cart_product_idx": [
+          [
+            "items.product",
+            1
+          ]
+        ],
+        "expiresAt_1": [
+          [
+            "expiresAt",
+            1
+          ]
+        ],
+        "user_1": [
+          [
+            "user",
+            1
+          ]
+        ],
+        "sessionId_1": [
+          [
+            "sessionId",
+            1
+          ]
+        ]
+      },
+      "samples": [
+        {
+          "_id": "6865fa6586667d9a8dd72091",
+          "user": "6865f9a386667d9a8dd72082",
+          "items": [
+            {
+              "product": "683dfb576fbad9a693c7cc1c",
+              "name": "لنت ترمز جلو پراید",
+              "quantity": 1,
+              "price": 180000,
+              "image": {
+                "url": "/images/products/placeholder.jpg",
+                "alt": "لنت ترمز جلو پراید"
+              },
+              "_id": "6868a7c1c98ee733b718dfbd",
+              "createdAt": "2025-07-05T04:19:13.948Z",
+              "updatedAt": "2025-07-05T04:19:13.948Z"
+            },
+            {
+              "product": "683dfb576fbad9a693c7cc25",
+              "name": "فیلتر روغن پژو 405",
+              "quantity": 1,
+              "price": 85000,
+              "image": {
+                "url": "/images/products/placeholder.jpg",
+                "alt": "فیلتر روغن پژو 405"
+              },
+              "_id": "6868a7eec98ee733b718dfd1",
+              "createdAt": "2025-07-05T04:19:58.815Z",
+              "updatedAt": "2025-07-05T04:19:58.815Z"
+            }
+          ],
+          "totalItems": 2,
+          "totalPrice": 265000,
+          "promoCode": null,
+          "discountAmount": 0,
+          "expiresAt": "2025-07-10T03:35:01.021Z",
+          "createdAt": "2025-07-03T03:35:01.025Z",
+          "updatedAt": "2025-07-05T04:19:58.815Z",
+          "__v": 5
+        }
+      ]
+    },
+    "orders": {
+      "count": 2,
+      "schema": {
+        "user": {
+          "type": "SchemaObjectId",
+          "required": false,
+          "unique": false,
+          "ref": "User",
+          "enum": null,
+          "default": null
+        },
+        "orderNumber": {
+          "type": "SchemaString",
+          "required": true,
+          "unique": true,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "trackingCode": {
+          "type": "SchemaString",
+          "required": true,
+          "unique": true,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "orderItems": {
+          "type": "SchemaDocumentArray",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null
+        },
+        "shippingAddress": {
+          "type": "SchemaSubdocument",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "shippingOption": {
+          "type": "SchemaString",
+          "required": true,
+          "unique": false,
+          "ref": null,
+          "enum": [
+            "standard",
+            "express",
+            "same_day"
+          ],
+          "default": "standard"
+        },
+        "paymentMethod": {
+          "type": "SchemaString",
+          "required": true,
+          "unique": false,
+          "ref": null,
+          "enum": [
+            "zarinpal",
+            "cod",
+            "bank_transfer"
+          ],
+          "default": null
+        },
+        "paymentStatus": {
+          "type": "SchemaString",
+          "required": true,
+          "unique": false,
+          "ref": null,
+          "enum": [
+            "pending",
+            "paid",
+            "failed"
+          ],
+          "default": "pending"
+        },
+        "itemsPrice": {
+          "type": "SchemaNumber",
+          "required": true,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "taxPrice": {
+          "type": "SchemaNumber",
+          "required": true,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "shippingPrice": {
+          "type": "SchemaNumber",
+          "required": true,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "totalPrice": {
+          "type": "SchemaNumber",
+          "required": true,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "status": {
+          "type": "SchemaString",
+          "required": true,
+          "unique": false,
+          "ref": null,
+          "enum": [
+            "pending",
+            "processing",
+            "shipped",
+            "delivered",
+            "cancelled"
+          ],
+          "default": "pending"
+        },
+        "isPaid": {
+          "type": "SchemaBoolean",
+          "required": true,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "paidAt": {
+          "type": "SchemaDate",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "isDelivered": {
+          "type": "SchemaBoolean",
+          "required": true,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "deliveredAt": {
+          "type": "SchemaDate",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "trackingNumber": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "notes": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "promoCodeApplied": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "discountAmount": {
+          "type": "SchemaNumber",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "estimatedDeliveryDate": {
+          "type": "SchemaDate",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "guestInfo": {
+          "type": "SchemaSubdocument",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "createdAt": {
+          "type": "SchemaDate",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "updatedAt": {
+          "type": "SchemaDate",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        }
+      },
+      "indexes": {
+        "_id_": [
+          [
+            "_id",
+            1
+          ]
+        ],
+        "orderNumber_idx": [
+          [
+            "orderNumber",
+            1
+          ]
+        ],
+        "user_idx": [
+          [
+            "user",
+            1
+          ]
+        ],
+        "status_idx": [
+          [
+            "status",
+            1
+          ]
+        ],
+        "createdAt_idx": [
+          [
+            "createdAt",
+            -1
+          ]
+        ],
+        "paymentStatus_idx": [
+          [
+            "paymentStatus",
+            1
+          ]
+        ],
+        "totalAmount_idx": [
+          [
+            "totalAmount",
+            1
+          ]
+        ],
+        "guestInfo.email_1_guestInfo.phone_1": [
+          [
+            "guestInfo.email",
+            1
+          ],
+          [
+            "guestInfo.phone",
+            1
+          ]
+        ],
+        "trackingCode_idx": [
+          [
+            "trackingCode",
+            1
+          ]
+        ],
+        "user_status_idx": [
+          [
+            "user",
+            1
+          ],
+          [
+            "status",
+            1
+          ]
+        ],
+        "user_date_idx": [
+          [
+            "user",
+            1
+          ],
+          [
+            "createdAt",
+            -1
+          ]
+        ],
+        "orderNumber_1": [
+          [
+            "orderNumber",
+            1
+          ]
+        ]
+      },
+      "samples": [
+        {
+          "_id": "681fa8526df4180889008a3c",
+          "user": "681fa11a15391503ddfa8c1b",
+          "orderItems": [
+            {
+              "product": "681fa6fd6099f0b844d3ec12",
+              "name": "iPhone 14 Pro",
+              "quantity": 2,
+              "price": 999.99,
+              "image": {
+                "url": "https://via.placeholder.com/500",
+                "alt": "iPhone 14 Pro"
+              },
+              "_id": "681fa8526df4180889008a3d"
+            }
+          ],
+          "shippingAddress": {
+            "fullName": "Admin User",
+            "address": "123 Main St",
+            "city": "Tehran",
+            "state": "Tehran Province",
+            "zipCode": "12345",
+            "country": "Iran",
+            "phone": "9123456789"
+          },
+          "paymentMethod": "credit_card",
+          "itemsPrice": 1999.98,
+          "taxPrice": 179.9982,
+          "shippingPrice": 10,
+          "totalPrice": 2189.9782,
+          "status": "pending",
+          "createdAt": "2025-05-10T19:26:10.318Z",
+          "updatedAt": "2025-05-10T19:26:10.318Z",
+          "__v": 0,
+          "orderNumber": "temp-681fa8526df4180889008a3c"
+        },
+        {
+          "_id": "681fa8aece90347134ff10f8",
+          "user": "681fa11a15391503ddfa8c1b",
+          "orderItems": [
+            {
+              "product": "681fa6fd6099f0b844d3ec12",
+              "name": "iPhone 14 Pro",
+              "quantity": 2,
+              "price": 999.99,
+              "_id": "681fa8aece90347134ff10f9"
+            }
+          ],
+          "shippingAddress": {
+            "fullName": "Admin User",
+            "address": "123 Main St",
+            "city": "Tehran",
+            "state": "Tehran Province",
+            "zipCode": "12345",
+            "country": "Iran",
+            "phone": "9123456789"
+          },
+          "paymentMethod": "credit_card",
+          "itemsPrice": 1999.98,
+          "taxPrice": 179.99,
+          "shippingPrice": 10,
+          "totalPrice": 2189.97,
+          "status": "pending",
+          "isPaid": false,
+          "isDelivered": false,
+          "createdAt": "2025-05-10T19:27:42.766Z",
+          "updatedAt": "2025-05-10T19:27:42.766Z",
+          "__v": 0,
+          "orderNumber": "temp-681fa8aece90347134ff10f8"
+        }
+      ]
+    },
+    "vehicleModels": {
+      "count": 10,
+      "schema": {
+        "name": {
+          "type": "SchemaString",
+          "required": true,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "nameEn": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "slug": {
+          "type": "SchemaString",
+          "required": true,
+          "unique": true,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "manufacturer": {
+          "type": "SchemaObjectId",
+          "required": true,
+          "unique": false,
+          "ref": "Manufacturer",
+          "enum": null,
+          "default": null
+        },
+        "year": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "engine": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "category": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [
+            "سدان",
+            "هاچبک",
+            "کراس‌اوور",
+            "شاسی‌بلند",
+            "وانت",
+            "کوپه"
+          ],
+          "default": null
+        },
+        "image": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": "/images/models/default-car.jpg"
+        },
+        "description": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "specifications.engineSize": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "specifications.power": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "specifications.transmission": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "specifications.fuelType": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "specifications.bodyType": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "specifications.seatingCapacity": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "specifications.length": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "specifications.width": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "specifications.height": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "specifications.wheelbase": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "popular": {
+          "type": "SchemaBoolean",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "isActive": {
+          "type": "SchemaBoolean",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": true
+        },
+        "productsCount": {
+          "type": "SchemaNumber",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "createdAt": {
+          "type": "SchemaDate",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "updatedAt": {
+          "type": "SchemaDate",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        }
+      },
+      "indexes": {
+        "_id_": [
+          [
+            "_id",
+            1
+          ]
+        ],
+        "slug_1": [
+          [
+            "slug",
+            1
+          ]
+        ],
+        "name_1": [
+          [
+            "name",
+            1
+          ]
+        ],
+        "manufacturer_1": [
+          [
+            "manufacturer",
+            1
+          ]
+        ],
+        "category_1": [
+          [
+            "category",
+            1
+          ]
+        ],
+        "popular_1": [
+          [
+            "popular",
+            1
+          ]
+        ],
+        "isActive_1": [
+          [
+            "isActive",
+            1
+          ]
+        ]
+      },
+      "samples": [
+        {
+          "_id": "683da86f36c123d90696372b",
+          "name": "پراید 111",
+          "nameEn": "Pride 111",
+          "slug": "pride_111",
+          "manufacturer": {
+            "_id": "683da86f36c123d906963728",
+            "name": "سایپا",
+            "nameEn": "SAIPA",
+            "slug": "saipa",
+            "logo": "/images/brands/saipa.png"
+          },
+          "year": "1398-1401",
+          "engine": "1.3 لیتر",
+          "category": "هاچبک",
+          "image": "/images/models/pride111.jpg",
+          "description": "پراید 111 یکی از پرفروش‌ترین خودروهای ایران با قطعات فراوان در بازار است.",
+          "specifications": {
+            "engineSize": "1.3 لیتر",
+            "fuelType": "بنزین",
+            "bodyType": "هاچبک"
+          },
+          "popular": true,
+          "isActive": true,
+          "createdAt": "2025-06-02T13:34:39.983Z",
+          "updatedAt": "2025-06-02T18:29:14.836Z",
+          "__v": 0,
+          "productsCount": 7
+        },
+        {
+          "_id": "683da86f36c123d90696372c",
+          "name": "پراید 131",
+          "nameEn": "Pride 131",
+          "slug": "pride_131",
+          "manufacturer": {
+            "_id": "683da86f36c123d906963728",
+            "name": "سایپا",
+            "nameEn": "SAIPA",
+            "slug": "saipa",
+            "logo": "/images/brands/saipa.png"
+          },
+          "year": "1395-1399",
+          "engine": "1.3 لیتر",
+          "category": "سدان",
+          "image": "/images/models/pride131.jpg",
+          "description": "پراید 131 نسخه سدان پراید که به دلیل قیمت مناسب و قطعات در دسترس، همچنان پرطرفدار است.",
+          "specifications": {
+            "engineSize": "1.3 لیتر",
+            "fuelType": "بنزین",
+            "bodyType": "سدان"
+          },
+          "popular": true,
+          "isActive": true,
+          "createdAt": "2025-06-02T13:34:39.983Z",
+          "updatedAt": "2025-06-02T13:34:39.983Z",
+          "__v": 0,
+          "productsCount": 5
+        },
+        {
+          "_id": "683da86f36c123d90696372d",
+          "name": "تیبا",
+          "nameEn": "Tiba",
+          "slug": "tiba",
+          "manufacturer": {
+            "_id": "683da86f36c123d906963728",
+            "name": "سایپا",
+            "nameEn": "SAIPA",
+            "slug": "saipa",
+            "logo": "/images/brands/saipa.png"
+          },
+          "year": "1396-1402",
+          "engine": "1.5 لیتر",
+          "category": "سدان",
+          "image": "/images/models/tiba.jpg",
+          "description": "تیبا جایگزین پراید در خط تولید سایپا با طراحی بهبود یافته و امکانات بیشتر.",
+          "specifications": {
+            "engineSize": "1.5 لیتر",
+            "fuelType": "بنزین",
+            "bodyType": "سدان"
+          },
+          "popular": true,
+          "isActive": true,
+          "createdAt": "2025-06-02T13:34:39.983Z",
+          "updatedAt": "2025-06-02T13:34:39.983Z",
+          "__v": 0,
+          "productsCount": 1
+        }
+      ]
+    },
+    "manufacturers": {
+      "count": 2,
+      "schema": {
+        "name": {
+          "type": "SchemaString",
+          "required": true,
+          "unique": true,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "nameEn": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "slug": {
+          "type": "SchemaString",
+          "required": true,
+          "unique": true,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "logo": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": "/images/brands/default.png"
+        },
+        "description": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "country": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": "Iran"
+        },
+        "website": {
+          "type": "SchemaString",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "isActive": {
+          "type": "SchemaBoolean",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": true
+        },
+        "createdAt": {
+          "type": "SchemaDate",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "updatedAt": {
+          "type": "SchemaDate",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        }
+      },
+      "indexes": {
+        "_id_": [
+          [
+            "_id",
+            1
+          ]
+        ],
+        "name_1": [
+          [
+            "name",
+            1
+          ]
+        ],
+        "slug_1": [
+          [
+            "slug",
+            1
+          ]
+        ],
+        "isActive_1": [
+          [
+            "isActive",
+            1
+          ]
+        ]
+      },
+      "samples": [
+        {
+          "_id": "683da86f36c123d906963728",
+          "name": "سایپا",
+          "nameEn": "SAIPA",
+          "slug": "saipa",
+          "logo": "/images/brands/saipa.png",
+          "description": "شرکت سایپا یکی از بزرگترین تولیدکنندگان خودرو در ایران",
+          "country": "Iran",
+          "website": "https://www.saipa.com",
+          "isActive": true,
+          "createdAt": "2025-06-02T13:34:39.974Z",
+          "updatedAt": "2025-06-02T13:34:39.974Z",
+          "__v": 0
+        },
+        {
+          "_id": "683da86f36c123d906963729",
+          "name": "ایران خودرو",
+          "nameEn": "Iran Khodro",
+          "slug": "ikco",
+          "logo": "/images/brands/ikco.png",
+          "description": "شرکت ایران خودرو بزرگترین تولیدکننده خودرو در ایران",
+          "country": "Iran",
+          "website": "https://www.ikco.com",
+          "isActive": true,
+          "createdAt": "2025-06-02T13:34:39.974Z",
+          "updatedAt": "2025-06-02T13:34:39.974Z",
+          "__v": 0
+        }
+      ]
+    },
+    "phoneVerifications": {
+      "count": 0,
+      "schema": {
+        "phone": {
+          "type": "SchemaString",
+          "required": true,
+          "unique": true,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "code": {
+          "type": "SchemaString",
+          "required": true,
+          "unique": false,
+          "ref": null,
+          "enum": [],
+          "default": null
+        },
+        "attempts": {
+          "type": "SchemaNumber",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "expiresAt": {
+          "type": "SchemaDate",
+          "required": true,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "verified": {
+          "type": "SchemaBoolean",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "createdAt": {
+          "type": "SchemaDate",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        },
+        "updatedAt": {
+          "type": "SchemaDate",
+          "required": false,
+          "unique": false,
+          "ref": null,
+          "enum": null,
+          "default": null
+        }
+      },
+      "indexes": {
+        "_id_": [
+          [
+            "_id",
+            1
+          ]
+        ],
+        "phone_1": [
+          [
+            "phone",
+            1
+          ]
+        ],
+        "expiresAt_1": [
+          [
+            "expiresAt",
+            1
+          ]
+        ]
+      },
+      "samples": []
+    }
+  }
+}

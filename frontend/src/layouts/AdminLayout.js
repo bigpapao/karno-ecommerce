@@ -1,34 +1,34 @@
-import React, { useState } from 'react';
-import { Outlet, useNavigate, Link as RouterLink, useLocation } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate, useLocation, Link as RouterLink, Outlet } from 'react-router-dom';
+import { adminService } from '../services/admin.service';
 import {
   Box,
   Drawer,
   AppBar,
   Toolbar,
-  Typography,
   List,
+  Typography,
+  Divider,
+  IconButton,
+  Avatar,
   ListItem,
+  ListItemButton,
   ListItemIcon,
   ListItemText,
-  IconButton,
-  Divider,
-  Avatar,
-  Menu,
-  MenuItem,
-  Container,
-  useTheme,
-  useMediaQuery,
   Badge,
-  Tooltip,
-  ListItemButton,
+  Chip,
+  Button,
+  Collapse,
   TextField,
   InputAdornment,
-  Chip,
-  alpha,
-  Collapse,
   ListSubheader,
-  Button,
+  useTheme,
+  alpha,
+  Menu,
+  MenuItem,
+  Tooltip,
+  CircularProgress,
 } from '@mui/material';
 import {
   Dashboard as DashboardIcon,
@@ -59,7 +59,7 @@ const drawerWidth = 280; // Increased width for better navigation
 const AdminLayout = () => {
   const theme = useTheme();
   const location = useLocation();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isMobile = useTheme().breakpoints.down('md');
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
@@ -68,14 +68,34 @@ const AdminLayout = () => {
   
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
-  const [notificationAnchorEl, setNotificationAnchorEl] = useState(null);
+  const [notificationAnchor, setNotificationAnchor] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedMenus, setExpandedMenus] = useState({});
+  const [dashboardStats, setDashboardStats] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   // Get directional values based on current direction
   const drawerAnchor = useDirectionalValue('right', 'left');
   const marginProp = useDirectionalValue('mr', 'ml');
   const marginStartProp = useDirectionalValue('ml', 'mr');
+
+  // Fetch dashboard stats for sidebar counts
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setLoading(true);
+        const response = await adminService.getDashboardStats();
+        // Set dashboard stats for sidebar counts
+        setDashboardStats(response.data || response);
+      } catch (error) {
+        // Error fetching dashboard stats - using empty state
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -90,11 +110,11 @@ const AdminLayout = () => {
   };
 
   const handleNotificationOpen = (event) => {
-    setNotificationAnchorEl(event.currentTarget);
+    setNotificationAnchor(event.currentTarget);
   };
 
   const handleNotificationClose = () => {
-    setNotificationAnchorEl(null);
+    setNotificationAnchor(null);
   };
 
   const handleLogout = () => {
@@ -110,13 +130,12 @@ const AdminLayout = () => {
     }));
   };
 
-  // Enhanced menu structure with categories and sub-items
+  // Dynamic menu items with real data
   const menuItems = [
     { 
       text: 'داشبورد', 
       icon: <DashboardIcon />, 
       path: '/admin',
-      badge: null,
       category: 'main'
     },
     { 
@@ -125,16 +144,16 @@ const AdminLayout = () => {
       category: 'store',
       expandable: true,
       subItems: [
-        { text: 'محصولات', icon: <ProductsIcon />, path: '/admin/products', badge: '1,254' },
-        { text: 'دسته‌بندی‌ها', icon: <CategoriesIcon />, path: '/admin/categories', badge: '24' },
-        { text: 'برندها', icon: <BrandsIcon />, path: '/admin/brands', badge: '156' },
+        { text: 'محصولات', icon: <ProductsIcon />, path: '/admin/products', badge: dashboardStats?.productCount?.toString() || '0' },
+        { text: 'دسته‌بندی‌ها', icon: <CategoriesIcon />, path: '/admin/categories', badge: dashboardStats?.categoryCount?.toString() || '0' },
+        { text: 'برندها', icon: <BrandsIcon />, path: '/admin/brands', badge: dashboardStats?.brandCount?.toString() || '0' },
       ]
     },
     { 
       text: 'سفارشات', 
       icon: <OrdersIcon />, 
       path: '/admin/orders',
-      badge: '12',
+      badge: dashboardStats?.orderCount?.toString() || '0',
       badgeColor: 'error',
       category: 'orders'
     },
@@ -142,7 +161,7 @@ const AdminLayout = () => {
       text: 'کاربران', 
       icon: <UsersIcon />, 
       path: '/admin/users',
-      badge: '2,341',
+      badge: dashboardStats?.userCount?.toString() || '0',
       category: 'users'
     },
     { 
@@ -151,6 +170,7 @@ const AdminLayout = () => {
       category: 'reports',
       expandable: true,
       subItems: [
+        { text: 'آمارها و تحلیل‌ها', icon: <AnalyticsIcon />, path: '/admin/analytics' },
         { text: 'گزارش فروش', icon: <ReportIcon />, path: '/admin/reports/sales' },
         { text: 'گزارش موجودی', icon: <ProductsIcon />, path: '/admin/reports/inventory' },
         { text: 'گزارش کاربران', icon: <UsersIcon />, path: '/admin/reports/users' },
@@ -524,9 +544,15 @@ const AdminLayout = () => {
         }}
       >
         <Toolbar />
-        <Container maxWidth={false} sx={{ py: 3 }}>
-          <Outlet />
-        </Container>
+        <Box sx={{ p: 3 }}>
+          {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <Outlet />
+          )}
+        </Box>
       </Box>
 
       {/* Profile Menu */}
@@ -560,8 +586,8 @@ const AdminLayout = () => {
 
       {/* Notifications Menu */}
       <Menu
-        anchorEl={notificationAnchorEl}
-        open={Boolean(notificationAnchorEl)}
+        anchorEl={notificationAnchor}
+        open={Boolean(notificationAnchor)}
         onClose={handleNotificationClose}
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}

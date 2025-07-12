@@ -1,6 +1,6 @@
 import React from 'react';
-import HeroSection from '../components/HeroSection';
-import FeaturedCategories from '../components/FeaturedCategories';
+import ModernHeroSection from '../components/ModernHeroSection';
+import PremiumCategoryCards from '../components/PremiumCategoryCards';
 import FeaturedBrands from '../components/FeaturedBrands';
 import WhyChooseUs from '../components/WhyChooseUs';
 import SEO from '../components/SEO';
@@ -25,8 +25,8 @@ const Home = () => {
         }}
         schema={combinedSchema}
       />
-      <HeroSection />
-      <FeaturedCategories />
+      <ModernHeroSection />
+      <PremiumCategoryCards maxCategories={6} showTitle={true} />
       <FeaturedBrands />
       <WhyChooseUs />
     </>

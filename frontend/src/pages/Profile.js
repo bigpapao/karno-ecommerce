@@ -152,6 +152,15 @@ const Profile = () => {
       // API call with apiKey
       setSubmitting(true);
       try {
+        // Format phone number for backend (09xxxxxxxxx format)
+        let backendPhone = formData.phone.toString().replace(/\D/g, '');
+        if (backendPhone.startsWith('98')) {
+          backendPhone = backendPhone.substring(2);
+        }
+        if (!backendPhone.startsWith('0')) {
+          backendPhone = '0' + backendPhone;
+        }
+        
         // Request with SMS.ir API key
         const response = await fetch(`https://sms.ir/api/otp/send?apiKey=${apiKey}`, {
           method: "POST",
@@ -159,7 +168,7 @@ const Profile = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            phone: normalizePhoneNumber(formData.phone),
+            phone: backendPhone,
             // other parameters
           }),
         });
@@ -188,8 +197,17 @@ const Profile = () => {
 
     setSubmitting(true);
     try {
+      // Format phone number for backend (09xxxxxxxxx format)
+      let backendPhone = formData.phone.toString().replace(/\D/g, '');
+      if (backendPhone.startsWith('98')) {
+        backendPhone = backendPhone.substring(2);
+      }
+      if (!backendPhone.startsWith('0')) {
+        backendPhone = '0' + backendPhone;
+      }
+      
       await dispatch(
-        verifyPhone({ phone: normalizePhoneNumber(formData.phone), code: otpCode })
+        verifyPhone({ phone: backendPhone, code: otpCode })
       ).unwrap();
       setOtpStep("verified");
     } catch (err) {

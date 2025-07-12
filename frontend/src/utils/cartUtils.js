@@ -25,7 +25,7 @@ export const addToCart = async (product, quantity, dispatch, isAuthenticated) =>
     if (isAuthenticated) {
       // For authenticated users, use the API
       const response = await api.post('/cart/add', {
-        productId: product.id,
+        productId: product._id || product.id,
         quantity,
       });
       
@@ -39,7 +39,8 @@ export const addToCart = async (product, quantity, dispatch, isAuthenticated) =>
       const cartItems = JSON.parse(localStorage.getItem('cartItems') || '[]');
       
       // Check if product already exists in cart
-      const existingItemIndex = cartItems.findIndex(item => item.id === product.id);
+      const productId = product._id || product.id;
+      const existingItemIndex = cartItems.findIndex(item => item.id === productId);
       
       if (existingItemIndex >= 0) {
         // Update quantity if product already exists
@@ -47,7 +48,7 @@ export const addToCart = async (product, quantity, dispatch, isAuthenticated) =>
       } else {
         // Add new product to cart
         cartItems.push({
-          id: product.id,
+          id: productId,
           name: product.name,
           price: product.price,
           discountPrice: product.discountPrice,
@@ -67,7 +68,7 @@ export const addToCart = async (product, quantity, dispatch, isAuthenticated) =>
       try {
         await api.post('/cart/guest/add', {
           sessionId,
-          productId: product.id,
+          productId: productId,
           quantity,
           name: product.name,
           price: product.price,

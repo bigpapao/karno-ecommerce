@@ -5,18 +5,15 @@ const eventSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,
-    index: true,
   },
   eventType: {
     type: String,
     enum: ['view', 'add_to_cart', 'purchase', 'search'],
     required: true,
-    index: true,
   },
   productId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Product',
-    index: true,
   },
   searchQuery: {
     type: String,
@@ -30,12 +27,10 @@ const eventSchema = new mongoose.Schema({
   timestamp: {
     type: Date,
     default: Date.now,
-    index: true,
   },
   referrer: String,
   sessionId: {
     type: String,
-    index: true,
   },
   metadata: {
     type: Object,

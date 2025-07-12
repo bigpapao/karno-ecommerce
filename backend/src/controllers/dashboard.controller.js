@@ -1,6 +1,8 @@
 import User from '../models/user.model.js';
 import Product from '../models/product.model.js';
 import Order from '../models/order.model.js';
+import Category from '../models/category.model.js';
+import Brand from '../models/brand.model.js';
 import { AppError } from '../middleware/error-handler.middleware.js';
 
 // @desc    Get dashboard statistics
@@ -12,6 +14,8 @@ export const getDashboardStats = async (req, res, next) => {
     let userCount = 0;
     let productCount = 0;
     let orderCount = 0;
+    let categoryCount = 0;
+    let brandCount = 0;
     let totalRevenue = 0;
     let recentOrders = [];
     let topProducts = [];
@@ -41,6 +45,18 @@ export const getDashboardStats = async (req, res, next) => {
       orderCount = await Order.countDocuments();
     } catch (err) {
       console.error('Error counting orders:', err);
+    }
+
+    try {
+      categoryCount = await Category.countDocuments();
+    } catch (err) {
+      console.error('Error counting categories:', err);
+    }
+
+    try {
+      brandCount = await Brand.countDocuments();
+    } catch (err) {
+      console.error('Error counting brands:', err);
     }
 
     // Get total revenue - with safer approach
@@ -167,6 +183,8 @@ export const getDashboardStats = async (req, res, next) => {
         userCount,
         productCount,
         orderCount,
+        categoryCount,
+        brandCount,
         totalRevenue,
         recentOrders,
         topProducts,

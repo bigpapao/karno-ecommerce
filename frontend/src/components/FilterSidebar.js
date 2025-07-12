@@ -22,25 +22,29 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  Stack
+  Stack,
+  Paper,
+  Skeleton,
 } from '@mui/material';
-import { Close as CloseIcon } from '@mui/icons-material';
+import { 
+  Close as CloseIcon,
+  ExpandMore as ExpandMoreIcon,
+  Category as CategoryIcon,
+  Storefront as StorefrontIcon,
+} from '@mui/icons-material';
+import { toPersianCurrency } from '../utils/persianUtils';
 
 const defaultFilters = {
-  price: [0, 1000],
-  category: [],
+  priceRange: [0, 10000000],
+  category: '',
   availability: 'all',
   rating: 0,
-  brand: null,
+  brand: '',
+  search: '',
+  sortBy: 'createdAt',
+  sortOrder: 'desc',
+  inStock: true,
 };
-
-// Available brands with their logos
-const availableBrands = [
-  { id: 'سایپا', name: 'سایپا', logo: 'images/brands/Saipa_Logo.png' },
-  { id: 'ایران خودرو', name: 'ایران خودرو', logo: 'images/brands/iran-khodro-logo.png' },
-  { id: 'ام وی ام', name: 'ام وی ام', logo: 'images/brands/MVM_logo.png' },
-  { id: 'بهمن موتور', name: 'بهمن موتور', logo: 'images/brands/Bahman_motor_Logo.png' },
-];
 
 const FilterSidebar = ({
   open = false,
@@ -52,28 +56,54 @@ const FilterSidebar = ({
   type = 'product',
   title = 'فیلترها',
   buttonText = 'حذف همه فیلترها',
+  categories = [],
+  brands = [],
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md')) || mobile;
+  const [expandedAccordion, setExpandedAccordion] = useState('');
 
   const {
-    price = defaultFilters.price,
+    priceRange = defaultFilters.priceRange,
     category = defaultFilters.category,
     availability = defaultFilters.availability,
     rating = defaultFilters.rating,
     brand = defaultFilters.brand,
+    sortBy = defaultFilters.sortBy,
+    sortOrder = defaultFilters.sortOrder,
+    inStock = defaultFilters.inStock,
   } = filters || {};
 
   const handlePriceChange = (event, newValue) => {
-    onChange('price', newValue);
+    onChange('priceRange', newValue);
   };
   
   const handleBrandSelect = (selectedBrand) => {
-    onChange('brand', selectedBrand === brand ? null : selectedBrand);
+    onChange('brand', selectedBrand === brand ? '' : selectedBrand);
+  };
+
+  const handleCategorySelect = (selectedCategory) => {
+    onChange('category', selectedCategory === category ? '' : selectedCategory);
+  };
+
+  const handleSortChange = (newSortBy) => {
+    onChange('sortBy', newSortBy);
+  };
+
+  const handleSortOrderChange = (newOrder) => {
+    onChange('sortOrder', newOrder);
+  };
+
+  const handleAccordionChange = (panel) => (event, isExpanded) => {
+    setExpandedAccordion(isExpanded ? panel : '');
+  };
+
+  const formatPrice = (price) => {
+    return toPersianCurrency(price);
   };
 
   const drawerContent = (
-    <Box sx={{ width: 280, p: 3, direction: 'rtl' }}>
+    <Box sx={{ width: 320, p: 3, direction: 'rtl' }}>
       <Box
         sx={{
           display: 'flex',
@@ -102,153 +132,272 @@ const FilterSidebar = ({
 
       <Divider sx={{ mb: 3 }} />
 
-      {/* Price Range */}
-      <Typography variant="subtitle1" gutterBottom>
-        محدوده قیمت
-      </Typography>
-      <Box sx={{ px: 2, mb: 3 }}>
-        <Slider
-          value={price}
-          onChange={handlePriceChange}
-          valueLabelDisplay="auto"
-          min={0}
-          max={1000}
-          step={10}
-        />
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            mt: 1,
-          }}
-        >
-          <Typography variant="body2">{price[0]} هزار تومان</Typography>
-          <Typography variant="body2">{price[1]} هزار تومان</Typography>
-        </Box>
-      </Box>
-
-      <Divider sx={{ mb: 3 }} />
-
-      {/* Brands */}
-      {type === 'product' && (
-        <>
-          <Typography variant="subtitle1" gutterBottom>
-            برندها
-          </Typography>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
-            {availableBrands.map((brandItem) => (
-              <Chip
-                key={brandItem.id}
-                avatar={<Avatar alt={brandItem.name} src={brandItem.logo} />}
-                label={brandItem.name}
-                onClick={() => handleBrandSelect(brandItem.id)}
-                variant={brand === brandItem.id ? "filled" : "outlined"}
-                color={brand === brandItem.id ? "primary" : "default"}
-                sx={{ mb: 1 }}
-              />
-            ))}
+      {/* Price Range Filter */}
+      <Accordion 
+        expanded={expandedAccordion === 'price'} 
+        onChange={handleAccordionChange('price')}
+        sx={{ mb: 2 }}
+      >
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="subtitle1">محدوده قیمت</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Box sx={{ px: 2 }}>
+            <Slider
+              value={priceRange}
+              onChange={handlePriceChange}
+              valueLabelDisplay="auto"
+              valueLabelFormat={formatPrice}
+              min={0}
+              max={50000000}
+              step={100000}
+              marks={[
+                { value: 0, label: '0' },
+                { value: 10000000, label: '10 میلیون' },
+                { value: 25000000, label: '25 میلیون' },
+                { value: 50000000, label: '50 میلیون' }
+              ]}
+            />
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                mt: 2,
+              }}
+            >
+              <Typography variant="body2" color="text.secondary">
+                {formatPrice(priceRange[0])}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {formatPrice(priceRange[1])}
+              </Typography>
+            </Box>
           </Box>
-          <Divider sx={{ mb: 3 }} />
-        </>
+        </AccordionDetails>
+      </Accordion>
+
+      {/* Categories Filter */}
+      {type === 'product' && categories.length > 0 && (
+        <Accordion 
+          expanded={expandedAccordion === 'categories'} 
+          onChange={handleAccordionChange('categories')}
+          sx={{ mb: 2 }}
+        >
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <CategoryIcon fontSize="small" />
+              <Typography variant="subtitle1">دسته‌بندی‌ها</Typography>
+              {category && (
+                <Chip 
+                  size="small" 
+                  label="1" 
+                  color="primary" 
+                  sx={{ minWidth: 24, height: 20 }}
+                />
+              )}
+            </Box>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Stack spacing={1}>
+              {categories.map((cat) => (
+                <Chip
+                  key={cat._id}
+                  label={cat.name}
+                  onClick={() => handleCategorySelect(cat.slug)}
+                  variant={category === cat.slug ? "filled" : "outlined"}
+                  color={category === cat.slug ? "primary" : "default"}
+                  avatar={
+                    cat.image?.url ? (
+                      <Avatar 
+                        alt={cat.name} 
+                        src={cat.image.url}
+                        sx={{ width: 24, height: 24 }}
+                      />
+                    ) : (
+                      <Avatar sx={{ width: 24, height: 24, bgcolor: 'primary.main' }}>
+                        <CategoryIcon fontSize="small" />
+                      </Avatar>
+                    )
+                  }
+                  sx={{ 
+                    justifyContent: 'flex-start',
+                    '& .MuiChip-avatar': {
+                      marginLeft: 1,
+                      marginRight: -1,
+                    }
+                  }}
+                />
+              ))}
+            </Stack>
+          </AccordionDetails>
+        </Accordion>
       )}
 
-      {/* Categories */}
-      <Typography variant="subtitle1" gutterBottom>
-        دسته‌بندی‌ها
-      </Typography>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
-        {[
-          { id: 'Engine', name: 'موتور' },
-          { id: 'Electrical', name: 'برق' },
-          { id: 'Battery', name: 'باتری' },
-          { id: 'Oil', name: 'روغن' },
-          { id: 'Brakes', name: 'ترمز' },
-          { id: 'Tires', name: 'لاستیک' },
-          { id: 'Lights', name: 'چراغ‌ها' },
-          { id: 'Suspension', name: 'سیستم تعلیق' }
-        ].map((cat) => (
-          <Chip
-            key={cat.id}
-            label={cat.name}
-            onClick={() => onChange('category', category.includes(cat.id) ? 
-              category.filter(c => c !== cat.id) : 
-              [...category, cat.id])}
-            variant={category.includes(cat.id) ? "filled" : "outlined"}
-            color={category.includes(cat.id) ? "primary" : "default"}
-            sx={{ mb: 1 }}
-          />
-        ))}
-      </Box>
+      {/* Brands Filter */}
+      {type === 'product' && brands.length > 0 && (
+        <Accordion 
+          expanded={expandedAccordion === 'brands'} 
+          onChange={handleAccordionChange('brands')}
+          sx={{ mb: 2 }}
+        >
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <StorefrontIcon fontSize="small" />
+              <Typography variant="subtitle1">برندها</Typography>
+              {brand && (
+                <Chip 
+                  size="small" 
+                  label="1" 
+                  color="primary" 
+                  sx={{ minWidth: 24, height: 20 }}
+                />
+              )}
+            </Box>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Stack spacing={1}>
+              {brands.map((brandItem) => (
+                <Chip
+                  key={brandItem._id}
+                  label={brandItem.name}
+                  onClick={() => handleBrandSelect(brandItem.slug)}
+                  variant={brand === brandItem.slug ? "filled" : "outlined"}
+                  color={brand === brandItem.slug ? "primary" : "default"}
+                  avatar={
+                    brandItem.logo?.url ? (
+                      <Avatar 
+                        alt={brandItem.name} 
+                        src={brandItem.logo.url}
+                        sx={{ width: 24, height: 24 }}
+                      />
+                    ) : (
+                      <Avatar sx={{ width: 24, height: 24, bgcolor: 'secondary.main' }}>
+                        <StorefrontIcon fontSize="small" />
+                      </Avatar>
+                    )
+                  }
+                  sx={{ 
+                    justifyContent: 'flex-start',
+                    '& .MuiChip-avatar': {
+                      marginLeft: 1,
+                      marginRight: -1,
+                    }
+                  }}
+                />
+              ))}
+            </Stack>
+          </AccordionDetails>
+        </Accordion>
+      )}
 
-      <Divider sx={{ mb: 3 }} />
-
-      {/* Availability */}
-      <Typography variant="subtitle1" gutterBottom>
-        موجودی
-      </Typography>
-      <RadioGroup
-        value={availability}
-        onChange={(e) => onChange('availability', e.target.value)}
-        sx={{ mb: 3 }}
+      {/* Sort Options */}
+      <Accordion 
+        expanded={expandedAccordion === 'sort'} 
+        onChange={handleAccordionChange('sort')}
+        sx={{ mb: 2 }}
       >
-        <FormControlLabel
-          value="all"
-          control={<Radio />}
-          label="همه محصولات"
-        />
-        <FormControlLabel
-          value="inStock"
-          control={<Radio />}
-          label="فقط موجود"
-        />
-        <FormControlLabel
-          value="onSale"
-          control={<Radio />}
-          label="فقط تخفیف‌دار"
-        />
-      </RadioGroup>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="subtitle1">مرتب‌سازی</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <RadioGroup
+            value={`${sortBy}-${sortOrder}`}
+            onChange={(e) => {
+              const [newSortBy, newSortOrder] = e.target.value.split('-');
+              handleSortChange(newSortBy);
+              handleSortOrderChange(newSortOrder);
+            }}
+          >
+            <FormControlLabel
+              value="createdAt-desc"
+              control={<Radio />}
+              label="جدیدترین"
+            />
+            <FormControlLabel
+              value="createdAt-asc"
+              control={<Radio />}
+              label="قدیمی‌ترین"
+            />
+            <FormControlLabel
+              value="price-asc"
+              control={<Radio />}
+              label="ارزان‌ترین"
+            />
+            <FormControlLabel
+              value="price-desc"
+              control={<Radio />}
+              label="گران‌ترین"
+            />
+            <FormControlLabel
+              value="name-asc"
+              control={<Radio />}
+              label="الفبایی (الف-ی)"
+            />
+            <FormControlLabel
+              value="name-desc"
+              control={<Radio />}
+              label="الفبایی (ی-الف)"
+            />
+          </RadioGroup>
+        </AccordionDetails>
+      </Accordion>
 
-      <Divider sx={{ mb: 3 }} />
-
-      {/* Rating */}
-      <Typography variant="subtitle1" gutterBottom>
-        امتیاز
-      </Typography>
-      <RadioGroup
-        value={rating}
-        onChange={(e) => onChange('rating', Number(e.target.value))}
-        sx={{ mb: 3 }}
+      {/* Availability Filter */}
+      <Accordion 
+        expanded={expandedAccordion === 'availability'} 
+        onChange={handleAccordionChange('availability')}
+        sx={{ mb: 2 }}
       >
-        {[4, 3, 2, 1].map((value) => (
-          <FormControlLabel
-            key={value}
-            value={value}
-            control={<Radio />}
-            label={`${value}+ ستاره`}
-          />
-        ))}
-      </RadioGroup>
-
-      <Divider sx={{ mb: 3 }} />
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="subtitle1">موجودی</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <FormGroup>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={inStock}
+                  onChange={(e) => onChange('inStock', e.target.checked)}
+                />
+              }
+              label="فقط کالاهای موجود"
+            />
+          </FormGroup>
+        </AccordionDetails>
+      </Accordion>
     </Box>
   );
 
-  return isMobile ? (
-    <Drawer anchor="right" open={open} onClose={onClose}>
-      {drawerContent}
-    </Drawer>
-  ) : (
-    <Box
-      component="aside"
+  if (isMobile) {
+    return (
+      <Drawer
+        anchor="left"
+        open={open}
+        onClose={onClose}
+        PaperProps={{
+          sx: {
+            direction: 'rtl',
+          },
+        }}
+      >
+        {drawerContent}
+      </Drawer>
+    );
+  }
+
+  return (
+    <Paper
+      elevation={2}
       sx={{
-        width: 280,
-        flexShrink: 0,
-        borderLeft: 1,
-        borderColor: 'divider',
+        position: 'sticky',
+        top: 100,
+        maxHeight: 'calc(100vh - 120px)',
+        overflowY: 'auto',
+        borderRadius: 2,
       }}
     >
       {drawerContent}
-    </Box>
+    </Paper>
   );
 };
 

@@ -2,7 +2,6 @@
 const { override, addBabelPlugin, addWebpackPlugin, addWebpackModuleRule } = require('customize-cra');
 const CompressionPlugin = require('compression-webpack-plugin');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
-const path = require('path');
 
 module.exports = override(
   // Add babel plugins for optimization

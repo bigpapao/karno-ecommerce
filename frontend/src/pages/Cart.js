@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Link as RouterLink } from 'react-router-dom';
-import { useAuthModal } from '../contexts/AuthModalContext';
 import SEO from '../components/SEO';
 import {
   Box,
@@ -35,7 +34,7 @@ import PaymentIcon from '@mui/icons-material/Payment';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import SecurityIcon from '@mui/icons-material/Security';
 import ShoppingCartCheckoutIcon from '@mui/icons-material/ShoppingCartCheckout';
-import { updateCartQuantity, removeFromCart, clearCart } from '../store/slices/cartSlice';
+import { updateCartQuantity, removeFromCart, clearCart, fetchCart } from '../store/slices/cartSlice';
 import { toPersianCurrency, toPersianNumber } from '../utils/persianUtils';
 import { removeFromCart as removeFromCartUtil, updateCartItemQuantity, clearEntireCart } from '../utils/cartUtils';
 
@@ -63,6 +62,11 @@ const Cart = () => {
   
   // Calculate final total
   const finalTotal = totalWithDiscount + shippingCost;
+  
+  // Fetch cart when component loads
+  useEffect(() => {
+    dispatch(fetchCart());
+  }, [dispatch]);
   
   // Show success message when user logs in
   useEffect(() => {
@@ -258,7 +262,7 @@ const Cart = () => {
                   <TableContainer>
                     <Table>
                       <TableHead sx={{ bgcolor: 'rgba(25, 118, 210, 0.05)' }}>
-                        <TableRow>
+                        <TableRow key="cart-header">
                           <TableCell sx={{ fontWeight: 'bold', direction: 'rtl' }}>محصول</TableCell>
                           <TableCell align="center" sx={{ fontWeight: 'bold' }}>قیمت واحد</TableCell>
                           <TableCell align="center" sx={{ fontWeight: 'bold' }}>تعداد</TableCell>

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useParams, Link as RouterLink } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import SEO from '../components/SEO';
 import { generateBreadcrumbSchema, generateProductSchema } from '../utils/structuredData';
 import { fetchProductStart, fetchProductSuccess, fetchProductFailure } from '../store/slices/productSlice';
+import { productAPI } from '../services/api';
 import {
   Box,
   Container,
@@ -27,7 +28,7 @@ import {
   Remove as RemoveIcon,
   ShoppingCart as CartIcon,
   Favorite as FavoriteIcon,
-  FavoriteBorder as FavoriteBorderIcon,
+
   Check as CheckIcon,
   LocalShipping as LocalShippingIcon,
   AssignmentReturn as AssignmentReturnIcon,
@@ -37,6 +38,7 @@ import RelatedProducts from '../components/RelatedProducts';
 import ReviewSection from '../components/ReviewSection';
 import Loading from '../components/Loading';
 import ContactCTA from '../components/ContactCTA';
+import AddToCartButton from '../components/AddToCartButton';
 
 const CART_ENABLED = String(process.env.REACT_APP_CART_ENABLED).toLowerCase() === 'true';
 
@@ -44,70 +46,38 @@ const ProductDetail = () => {
   const { id } = useParams();
   const theme = useTheme();
   const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const contactRoute = process.env.REACT_APP_CONTACT_ROUTE || '/contact-us';
+
 
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState(0);
+  const [notFound, setNotFound] = useState(false);
   const { product, loading, error } = useSelector((state) => state.product);
 
   useEffect(() => {
     const fetchProduct = async () => {
       dispatch(fetchProductStart());
+      setNotFound(false);
       try {
-        // In a real app, this would be an API call
-        // For now, we'll use a timeout to simulate a network request
-        setTimeout(() => {
-          // Sample product data for demonstration
-          const sampleProduct = {
-            id: id,
-            name: 'چراغ جلو دنا ایران خودرو',
-            slug: 'iran-khodro-dena-headlight-assembly',
-            brand: 'ایران خودرو',
-            brandSlug: 'irankhodro',
-            price: 2850000,
-            discountPrice: 2650000,
-            discount: 7,
-            rating: 4.6,
-            reviewCount: 42,
-            stockQuantity: 15,
-            sku: 'IK-DN-HL-001',
-            category: 'قطعات بدنه',
-            subcategory: 'چراغ و روشنایی',
-            description: 'چراغ جلو اصلی خودروی دنا با کیفیت بالا و مطابق با استانداردهای شرکت ایران خودرو.',
-            fullDescription: 'چراغ جلو اصلی خودروی دنا با کیفیت بالا و مطابق با استانداردهای شرکت ایران خودرو. این چراغ دارای لنز شیشه‌ای با کیفیت و رفلکتور آلومینیومی است که نور را به خوبی منعکس می‌کند. این محصول با دقت بالا طراحی شده تا دقیقاً با خودروی دنا مطابقت داشته باشد و نصب آن بسیار آسان است. این چراغ با گارانتی یک ساله عرضه می‌شود و در صورت بروز هرگونه مشکل، می‌توانید آن را تعویض نمایید.',
-            images: [
-              '/images/products/dena-headlight-1.jpg',
-              '/images/products/dena-headlight-2.jpg',
-              '/images/products/dena-headlight-3.jpg',
-            ],
-            specifications: [
-              { name: 'برند', value: 'ایران خودرو' },
-              { name: 'مدل خودرو', value: 'دنا' },
-              { name: 'سال تولید', value: '1398-1402' },
-              { name: 'جنس بدنه', value: 'پلاستیک ABS با مقاومت بالا' },
-              { name: 'جنس لنز', value: 'شیشه‌ای' },
-              { name: 'نوع لامپ', value: 'هالوژن' },
-              { name: 'تعداد لامپ', value: '2 عدد' },
-              { name: 'وزن', value: '1.8 کیلوگرم' },
-              { name: 'ابعاد', value: '35 × 25 × 15 سانتی‌متر' },
-              { name: 'گارانتی', value: '12 ماه' },
-            ],
-            compatibleModels: ['دنا', 'دنا پلاس', 'دنا پلاس توربو'],
-            isOriginal: true,
-            installationDifficulty: 'آسان',
-            installationTime: '30 دقیقه',
-            tags: ['چراغ جلو', 'دنا', 'ایران خودرو', 'قطعات بدنه'],
-            relatedProducts: [1, 2, 3, 4],
-          };
-          
-          dispatch(fetchProductSuccess(sampleProduct));
-        }, 500);
+        const response = await productAPI.getProductById(id);
+        if (response.data && response.data.success) {
+          dispatch(fetchProductSuccess(response.data.data));
+        } else {
+          throw new Error('Product not found');
+        }
       } catch (error) {
-        dispatch(fetchProductFailure(error.message));
+
+        if (error.response && error.response.status === 404) {
+          setNotFound(true);
+          dispatch(fetchProductFailure('محصول مورد نظر یافت نشد.'));
+        } else {
+          dispatch(fetchProductFailure(error.message || 'خطا در بارگذاری محصول'));
+        }
       }
     };
-    fetchProduct();
+    
+    if (id) {
+      fetchProduct();
+    }
     window.scrollTo(0, 0);
   }, [dispatch, id]);
 
@@ -122,7 +92,53 @@ const ProductDetail = () => {
   };
 
   if (loading) return <Loading />;
-  if (error) {
+  
+  // Handle 404 - Product not found
+  if (notFound || (!loading && !product)) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 8, direction: 'rtl', textAlign: 'center' }}>
+        <SEO 
+          title="محصول یافت نشد"
+          description="متأسفانه محصول مورد نظر شما یافت نشد."
+        />
+        <Paper elevation={2} sx={{ p: 6, borderRadius: 3 }}>
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h1" sx={{ fontSize: '6rem', color: 'primary.main', fontWeight: 'bold' }}>
+              404
+            </Typography>
+            <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', color: 'text.primary' }}>
+              محصول یافت نشد
+            </Typography>
+            <Typography variant="body1" color="text.secondary" sx={{ mb: 4, maxWidth: 600, mx: 'auto' }}>
+              متأسفانه محصول مورد نظر شما در سیستم موجود نیست. ممکن است این محصول حذف شده یا آدرس آن تغییر کرده باشد.
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Button
+              variant="contained"
+              size="large"
+              component={RouterLink}
+              to="/"
+              sx={{ px: 4, py: 1.5, borderRadius: 2 }}
+            >
+              بازگشت به صفحه اصلی
+            </Button>
+            <Button
+              variant="outlined"
+              size="large"
+              component={RouterLink}
+              to="/products"
+              sx={{ px: 4, py: 1.5, borderRadius: 2 }}
+            >
+              مشاهده همه محصولات
+            </Button>
+          </Box>
+        </Paper>
+      </Container>
+    );
+  }
+  
+  if (error && !notFound) {
     return (
       <Container>
         <Typography color="error" align="center" py={8} sx={{ direction: 'rtl' }}>
@@ -131,6 +147,7 @@ const ProductDetail = () => {
       </Container>
     );
   }
+  
   if (!product) return null;
 
   // Generate product schema for structured data
@@ -398,17 +415,15 @@ const ProductDetail = () => {
               <Typography variant="body1" color="text.secondary" paragraph>
                 {product.fullDescription || product.description}
               </Typography>
-              {/* Contact block below description */}
-              <Button
+              {/* Add to Cart button below description */}
+              <AddToCartButton
+                product={product}
+                quantity={quantity}
                 fullWidth
-                variant="contained"
-                color="primary"
+                customText="افزودن به سبد خرید"
+                redirectAfterLogin={`/products/${product.slug}`}
                 sx={{ mt: 2, borderRadius: 2, transition: 'background 0.2s', fontWeight: 600 }}
-                aria-label="برای خرید کلیک کنید"
-                onClick={() => navigate(contactRoute)}
-              >
-                برای خرید کلیک کنید
-              </Button>
+              />
             </Box>
 
             {/* Quantity Selector */}

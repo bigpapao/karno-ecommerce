@@ -329,6 +329,9 @@ const BrandDetail = () => {
     availability: 'all',
   });
   const [brandSpecificProducts, setBrandSpecificProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
   const brand = brandData[brandSlug] || {
     name: 'برند یافت نشد',
     logo: '',
@@ -336,10 +339,77 @@ const BrandDetail = () => {
     popularModels: [],
   };
 
+  // Enhanced product filtering logic
   useEffect(() => {
-    const brandProducts = products.filter((product) => product.brand === brand.name);
+    setLoading(true);
+    
+    // Create mapping for brand name matching
+    const brandNameMapping = {
+      'saipa': ['Saipa', 'سایپا', 'saipa'],
+      'irankhodro': ['Iran Khodro', 'ایران خودرو', 'irankhodro'],
+      'mvm': ['MVM', 'ام وی ام', 'mvm'],
+      'bahmanmotor': ['Bahman Motor', 'بهمن موتور', 'bahmanmotor']
+    };
+    
+    const possibleBrandNames = brandNameMapping[brandSlug] || [brand.name];
+    
+    const brandProducts = products.filter((product) => 
+      possibleBrandNames.some(brandName => 
+        product.brand?.toLowerCase().includes(brandName.toLowerCase()) ||
+        brandName.toLowerCase().includes(product.brand?.toLowerCase())
+      )
+    );
+    
     setBrandSpecificProducts(brandProducts);
+    setFilteredProducts(brandProducts);
+    setLoading(false);
   }, [brandSlug, brand.name]);
+
+  // Filter products based on current filters and tab
+  useEffect(() => {
+    let filtered = [...brandSpecificProducts];
+    
+    // Apply tab filter
+    switch (currentTab) {
+      case 'popular':
+        filtered = filtered.filter(p => p.rating >= 4.0);
+        break;
+      case 'new':
+        filtered = filtered.slice(-6); // Last 6 products as "new"
+        break;
+      case 'sale':
+        filtered = filtered.filter(p => p.discount > 0);
+        break;
+      default:
+        break;
+    }
+    
+    // Apply category filter
+    if (filters.category.length > 0) {
+      filtered = filtered.filter(p => 
+        filters.category.includes(p.category)
+      );
+    }
+    
+    // Apply price filter
+    filtered = filtered.filter(p => 
+      p.price >= filters.price[0] && p.price <= filters.price[1]
+    );
+    
+    // Apply rating filter
+    if (filters.rating > 0) {
+      filtered = filtered.filter(p => p.rating >= filters.rating);
+    }
+    
+    // Apply availability filter
+    if (filters.availability === 'inStock') {
+      filtered = filtered.filter(p => p.inStock);
+    } else if (filters.availability === 'onSale') {
+      filtered = filtered.filter(p => p.discount > 0);
+    }
+    
+    setFilteredProducts(filtered);
+  }, [brandSpecificProducts, currentTab, filters]);
 
   useEffect(() => {
     if (brand) {
@@ -383,152 +453,396 @@ const BrandDetail = () => {
       <Box sx={{ mb: 4 }}>
         <Grid container spacing={3} alignItems="center">
           <Grid item xs={12} md={3}>
-            {brand.logo ? (
-              <Box
-                component="img"
-                src={brand.logo}
-                alt={brand.name}
-                sx={{
-                  width: '100%',
-                  maxHeight: 120,
-                  objectFit: 'contain',
-                  p: 2,
-                  border: '1px solid #eee',
-                  borderRadius: 2,
-                  bgcolor: 'background.paper',
-                }}
-              />
-            ) : (
-              <Box
-                sx={{
-                  width: '100%',
-                  height: 120,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  bgcolor: 'primary.light',
-                  color: 'white',
-                  borderRadius: 1,
-                }}
-              >
-                <Typography variant="h6" fontWeight="bold">
-                  {brand.name}
-                </Typography>
-              </Box>
-            )}
-            {brand.country && (
-              <Box sx={{ mt: 1, display: 'flex', justifyContent: 'center' }}>
-                <Chip 
-                  label={`ساخت ${brand.country}`}
-                  color="primary"
-                  size="small"
+            <Box
+              sx={{
+                position: 'relative',
+                overflow: 'hidden',
+                borderRadius: 3,
+                bgcolor: 'background.paper',
+                boxShadow: 3,
+                transition: 'transform 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: 6,
+                }
+              }}
+            >
+              {brand.logo ? (
+                <Box
+                  component="img"
+                  src={brand.logo}
+                  alt={brand.name}
+                  sx={{
+                    width: '100%',
+                    maxHeight: 140,
+                    objectFit: 'contain',
+                    p: 3,
+                    transition: 'transform 0.3s ease',
+                    '&:hover': {
+                      transform: 'scale(1.05)',
+                    }
+                  }}
                 />
-              </Box>
-            )}
+              ) : (
+                <Box
+                  sx={{
+                    width: '100%',
+                    height: 140,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    bgcolor: 'primary.light',
+                    color: 'white',
+                    borderRadius: 3,
+                  }}
+                >
+                  <Typography variant="h6" fontWeight="bold">
+                    {brand.name}
+                  </Typography>
+                </Box>
+              )}
+              {brand.country && (
+                <Box sx={{ 
+                  position: 'absolute',
+                  bottom: 8,
+                  right: 8,
+                  bgcolor: 'primary.main',
+                  color: 'white',
+                  px: 1.5,
+                  py: 0.5,
+                  borderRadius: 2,
+                  fontSize: '0.75rem',
+                  fontWeight: 'bold'
+                }}>
+                  ساخت {brand.country}
+                </Box>
+              )}
+            </Box>
           </Grid>
           <Grid item xs={12} md={9}>
-            <Typography variant="h4" component="h1" gutterBottom sx={{ direction: 'rtl' }}>
-              قطعات و لوازم جانبی {brand.name}
-            </Typography>
-            <Typography color="text.secondary" paragraph sx={{ direction: 'rtl' }}>
-              {brand.description}
-            </Typography>
-            
-            {/* Brand Details */}
-            {brand.foundedYear && (
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2, direction: 'rtl' }}>
+            <Box sx={{ 
+              bgcolor: 'background.paper', 
+              p: 3, 
+              borderRadius: 3, 
+              boxShadow: 2,
+              position: 'relative',
+              overflow: 'hidden'
+            }}>
+              {/* Background Pattern */}
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: 0,
+                  right: 0,
+                  width: 200,
+                  height: 200,
+                  background: 'linear-gradient(45deg, rgba(25, 118, 210, 0.05) 0%, rgba(25, 118, 210, 0.02) 100%)',
+                  borderRadius: '50%',
+                  transform: 'translate(30%, -30%)'
+                }}
+              />
+              
+              <Typography variant="h4" component="h1" gutterBottom sx={{ 
+                direction: 'rtl',
+                fontWeight: 'bold',
+                color: 'primary.main',
+                position: 'relative',
+                zIndex: 1
+              }}>
+                قطعات و لوازم جانبی {brand.name}
+              </Typography>
+              
+              <Typography color="text.secondary" paragraph sx={{ 
+                direction: 'rtl',
+                fontSize: '1.1rem',
+                lineHeight: 1.7,
+                position: 'relative',
+                zIndex: 1
+              }}>
+                {brand.description}
+              </Typography>
+              
+              {/* Brand Stats */}
+              <Box sx={{ 
+                display: 'flex', 
+                gap: 3, 
+                mb: 3, 
+                direction: 'rtl',
+                flexWrap: 'wrap',
+                position: 'relative',
+                zIndex: 1
+              }}>
+                <Box sx={{ 
+                  bgcolor: 'rgba(25, 118, 210, 0.1)', 
+                  px: 2, 
+                  py: 1, 
+                  borderRadius: 2,
+                  border: '1px solid rgba(25, 118, 210, 0.2)'
+                }}>
+                  <Typography variant="h6" color="primary.main" fontWeight="bold">
+                    {loading ? '...' : brandSpecificProducts.length}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    محصول موجود
+                  </Typography>
+                </Box>
+                
+                {brand.popularModels && brand.popularModels.length > 0 && (
+                  <Box sx={{ 
+                    bgcolor: 'rgba(46, 125, 50, 0.1)', 
+                    px: 2, 
+                    py: 1, 
+                    borderRadius: 2,
+                    border: '1px solid rgba(46, 125, 50, 0.2)'
+                  }}>
+                    <Typography variant="h6" color="success.main" fontWeight="bold">
+                      {brand.popularModels.length}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      مدل خودرو
+                    </Typography>
+                  </Box>
+                )}
+                
                 {brand.foundedYear && (
-                  <Typography variant="body2" color="text.secondary">
-                    <strong>تاسیس:</strong> {brand.foundedYear}
-                  </Typography>
-                )}
-                {brand.headquarters && (
-                  <Typography variant="body2" color="text.secondary">
-                    <strong>دفتر مرکزی:</strong> {brand.headquarters}
-                  </Typography>
-                )}
-                {brand.website && (
-                  <Typography variant="body2" color="text.secondary">
-                    <strong>وب‌سایت:</strong> <Link href={brand.website} target="_blank" rel="noopener">{brand.website}</Link>
-                  </Typography>
+                  <Box sx={{ 
+                    bgcolor: 'rgba(237, 108, 2, 0.1)', 
+                    px: 2, 
+                    py: 1, 
+                    borderRadius: 2,
+                    border: '1px solid rgba(237, 108, 2, 0.2)'
+                  }}>
+                    <Typography variant="h6" color="warning.main" fontWeight="bold">
+                      {new Date().getFullYear() - brand.foundedYear}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      سال سابقه
+                    </Typography>
+                  </Box>
                 )}
               </Box>
-            )}
-            
+              
+              {/* Brand Details */}
+              {(brand.foundedYear || brand.headquarters || brand.website) && (
+                <Box sx={{ 
+                  display: 'flex', 
+                  flexWrap: 'wrap', 
+                  gap: 3, 
+                  mb: 3, 
+                  direction: 'rtl',
+                  position: 'relative',
+                  zIndex: 1
+                }}>
+                  {brand.foundedYear && (
+                    <Typography variant="body2" color="text.secondary" sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: 1 
+                    }}>
+                      <Box component="span" sx={{ 
+                        width: 8, 
+                        height: 8, 
+                        borderRadius: '50%', 
+                        bgcolor: 'primary.main' 
+                      }} />
+                      <strong>تاسیس:</strong> {brand.foundedYear}
+                    </Typography>
+                  )}
+                  {brand.headquarters && (
+                    <Typography variant="body2" color="text.secondary" sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: 1 
+                    }}>
+                      <Box component="span" sx={{ 
+                        width: 8, 
+                        height: 8, 
+                        borderRadius: '50%', 
+                        bgcolor: 'success.main' 
+                      }} />
+                      <strong>دفتر مرکزی:</strong> {brand.headquarters}
+                    </Typography>
+                  )}
+                  {brand.website && (
+                    <Typography variant="body2" color="text.secondary" sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: 1 
+                    }}>
+                      <Box component="span" sx={{ 
+                        width: 8, 
+                        height: 8, 
+                        borderRadius: '50%', 
+                        bgcolor: 'warning.main' 
+                      }} />
+                      <strong>وب‌سایت:</strong> 
+                      <Link 
+                        href={brand.website} 
+                        target="_blank" 
+                        rel="noopener"
+                        sx={{ 
+                          color: 'primary.main',
+                          textDecoration: 'none',
+                          '&:hover': {
+                            textDecoration: 'underline'
+                          }
+                        }}
+                      >
+                        {brand.website}
+                      </Link>
+                    </Typography>
+                  )}
+                </Box>
+              )}
+            </Box>
+          </Grid>
+        </Grid>
+      </Box>
+
+      {/* Popular Models and Common Parts */}
+      {((brand.popularModels && brand.popularModels.length > 0) || (brand.commonParts && brand.commonParts.length > 0)) && (
+        <Box sx={{ mb: 4 }}>
+          <Grid container spacing={3}>
             {/* Popular Models */}
             {brand.popularModels && brand.popularModels.length > 0 && (
-              <Box sx={{ mt: 2, direction: 'rtl' }}>
-                <Typography variant="subtitle1" gutterBottom>
-                  مدل‌های محبوب:
-                </Typography>
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                  {brand.popularModels.map((model) => {
-                    // Find the model ID from our carModels data (this would come from API in real app)
-                    // Here we're just using a simple mapping for demonstration
-                    const modelId = {
-                      'پراید': 1,
-                      'تیبا': 3,
-                      'کوییک': 4,
-                      'ساینا': 5,
-                      'شاهین': 5,
-                      'سمند': 8,
-                      'دنا': 9,
-                      'رانا': 10,
-                      'پژو پارس': 7,
-                      'پژو 207': 6,
-                      'تارا': 10,
-                      'ام وی ام 110': 13,
-                      'ام وی ام 315': 13,
-                      'ام وی ام 550': 12,
-                      'ام وی ام X22': 11,
-                      'ام وی ام X33': 12,
-                      'مزدا 3': 14,
-                      'کارا': 15,
-                      'کاپرا': 16,
-                      'شهاب': 16,
-                    }[model] || 1; // Default to 1 if not found
-                    
-                    return (
-                      <Button
-                        key={model}
-                        variant="outlined"
-                        size="small"
-                        component={RouterLink}
-                        to={`/models/${modelId}`}
-                      >
-                        {model}
-                      </Button>
-                    );
-                  })}
+              <Grid item xs={12} md={6}>
+                <Box sx={{ 
+                  bgcolor: 'background.paper', 
+                  p: 3, 
+                  borderRadius: 3, 
+                  boxShadow: 2,
+                  height: '100%'
+                }}>
+                  <Typography variant="h6" gutterBottom sx={{ 
+                    direction: 'rtl',
+                    color: 'primary.main',
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    mb: 2
+                  }}>
+                    <Box sx={{ 
+                      width: 24, 
+                      height: 24, 
+                      borderRadius: '50%', 
+                      bgcolor: 'primary.main',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'white',
+                      fontSize: '0.8rem'
+                    }}>
+                      🚗
+                    </Box>
+                    مدل‌های محبوب
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+                    {brand.popularModels.map((model) => {
+                      const modelId = {
+                        'پراید': 1, 'تیبا': 3, 'کوییک': 4, 'ساینا': 5, 'شاهین': 5,
+                        'سمند': 8, 'دنا': 9, 'رانا': 10, 'پژو پارس': 7, 'پژو 207': 6, 'تارا': 10,
+                        'ام وی ام 110': 13, 'ام وی ام 315': 13, 'ام وی ام 550': 12,
+                        'ام وی ام X22': 11, 'ام وی ام X33': 12, 'مزدا 3': 14,
+                        'کارا': 15, 'کاپرا': 16, 'شهاب': 16,
+                      }[model] || 1;
+                      
+                      return (
+                        <Button
+                          key={model}
+                          variant="outlined"
+                          size="small"
+                          component={RouterLink}
+                          to={`/models/${modelId}`}
+                          sx={{
+                            borderRadius: 2,
+                            textTransform: 'none',
+                            borderColor: 'divider',
+                            color: 'text.primary',
+                            '&:hover': {
+                              borderColor: 'primary.main',
+                              bgcolor: 'primary.light',
+                              color: 'primary.main',
+                              transform: 'translateY(-1px)',
+                            },
+                            transition: 'all 0.2s ease'
+                          }}
+                        >
+                          {model}
+                        </Button>
+                      );
+                    })}
+                  </Box>
                 </Box>
-              </Box>
+              </Grid>
             )}
             
             {/* Common Parts */}
             {brand.commonParts && brand.commonParts.length > 0 && (
-              <Box sx={{ mt: 3, direction: 'rtl' }}>
-                <Typography variant="subtitle1" gutterBottom>
-                  قطعات و لوازم جانبی متداول:
-                </Typography>
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                  {brand.commonParts.map((part) => (
-                    <Chip
-                      key={part}
-                      label={part}
-                      variant="outlined"
-                      size="small"
-                      clickable
-                      component={RouterLink}
-                      to={`/products?brand=${brandSlug}&category=${part.toLowerCase().replace(' ', '-')}`}
-                      sx={{ m: 0.5 }}
-                    />
-                  ))}
+              <Grid item xs={12} md={6}>
+                <Box sx={{ 
+                  bgcolor: 'background.paper', 
+                  p: 3, 
+                  borderRadius: 3, 
+                  boxShadow: 2,
+                  height: '100%'
+                }}>
+                  <Typography variant="h6" gutterBottom sx={{ 
+                    direction: 'rtl',
+                    color: 'success.main',
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    mb: 2
+                  }}>
+                    <Box sx={{ 
+                      width: 24, 
+                      height: 24, 
+                      borderRadius: '50%', 
+                      bgcolor: 'success.main',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'white',
+                      fontSize: '0.8rem'
+                    }}>
+                      🔧
+                    </Box>
+                    قطعات و لوازم جانبی متداول
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                    {brand.commonParts.map((part) => (
+                      <Chip
+                        key={part}
+                        label={part}
+                        variant="outlined"
+                        size="small"
+                        clickable
+                        component={RouterLink}
+                        to={`/products?brand=${brandSlug}&category=${part.toLowerCase().replace(' ', '-')}`}
+                        sx={{ 
+                          m: 0.5,
+                          borderRadius: 2,
+                          borderColor: 'success.light',
+                          color: 'success.main',
+                          '&:hover': {
+                            bgcolor: 'success.light',
+                            borderColor: 'success.main',
+                            color: 'white',
+                            transform: 'translateY(-1px)',
+                          },
+                          transition: 'all 0.2s ease'
+                        }}
+                      />
+                    ))}
+                  </Box>
                 </Box>
-              </Box>
+              </Grid>
             )}
           </Grid>
-        </Grid>
-      </Box>
+        </Box>
+      )}
 
       {/* Tabs and Filter Button */}
       <Box
@@ -579,44 +893,172 @@ const BrandDetail = () => {
 
         {/* Products Grid */}
         <Grid item xs={12} md={!isMobile ? 9 : 12}>
-          <Grid container spacing={3}>
-            {brandSpecificProducts.length > 0 ? (
-              brandSpecificProducts.map((product) => (
-                <Grid item xs={12} sm={6} md={4} key={product.id}>
-                  <ProductCard product={product} />
-                </Grid>
-              ))
-            ) : (
-              <Grid item xs={12}>
-                <Box
-                  sx={{
-                    py: 6,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    textAlign: 'center',
-                  }}
-                >
-                  <Typography variant="h6" gutterBottom>
-                    محصولی یافت نشد
-                  </Typography>
-                  <Typography variant="body1" color="text.secondary">
-                    متأسفانه، هیچ محصولی برای {brand.name} در حال حاضر در دسترس نیست.
-                  </Typography>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    component={RouterLink}
-                    to="/products"
-                    sx={{ mt: 2 }}
+          {/* Products Header with Count and Sort */}
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            mb: 3,
+            p: 2,
+            bgcolor: 'background.paper',
+            borderRadius: 2,
+            boxShadow: 1
+          }}>
+            <Typography variant="h6" sx={{ direction: 'rtl' }}>
+              {loading ? 'در حال بارگذاری...' : `${filteredProducts.length} محصول یافت شد`}
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+              <Typography variant="body2" color="text.secondary">
+                مرتب‌سازی بر اساس:
+              </Typography>
+              <Button 
+                variant="outlined" 
+                size="small"
+                onClick={() => {
+                  const sorted = [...filteredProducts].sort((a, b) => b.rating - a.rating);
+                  setFilteredProducts(sorted);
+                }}
+              >
+                امتیاز
+              </Button>
+              <Button 
+                variant="outlined" 
+                size="small"
+                onClick={() => {
+                  const sorted = [...filteredProducts].sort((a, b) => a.price - b.price);
+                  setFilteredProducts(sorted);
+                }}
+              >
+                قیمت
+              </Button>
+            </Box>
+          </Box>
+
+          {/* Loading State */}
+          {loading ? (
+            <Box sx={{ py: 8, textAlign: 'center' }}>
+              <Typography variant="h6" color="text.secondary" gutterBottom>
+                در حال بارگذاری محصولات...
+              </Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                {[1, 2, 3].map((i) => (
+                  <Box
+                    key={i}
+                    sx={{
+                      width: 12,
+                      height: 12,
+                      borderRadius: '50%',
+                      bgcolor: 'primary.main',
+                      mx: 0.5,
+                      animation: `pulse 1.5s ease-in-out ${i * 0.3}s infinite`,
+                      '@keyframes pulse': {
+                        '0%, 80%, 100%': { transform: 'scale(0)' },
+                        '40%': { transform: 'scale(1)' }
+                      }
+                    }}
+                  />
+                ))}
+              </Box>
+            </Box>
+          ) : (
+            <Grid container spacing={3}>
+              {filteredProducts.length > 0 ? (
+                filteredProducts.map((product) => (
+                  <Grid item xs={12} sm={6} md={4} key={product.id}>
+                    <ProductCard product={product} />
+                  </Grid>
+                ))
+              ) : (
+                <Grid item xs={12}>
+                  <Box
+                    sx={{
+                      py: 8,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      textAlign: 'center',
+                      bgcolor: 'background.paper',
+                      borderRadius: 2,
+                      boxShadow: 1,
+                    }}
                   >
-                    مشاهده همه محصولات
-                  </Button>
-                </Box>
-              </Grid>
-            )}
-          </Grid>
+                    <Box
+                      sx={{
+                        width: 120,
+                        height: 120,
+                        borderRadius: '50%',
+                        bgcolor: 'grey.100',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        mb: 3,
+                      }}
+                    >
+                      <Typography variant="h2" color="grey.400">
+                        📦
+                      </Typography>
+                    </Box>
+                    <Typography variant="h6" gutterBottom color="text.primary">
+                      محصولی یافت نشد
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary" sx={{ mb: 3, maxWidth: 400 }}>
+                      {currentTab === 'all' 
+                        ? `متأسفانه، هیچ محصولی برای ${brand.name} در حال حاضر در دسترس نیست.`
+                        : `هیچ محصولی در دسته‌بندی انتخاب شده برای ${brand.name} یافت نشد.`
+                      }
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        component={RouterLink}
+                        to="/products"
+                      >
+                        مشاهده همه محصولات
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        color="primary"
+                        component={RouterLink}
+                        to="/brands"
+                      >
+                        سایر برندها
+                      </Button>
+                      {currentTab !== 'all' && (
+                        <Button
+                          variant="text"
+                          color="primary"
+                          onClick={() => setCurrentTab('all')}
+                        >
+                          نمایش همه محصولات {brand.name}
+                        </Button>
+                      )}
+                    </Box>
+                  </Box>
+                </Grid>
+              )}
+            </Grid>
+          )}
+
+          {/* Load More Button */}
+          {filteredProducts.length > 0 && filteredProducts.length >= 9 && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+              <Button
+                variant="outlined"
+                size="large"
+                sx={{
+                  px: 4,
+                  py: 1.5,
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontSize: '1rem'
+                }}
+              >
+                مشاهده محصولات بیشتر
+              </Button>
+            </Box>
+          )}
         </Grid>
       </Grid>
 
