@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { HelmetProvider } from 'react-helmet-async';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import './i18n';  // Import i18n configuration
 import store from './store';
 import App from './App';
@@ -42,6 +43,7 @@ if (process.env.NODE_ENV === 'development') {
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
+    <SpeedInsights />
     <Provider store={store}>
       <BrowserRouter future={routerFutureConfig}>
         <HelmetProvider>
