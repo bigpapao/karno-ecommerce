@@ -29,10 +29,16 @@ export const getUserAddresses = asyncHandler(async (req, res, next) => {
     return next(new AppError('User not found', 404, 'ERR_USER_NOT_FOUND'));
   }
 
+  const addresses = user.addresses.map((addr) => {
+    const obj = addr.toObject();
+    obj.isDefaultAddress = addr.isDefault;
+    return obj;
+  });
+
   res.status(200).json({
     success: true,
-    count: user.addresses.length,
-    data: user.addresses,
+    count: addresses.length,
+    data: addresses,
   });
 });
 
@@ -54,9 +60,12 @@ export const getAddressById = asyncHandler(async (req, res, next) => {
     return next(new AppError('Address not found', 404, 'ERR_ADDRESS_NOT_FOUND'));
   }
 
+  const addressObj = address.toObject();
+  addressObj.isDefaultAddress = address.isDefault;
+
   res.status(200).json({
     success: true,
-    data: address,
+    data: addressObj,
   });
 });
 
@@ -104,26 +113,35 @@ export const addAddress = asyncHandler(async (req, res, next) => {
     }
   }
 
+  // Map frontend field to schema field
+  if (req.body.isDefaultAddress !== undefined) {
+    req.body.isDefault = req.body.isDefaultAddress;
+  }
+
   // Add new address to the user's addresses array
   user.addresses.push({
     ...req.body,
-    isDefaultAddress: req.body.isDefaultAddress || isFirst,
+    isDefault: req.body.isDefault || isFirst,
   });
 
   // If this address is set as default, update all other addresses
-  if (req.body.isDefaultAddress || isFirst) {
+  if (req.body.isDefault || isFirst) {
     user.addresses.forEach((address) => {
       if (address._id.toString() !== user.addresses[user.addresses.length - 1]._id.toString()) {
-        address.isDefaultAddress = false;
+        address.isDefault = false;
       }
     });
   }
 
   await user.save();
 
+  const newAddress = user.addresses[user.addresses.length - 1];
+  const addressObj = newAddress.toObject();
+  addressObj.isDefaultAddress = newAddress.isDefault;
+
   res.status(201).json({
     success: true,
-    data: user.addresses[user.addresses.length - 1],
+    data: addressObj,
     warnings,
   });
 });
@@ -175,12 +193,17 @@ export const updateAddress = asyncHandler(async (req, res, next) => {
     }
   }
 
+  // Map frontend field to schema field
+  if (req.body.isDefaultAddress !== undefined) {
+    req.body.isDefault = req.body.isDefaultAddress;
+  }
+
   // If this is being set as default address
-  if (req.body.isDefaultAddress && !address.isDefaultAddress) {
+  if (req.body.isDefault && !address.isDefault) {
     // Update all other addresses
     user.addresses.forEach((addr) => {
       if (addr._id.toString() !== address._id.toString()) {
-        addr.isDefaultAddress = false;
+        addr.isDefault = false;
       }
     });
   }
@@ -188,7 +211,7 @@ export const updateAddress = asyncHandler(async (req, res, next) => {
   // Update address fields
   const updateFields = [
     'fullName', 'address', 'city', 'state', 'zipCode', 'country',
-    'phoneNumber', 'addressType', 'isDefaultAddress', 'notes',
+    'phoneNumber', 'addressType', 'isDefault', 'notes',
   ];
 
   updateFields.forEach((field) => {
@@ -199,9 +222,12 @@ export const updateAddress = asyncHandler(async (req, res, next) => {
 
   await user.save();
 
+  const addressObj = address.toObject();
+  addressObj.isDefaultAddress = address.isDefault;
+
   res.status(200).json({
     success: true,
-    data: address,
+    data: addressObj,
     warnings,
   });
 });
@@ -240,14 +266,14 @@ export const deleteAddress = asyncHandler(async (req, res, next) => {
   }
 
   // If this is the default address, we need to set another as default if possible
-  const wasDefault = address.isDefaultAddress;
+  const wasDefault = address.isDefault;
 
   // Remove the address
   address.deleteOne();
 
   // If the removed address was the default, set another one as default
   if (wasDefault && user.addresses.length > 0) {
-    user.addresses[0].isDefaultAddress = true;
+    user.addresses[0].isDefault = true;
   }
 
   await user.save();
@@ -278,15 +304,18 @@ export const setDefaultAddress = asyncHandler(async (req, res, next) => {
 
   // Update all addresses to not be default
   user.addresses.forEach((addr) => {
-    addr.isDefaultAddress = addr._id.toString() === req.params.id;
+    addr.isDefault = addr._id.toString() === req.params.id;
   });
 
   await user.save();
 
+  const addressObj = address.toObject();
+  addressObj.isDefaultAddress = address.isDefault;
+
   res.status(200).json({
     success: true,
     message: 'Default address updated successfully',
-    data: address,
+    data: addressObj,
   });
 });
 
