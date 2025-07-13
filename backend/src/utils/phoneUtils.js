@@ -14,6 +14,11 @@ export const normalizePhoneNumber = (phone) => {
   // Remove all non-digit characters
   let normalizedPhone = phone.toString().replace(/\D/g, '');
 
+  // Remove international prefix "00" if present
+  if (normalizedPhone.startsWith('00')) {
+    normalizedPhone = normalizedPhone.substring(2);
+  }
+
   // Remove country code (98) if present
   if (normalizedPhone.startsWith('98')) {
     normalizedPhone = normalizedPhone.substring(2);
