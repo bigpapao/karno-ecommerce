@@ -5,6 +5,8 @@ describe('phoneUtils', () => {
     test('removes country code and leading zero', () => {
       expect(normalizePhoneNumber('989121234567')).toBe('9121234567');
       expect(normalizePhoneNumber('09121234567')).toBe('9121234567');
+      expect(normalizePhoneNumber('+989121234567')).toBe('9121234567');
+      expect(normalizePhoneNumber('00989121234567')).toBe('9121234567');
     });
 
     test('returns the phone if invalid', () => {
@@ -25,6 +27,7 @@ describe('phoneUtils', () => {
   describe('isValidIranianMobile', () => {
     test('detects valid numbers', () => {
       expect(isValidIranianMobile('09121234567')).toBe(true);
+      expect(isValidIranianMobile('00989121234567')).toBe(true);
     });
 
     test('detects invalid numbers', () => {
