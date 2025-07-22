@@ -19,6 +19,10 @@ import {
   createProduct,
   updateProduct,
   deleteProduct,
+  getProductReviews,
+  addProductReview,
+  updateProductReview,
+  deleteProductReview,
 } from '../controllers/product.controller.js';
 import {
   getProductAnalytics,
@@ -165,6 +169,37 @@ router.get('/vehicle-search', searchByVehicle);
 router.get('/vehicle-makes', cacheMiddleware(86400), getVehicleMakes); // Cache for 1 day
 router.get('/vehicle-models', cacheMiddleware(86400), getVehicleModels);
 router.get('/vehicle-years', cacheMiddleware(86400), getVehicleYears);
+
+// Review routes
+router.get(
+  '/:id/reviews',
+  validateRequest(schemas.id, 'params'),
+  paginationMiddleware,
+  asyncHandler(getProductReviews),
+);
+
+router.post(
+  '/:id/reviews',
+  authenticate,
+  validateRequest(schemas.id, 'params'),
+  validateRequest(schemas.createReview, 'body'),
+  asyncHandler(addProductReview),
+);
+
+router.put(
+  '/:id/reviews/:reviewId',
+  authenticate,
+  validateRequest(schemas.id, 'params'),
+  validateRequest(schemas.updateReview, 'body'),
+  asyncHandler(updateProductReview),
+);
+
+router.delete(
+  '/:id/reviews/:reviewId',
+  authenticate,
+  validateRequest(schemas.id, 'params'),
+  asyncHandler(deleteProductReview),
+);
 
 // Protected routes (admin only)
 router.use(authenticate, authorize('admin'));

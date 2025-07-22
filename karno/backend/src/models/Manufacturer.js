@@ -54,8 +54,7 @@ manufacturerSchema.virtual('modelsCount', {
 });
 
 // Index for better performance
-manufacturerSchema.index({ name: 1 });
-manufacturerSchema.index({ slug: 1 });
+// Removed duplicate name and slug indexes since they already have unique: true in schema definitions
 manufacturerSchema.index({ isActive: 1 });
 
 export default mongoose.model('Manufacturer', manufacturerSchema); 

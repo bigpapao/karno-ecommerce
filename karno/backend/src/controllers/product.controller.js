@@ -762,6 +762,252 @@ export const deleteProduct = async (req, res, next) => {
   }
 };
 
+/**
+ * Review Management Functions
+ */
+
+/**
+ * Get all reviews for a product
+ */
+export const getProductReviews = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { page = 1, limit = 10, sort = 'createdAt', order = 'desc' } = req.query;
+
+    const pageNum = parseInt(page, 10);
+    const limitNum = parseInt(limit, 10);
+
+    const product = await Product.findById(id);
+    if (!product) {
+      return next(new AppError('Product not found', 404));
+    }
+
+    // Sort reviews
+    const sortDirection = order === 'desc' ? -1 : 1;
+    const reviews = product.reviews
+      .sort((a, b) => {
+        if (sort === 'rating') {
+          return sortDirection * (a.rating - b.rating);
+        }
+        return sortDirection * (new Date(a.createdAt) - new Date(b.createdAt));
+      })
+      .slice((pageNum - 1) * limitNum, pageNum * limitNum);
+
+    // Populate user data for reviews
+    await Product.populate(reviews, {
+      path: 'user',
+      select: 'firstName lastName'
+    });
+
+    const totalReviews = product.reviews.length;
+    const stats = {
+      average: product.rating,
+      total: totalReviews,
+      distribution: [0, 0, 0, 0, 0]
+    };
+
+    // Calculate rating distribution
+    product.reviews.forEach(review => {
+      stats.distribution[review.rating - 1]++;
+    });
+
+    res.json({
+      reviews,
+      stats,
+      pagination: {
+        total: totalReviews,
+        page: pageNum,
+        limit: limitNum,
+        pages: Math.ceil(totalReviews / limitNum),
+      }
+    });
+  } catch (error) {
+    logger.error({
+      message: 'Error fetching product reviews',
+      error: error.message,
+      productId: req.params.id,
+    });
+    next(new AppError('Error fetching reviews', 500));
+  }
+};
+
+/**
+ * Add a review to a product
+ */
+export const addProductReview = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { rating, comment } = req.body;
+    const userId = req.user.id;
+
+    if (!rating || !comment) {
+      return next(new AppError('Rating and comment are required', 400));
+    }
+
+    if (rating < 1 || rating > 5) {
+      return next(new AppError('Rating must be between 1 and 5', 400));
+    }
+
+    const product = await Product.findById(id);
+    if (!product) {
+      return next(new AppError('Product not found', 404));
+    }
+
+    // Check if user has already reviewed this product
+    const existingReview = product.reviews.find(
+      review => review.user.toString() === userId
+    );
+
+    if (existingReview) {
+      return next(new AppError('You have already reviewed this product', 400));
+    }
+
+    // Add the review
+    const newReview = {
+      user: userId,
+      rating: parseInt(rating),
+      comment: comment.trim()
+    };
+
+    product.reviews.push(newReview);
+    await product.save();
+
+    // Populate the user data for the response
+    await Product.populate(product.reviews[product.reviews.length - 1], {
+      path: 'user',
+      select: 'firstName lastName'
+    });
+
+    // Clear product cache
+    await clearProductCache(id);
+
+    res.status(201).json({
+      success: true,
+      message: 'Review added successfully',
+      review: product.reviews[product.reviews.length - 1]
+    });
+  } catch (error) {
+    logger.error({
+      message: 'Error adding product review',
+      error: error.message,
+      productId: req.params.id,
+      userId: req.user?.id,
+    });
+    next(new AppError('Error adding review', 500));
+  }
+};
+
+/**
+ * Update a user's review
+ */
+export const updateProductReview = async (req, res, next) => {
+  try {
+    const { id, reviewId } = req.params;
+    const { rating, comment } = req.body;
+    const userId = req.user.id;
+
+    if (!rating || !comment) {
+      return next(new AppError('Rating and comment are required', 400));
+    }
+
+    if (rating < 1 || rating > 5) {
+      return next(new AppError('Rating must be between 1 and 5', 400));
+    }
+
+    const product = await Product.findById(id);
+    if (!product) {
+      return next(new AppError('Product not found', 404));
+    }
+
+    const review = product.reviews.id(reviewId);
+    if (!review) {
+      return next(new AppError('Review not found', 404));
+    }
+
+    // Check if the review belongs to the current user
+    if (review.user.toString() !== userId) {
+      return next(new AppError('You can only update your own reviews', 403));
+    }
+
+    // Update the review
+    review.rating = parseInt(rating);
+    review.comment = comment.trim();
+    review.updatedAt = new Date();
+
+    await product.save();
+
+    // Populate user data
+    await Product.populate(review, {
+      path: 'user',
+      select: 'firstName lastName'
+    });
+
+    // Clear product cache
+    await clearProductCache(id);
+
+    res.json({
+      success: true,
+      message: 'Review updated successfully',
+      review
+    });
+  } catch (error) {
+    logger.error({
+      message: 'Error updating product review',
+      error: error.message,
+      productId: req.params.id,
+      reviewId: req.params.reviewId,
+      userId: req.user?.id,
+    });
+    next(new AppError('Error updating review', 500));
+  }
+};
+
+/**
+ * Delete a user's review
+ */
+export const deleteProductReview = async (req, res, next) => {
+  try {
+    const { id, reviewId } = req.params;
+    const userId = req.user.id;
+
+    const product = await Product.findById(id);
+    if (!product) {
+      return next(new AppError('Product not found', 404));
+    }
+
+    const review = product.reviews.id(reviewId);
+    if (!review) {
+      return next(new AppError('Review not found', 404));
+    }
+
+    // Check if the review belongs to the current user or if user is admin
+    if (review.user.toString() !== userId && req.user.role !== 'admin') {
+      return next(new AppError('You can only delete your own reviews', 403));
+    }
+
+    // Remove the review
+    review.deleteOne();
+    await product.save();
+
+    // Clear product cache
+    await clearProductCache(id);
+
+    res.json({
+      success: true,
+      message: 'Review deleted successfully'
+    });
+  } catch (error) {
+    logger.error({
+      message: 'Error deleting product review',
+      error: error.message,
+      productId: req.params.id,
+      reviewId: req.params.reviewId,
+      userId: req.user?.id,
+    });
+    next(new AppError('Error deleting review', 500));
+  }
+};
+
 export default {
   getProducts,
   getProductById,

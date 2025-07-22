@@ -35,7 +35,9 @@ router.get('/manufacturers/:manufacturerId/models', asyncHandler(async (req, res
   const models = await VehicleModel.find({ 
     manufacturer: manufacturer._id,
     isActive: true 
-  }).sort({ name: 1 });
+  })
+    .populate('manufacturer', 'name slug')
+    .sort({ name: 1 });
   
   res.json({ models });
 }));
@@ -43,6 +45,7 @@ router.get('/manufacturers/:manufacturerId/models', asyncHandler(async (req, res
 // Get all models
 router.get('/models', asyncHandler(async (req, res) => {
   const models = await VehicleModel.find({ isActive: true })
+    .populate('manufacturer', 'name slug')
     .populate('productsCount')
     .sort({ name: 1 });
   
@@ -67,7 +70,8 @@ router.get('/models/:modelId', asyncHandler(async (req, res) => {
     vehicleModelQuery.slug = modelId;
   }
   
-  const model = await VehicleModel.findOne(vehicleModelQuery);
+  const model = await VehicleModel.findOne(vehicleModelQuery)
+    .populate('manufacturer', 'name slug');
   
   if (!model) {
     return res.status(404).json({ error: 'Model not found' });
@@ -80,7 +84,7 @@ router.get('/models/:modelId', asyncHandler(async (req, res) => {
 router.get('/stats', asyncHandler(async (req, res) => {
   const [manufacturers, models] = await Promise.all([
     Manufacturer.find({ isActive: true }),
-    VehicleModel.find({ isActive: true })
+    VehicleModel.find({ isActive: true }).populate('manufacturer', 'name slug')
   ]);
   
   const stats = {
@@ -90,9 +94,11 @@ router.get('/stats', asyncHandler(async (req, res) => {
     stats: manufacturers.map(manufacturer => ({
       manufacturer: manufacturer.name,
       modelsCount: models.filter(model => 
+        model.manufacturer && model.manufacturer._id && 
         model.manufacturer._id.toString() === manufacturer._id.toString()
       ).length,
       popularModelsCount: models.filter(model => 
+        model.manufacturer && model.manufacturer._id && 
         model.manufacturer._id.toString() === manufacturer._id.toString() && model.popular
       ).length
     }))
@@ -145,11 +151,24 @@ router.put('/models/:id', asyncHandler(async (req, res) => {
 
 // Delete manufacturer (Admin only)
 router.delete('/manufacturers/:id', asyncHandler(async (req, res) => {
-  const manufacturer = await Manufacturer.findByIdAndDelete(req.params.id);
+  const manufacturer = await Manufacturer.findById(req.params.id);
   
   if (!manufacturer) {
     return res.status(404).json({ error: 'Manufacturer not found' });
   }
+  
+  // Check if there are any models associated with this manufacturer
+  const associatedModels = await VehicleModel.find({ manufacturer: manufacturer._id });
+  
+  if (associatedModels.length > 0) {
+    return res.status(400).json({ 
+      error: 'Cannot delete manufacturer with associated models',
+      associatedModelsCount: associatedModels.length
+    });
+  }
+  
+  // Delete the manufacturer
+  await Manufacturer.findByIdAndDelete(req.params.id);
   
   res.json({ message: 'Manufacturer deleted successfully' });
 }));

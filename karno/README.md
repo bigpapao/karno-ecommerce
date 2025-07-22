@@ -1,258 +1,291 @@
-# Karno - Car Parts E-Commerce Platform
+# 🚗 Karno - Iranian Car Parts E-commerce Platform
 
-Karno is an e-commerce platform specializing in automotive parts, accessories, and vehicles. The platform provides a seamless shopping experience with advanced search capabilities, secure payments, and comprehensive order management.
+A comprehensive full-stack e-commerce platform specialized in Iranian car parts and accessories. Built with modern web technologies and designed for the Iranian automotive market.
 
-## Features
+## 🌟 Features
 
-### Frontend (React.js)
-- Responsive design for mobile and desktop
-- Advanced product search by vehicle, brand, model, or category
-- User authentication and account management
-- Shopping cart and secure checkout
-- Order tracking and history
-- Detailed product pages with specifications
-- SEO-optimized content
+### 🛍️ **E-commerce Core**
+- **Product Catalog**: Browse Iranian car parts by brand, category, and model
+- **Advanced Search**: Find parts by car make, model, year, and part type
+- **Shopping Cart**: Add, remove, and manage items with real-time updates
+- **User Authentication**: Secure registration, login, and profile management
+- **Order Management**: Complete order processing and tracking system
 
-### Backend (Node.js/Express.js)
-- RESTful API architecture
-- MongoDB database with Mongoose ODM
-- JWT-based authentication
-- Admin panel for inventory management
-- Real-time inventory updates
-- Payment gateway integration (Stripe, PayPal)
-- Robust security measures
+### 🚙 **Iranian Car Focus**
+- **Supported Brands**: Iran Khodro, Saipa, Bahman Motor, MVM, and more
+- **Localized Content**: Full RTL support and Persian language interface
+- **Iranian Payment**: ZarinPal payment gateway integration
+- **Local Shipping**: Optimized for Iranian postal system
 
-## Project Structure
+### 💳 **Payment & Checkout**
+- **Multiple Gateways**: Stripe (international) and ZarinPal (Iran)
+- **Secure Transactions**: PCI-compliant payment processing
+- **Guest Checkout**: Purchase without registration
+- **Order Tracking**: Real-time order status updates
 
-```
-karno/
-├── frontend/          # React.js application
-│   ├── public/       # Static files
-│   └── src/          # Source code
-├── backend/          # Node.js/Express.js application
-│   ├── src/         # Source code
-│   ├── config/      # Configuration files
-│   └── models/      # Database models
-└── README.md        # Project documentation
-```
+### 🔧 **Technical Features**
+- **Progressive Web App**: Offline support and mobile optimization
+- **Real-time Updates**: Live inventory and price updates
+- **Analytics**: Comprehensive user behavior tracking
+- **SEO Optimized**: Server-side rendering and meta optimization
+- **Performance**: Optimized loading and caching strategies
 
-## Prerequisites
+## 🛠️ Technology Stack
 
+### **Frontend**
+- **React.js 18** - Modern UI framework
+- **Material-UI (MUI)** - Component library and theming
+- **Redux Toolkit** - State management
+- **Framer Motion** - Animations and transitions
+- **React Router** - Client-side routing
+- **Axios** - HTTP client
+- **React Query** - Data fetching and caching
+- **i18next** - Internationalization
+- **Workbox** - Service worker and PWA features
+
+### **Backend**
+- **Node.js** - Runtime environment
+- **Express.js** - Web framework
+- **MongoDB** - NoSQL database
+- **Mongoose** - MongoDB ODM
+- **Redis** - Caching and session storage
+- **JWT** - Authentication tokens
+- **Stripe** - International payments
+- **ZarinPal** - Iranian payment gateway
+- **Nodemailer** - Email notifications
+- **Sharp** - Image processing
+- **Winston** - Logging
+
+### **DevOps & Tools**
+- **Git** - Version control
+- **ESLint** - Code linting
+- **Prettier** - Code formatting
+- **Jest** - Testing framework
+- **Webpack** - Module bundling
+- **Compression** - Asset optimization
+
+## 🚀 Quick Start
+
+### Prerequisites
 - Node.js (v16 or higher)
-- MongoDB (v5 or higher)
-- npm or yarn package manager
+- MongoDB (v4.4 or higher)
+- Redis (v6 or higher)
+- Git
 
-## Getting Started
+### Installation
 
-1. Clone the repository:
-```bash
-git clone [repository-url]
-cd karno
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/bigpapao/karno-ecommerce.git
+   cd karno-ecommerce
+   ```
+
+2. **Install dependencies**
+   ```bash
+   # Install backend dependencies
+   cd backend
+   npm install
+   
+   # Install frontend dependencies
+   cd ../frontend
+   npm install
+   ```
+
+3. **Environment Configuration**
+   ```bash
+   # Backend configuration
+   cd backend
+   cp .env.example .env
+   # Edit .env with your configuration
+   
+   # Frontend configuration
+   cd ../frontend
+   cp .env.example .env
+   # Edit .env with your configuration
+   ```
+
+4. **Database Setup**
+   ```bash
+   # Make sure MongoDB is running
+   # The application will create the database automatically
+   
+   # Optional: Seed sample data
+   cd backend
+   npm run seed
+   ```
+
+5. **Start the application**
+   ```bash
+   # Start backend server (Terminal 1)
+   cd backend
+   npm run dev
+   
+   # Start frontend development server (Terminal 2)
+   cd frontend
+   npm start
+   ```
+
+6. **Access the application**
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:5000
+   - API Documentation: http://localhost:5000/api-docs
+
+## 📁 Project Structure
+
+```
+karno-ecommerce/
+├── frontend/                 # React.js frontend application
+│   ├── public/              # Static assets
+│   ├── src/
+│   │   ├── components/      # Reusable UI components
+│   │   ├── pages/          # Page components
+│   │   ├── services/       # API services
+│   │   ├── store/          # Redux store and slices
+│   │   ├── utils/          # Utility functions
+│   │   └── styles/         # Global styles
+│   ├── package.json
+│   └── .env.example
+├── backend/                 # Node.js backend API
+│   ├── src/
+│   │   ├── controllers/    # Route controllers
+│   │   ├── models/         # Database models
+│   │   ├── routes/         # API routes
+│   │   ├── middleware/     # Custom middleware
+│   │   ├── services/       # Business logic
+│   │   └── utils/          # Utility functions
+│   ├── package.json
+│   └── .env.example
+├── .gitignore
+└── README.md
 ```
 
-2. Install frontend dependencies:
-```bash
-cd frontend
-npm install
-```
+## 🔧 Configuration
 
-3. Install backend dependencies:
-```bash
-cd ../backend
-npm install
-```
+### Backend Environment Variables
+```env
+# Server
+NODE_ENV=development
+PORT=5000
 
-4. Set up environment variables:
-- Create `.env` files in both frontend and backend directories
-- Add necessary configuration (database URI, API keys, etc.)
+# Database
+MONGODB_URI=mongodb://localhost:27017/karno-ecommerce
 
-5. Start the development servers:
+# Redis
+REDIS_HOST=localhost
+REDIS_PORT=6379
 
-Backend:
-```bash
-cd backend
-
-```
-
-Frontend:
-```bash
-cd frontend
-npm start
-```
-
-The application will be available at:
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:5001
-
-## Environment Variables
-
-### Backend (.env)
-```
-MONGODB_URI=your_mongodb_uri
+# Authentication
 JWT_SECRET=your_jwt_secret
-STRIPE_SECRET_KEY=your_stripe_key
+
+# Payment Gateways
+STRIPE_SECRET_KEY=sk_test_...
+ZARINPAL_MERCHANT_ID=your_merchant_id
+
+# Email
+SMTP_HOST=smtp.gmail.com
+SMTP_EMAIL=your_email@gmail.com
+SMTP_PASSWORD=your_password
 ```
 
-### Frontend (.env)
-```
-REACT_APP_API_URL=http://localhost:5001
-REACT_APP_STRIPE_PUBLIC_KEY=your_stripe_public_key
+### Frontend Environment Variables
+```env
+# API
+REACT_APP_API_URL=http://localhost:5000/api/v1
+
+# Features
+REACT_APP_CART_ENABLED=true
+
+# Contact
+REACT_APP_TEL=+98XXXXXXXXXX
+REACT_APP_TELEGRAM=your_telegram
+REACT_APP_WHATSAPP=+98XXXXXXXXXX
 ```
 
-## Contributing
+## 🚀 Deployment
+
+### Production Build
+```bash
+# Build frontend
+cd frontend
+npm run build
+
+# Start backend in production
+cd backend
+NODE_ENV=production npm start
+```
+
+### Deployment Options
+- **Vercel/Netlify**: Frontend deployment
+- **Heroku/Railway**: Full-stack deployment
+- **DigitalOcean/AWS**: VPS deployment
+- **Docker**: Containerized deployment
+
+## 📱 PWA Features
+
+The application includes Progressive Web App features:
+- **Offline Support**: Cache critical resources
+- **Add to Home Screen**: Install as native app
+- **Push Notifications**: Order updates and promotions
+- **Background Sync**: Sync data when connection restored
+
+## 🔒 Security Features
+
+- **Authentication**: JWT-based secure authentication
+- **Authorization**: Role-based access control
+- **Input Validation**: Comprehensive request validation
+- **Rate Limiting**: API rate limiting and DDoS protection
+- **Data Sanitization**: XSS and injection attack prevention
+- **HTTPS**: SSL/TLS encryption
+- **CORS**: Cross-origin resource sharing configuration
+
+## 🧪 Testing
+
+```bash
+# Run backend tests
+cd backend
+npm test
+
+# Run frontend tests
+cd frontend
+npm test
+
+# Run tests with coverage
+npm run test:coverage
+```
+
+## 📊 Analytics & Monitoring
+
+- **Google Analytics**: User behavior tracking
+- **Performance Monitoring**: Core Web Vitals
+- **Error Tracking**: Comprehensive error logging
+- **API Monitoring**: Request/response monitoring
+
+## 🤝 Contributing
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Commit your changes (`git commit -m 'Add amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## License
+## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-# Karno Authentication System
+## 🆘 Support
 
-A clean, optimized, and user-friendly authentication system for the Karno e-commerce platform.
+For support and questions:
+- **Email**: support@karno.com
+- **Telegram**: @karno_support
+- **GitHub Issues**: [Create an issue](https://github.com/bigpapao/karno-ecommerce/issues)
 
-## Features
+## 🙏 Acknowledgments
 
-- **Lightweight Authentication**: Simple email/phone number and password-based authentication
-- **Guest Cart Functionality**: Allow guests to add items to cart without login
-- **Cart Merging**: Automatically merge guest cart with user cart upon login
-- **JWT Authentication**: 15-minute access tokens with HTTP-only refresh tokens
-- **Remember Me**: Extend session longevity with an opt-in feature (7 days)
-- **Secure Implementation**: Includes password hashing, rate limiting, and more
+- Iranian automotive industry for inspiration
+- Open source community for amazing tools
+- Material-UI team for excellent components
+- All contributors and supporters
 
-## Frontend Implementation
+---
 
-The frontend is built with React and Tailwind CSS, featuring:
-
-- Responsive login and registration forms
-- Real-time form validation
-- Password strength indicators
-- Mobile number validation
-- Protected routes for authenticated sections
-- Guest cart management with localStorage
-
-## Backend API
-
-The backend provides RESTful endpoints for:
-
-- User registration (`/api/register`)
-- User login (`/api/login`)
-- Cart merging (`/api/cart/merge`)
-- User profile management
-- JWT token management
-
-## Setup Instructions
-
-### Prerequisites
-
-- Node.js (v14 or later)
-- npm or yarn
-- MongoDB
-
-### Frontend Setup
-
-1. Navigate to the frontend directory:
-   ```bash
-   cd karno/frontend
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Start the development server:
-   ```bash
-   npm start
-   ```
-
-### Backend Setup
-
-1. Navigate to the backend directory:
-   ```bash
-   cd karno/backend
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Create a `.env` file in the backend root with the following variables:
-   ```
-   PORT=5000
-   MONGODB_URI=mongodb://localhost:27017/karno
-   JWT_SECRET=your_secure_jwt_secret
-   JWT_REFRESH_SECRET=your_secure_refresh_token_secret
-   NODE_ENV=development
-   ```
-
-4. Start the server:
-   ```bash
-   npm run dev
-   ```
-
-## Security Features
-
-- **Password Hashing**: bcrypt with 12 rounds of salting
-- **Rate Limiting**: 5 requests per minute for login/register endpoints
-- **JWT Security**: Short-lived access tokens with HTTP-only refresh tokens
-- **Generic Error Messages**: Prevents user enumeration
-- **HTTP Security Headers**: Protects against common web vulnerabilities
-
-## Usage Examples
-
-### Protecting Routes
-
-Wrap your routes in the `ProtectedRoute` component:
-
-```jsx
-<Routes>
-  <Route path="/" element={<Home />} />
-  <Route path="/login" element={<Login />} />
-  <Route path="/register" element={<Register />} />
-  
-  {/* Protected Routes */}
-  <Route path="/checkout" element={
-    <ProtectedRoute>
-      <Checkout />
-    </ProtectedRoute>
-  } />
-  <Route path="/profile" element={
-    <ProtectedRoute>
-      <Profile />
-    </ProtectedRoute>
-  } />
-</Routes>
-```
-
-### Guest Cart Functionality
-
-Use the cart utilities to manage the guest cart:
-
-```javascript
-import { addToGuestCart, getGuestCart } from '../utils/cartMergeUtils';
-
-// Add item to guest cart
-const handleAddToCart = (product) => {
-  addToGuestCart({
-    productId: product._id,
-    name: product.name,
-    price: product.price,
-    quantity: 1,
-    image: product.images[0]
-  });
-};
-```
-
-## License
-
-[MIT License](LICENSE)
-
-## Contact
-
-For support or questions, please contact the Karno development team.
+**Made with ❤️ for the Iranian automotive community**

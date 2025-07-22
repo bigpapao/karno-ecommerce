@@ -1,98 +1,77 @@
 # Dependencies
 node_modules/
-/.pnp
-.pnp.js
-
-# Testing
-/coverage
-/test-results
-
-# Production build
-/frontend/build
-/dist
-/out
-/.next
-
-# Misc
-.DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-.env
-.env.production
-.env.development
-
-# Debug logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-logs/
-*.log
+lerna-debug.log*
 
-# Editor directories and files
-.idea/
-.vscode/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
 
-# Cache and temporary files
-.eslintcache
-.cache/
-*.tsbuildinfo
-.temp/
-.tmp/
-
-# Local development files
-.vercel
-.netlify
-
-# Backend uploads
-/backend/uploads/*
-!/backend/uploads/.gitkeep
-
-# Redis dump
-*.rdb
-
-# Report files
-report.*.json
+# Coverage directory used by tools like istanbul
+coverage/
 *.lcov
-
-# Bundle analyzer
-/frontend/bundle-analysis.html
 
 # Environment variables
 .env
 .env.local
-.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.production
 
-# Firebase
-**/firebase-adminsdk-*.json
-**/firebase-credentials.json
-
-# Build outputs
-/build
+# React build files
+build/
+frontend/build/
 
 # Logs
 logs
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Uploads and media files
+uploads/
+public/uploads/
+backend/uploads/
+frontend/public/uploads/
+
+# Temporary files
+tmp/
+temp/
 
 # IDE and editor files
-.idea/
 .vscode/
+.idea/
 *.swp
 *.swo
+*~
+
+# OS generated files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
-# Uploads
-/uploads
-/public/uploads
+# Backup files
+*.backup
+*.bak
 
-# Error pages
-/errors 
+# Redis dump files
+dump.rdb
+
+# MongoDB dump files
+*.bson
+
+# Test files
+test-results/
+coverage/

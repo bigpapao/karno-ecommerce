@@ -10,7 +10,7 @@ import { connectDB } from './config/database.js';
 import { errorHandler } from './middleware/error-handler.middleware.js';
 // app.use(errorHandler);
 import { logger, logAPIRequest } from './utils/logger.js';
-import { createAllIndexes } from './utils/database-indexes.js';
+
 
 // Import custom security middleware
 import { securityMiddleware } from './middleware/security.middleware.js';
@@ -45,6 +45,7 @@ import cartRoutes from './routes/cart.routes.js';
 import addressRoutes from './routes/address.routes.js';
 import sitemapRoutes from './routes/sitemap.routes.js';
 import recommendationRoutes from './routes/recommendation.routes.js';
+import analyticsRoutes from './routes/analytics.routes.js';
 import recommendationMonitoringRoutes from './routes/recommendation-monitoring.routes.js';
 import vehicleRoutes from './routes/vehicle.routes.js';
 
@@ -56,24 +57,8 @@ try {
   await connectDB();
   logger.info('MongoDB connected successfully');
 
-  // Create database indexes (if not already present)
-  if (process.env.CREATE_INDEXES_ON_STARTUP !== 'false') {
-    try {
-      const result = await createAllIndexes();
-      if (result.success) {
-        logger.info('Database indexes initialized successfully');
-      } else {
-        logger.warn(`Database indexes initialization skipped or failed: ${result.error}`);
-      }
-    } catch (indexError) {
-      logger.error({
-        message: 'Error initializing database indexes',
-        error: indexError.message,
-        stack: indexError.stack,
-      });
-      // Continue without indexes - they can be created later with the script
-    }
-  }
+  // Skip external index creation - models already define their own indexes
+  logger.info('Database indexes are managed by model schemas');
 } catch (error) {
   logger.error({
     message: 'Failed to connect to MongoDB',
@@ -199,6 +184,7 @@ apiV1Router.use('/addresses', addressRoutes);
 apiV1Router.use('/sitemap', sitemapRoutes);
 apiV1Router.use('/recommendations', recommendationRoutes);
 apiV1Router.use('/recommendation-monitoring', recommendationMonitoringRoutes);
+apiV1Router.use('/analytics', analyticsRoutes);
 apiV1Router.use('/vehicles', vehicleRoutes);
 
 // Mount versioned API router
