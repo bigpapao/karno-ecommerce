@@ -380,9 +380,87 @@ export const getSearchSuggestions = asyncHandler(async (req, res, next) => {
  */
 export const searchByVehicle = asyncHandler(async (req, res, next) => {
   const {
-    make, model, year, page = 1, limit = 10,
+    vehicle, make, model, year, page = 1, limit = 10, sortBy = 'createdAt',
   } = req.query;
 
+  // If vehicle ID is provided, look up the vehicle model first
+  let vehicleModel = null;
+  let manufacturer = null;
+  
+  if (vehicle) {
+    try {
+      // Import VehicleModel and Manufacturer models
+      const VehicleModel = (await import('../models/VehicleModel.js')).default;
+      const Manufacturer = (await import('../models/Manufacturer.js')).default;
+      
+      // Find the vehicle model by ID
+      vehicleModel = await VehicleModel.findById(vehicle).populate('manufacturer');
+      
+      if (!vehicleModel) {
+        return next(new AppError('Vehicle model not found', 404));
+      }
+      
+      manufacturer = vehicleModel.manufacturer;
+      
+      logger.info(`Vehicle search: Found vehicle ${vehicleModel.name} (${vehicleModel.nameEn}) from manufacturer ${manufacturer?.name}`);
+      
+      // Build query using the vehicle model ID
+      const query = {
+        'compatibleVehicles.modelId': vehicleModel._id,
+        $or: [
+          { status: { $exists: false } },
+          { status: 'active' }
+        ]
+      };
+
+      const pageNum = parseInt(page, 10);
+      const limitNum = parseInt(limit, 10);
+      const skip = (pageNum - 1) * limitNum;
+
+      // Build sort object
+      const sortObj = {};
+      sortObj[sortBy] = -1;
+
+      // Execute query
+      const products = await Product.find(query)
+        .select('name description price discountPrice images category brand slug stock rating numReviews')
+        .populate('category', 'name slug')
+        .populate('brand', 'name slug logo')
+        .sort(sortObj)
+        .skip(skip)
+        .limit(limitNum)
+        .lean();
+
+      const total = await Product.countDocuments(query);
+
+      res.status(200).json({
+        status: 'success',
+        results: products.length,
+        total,
+        totalPages: Math.ceil(total / limitNum),
+        currentPage: pageNum,
+        data: products,
+        vehicleInfo: {
+          id: vehicleModel._id,
+          name: vehicleModel.name,
+          nameEn: vehicleModel.nameEn,
+          manufacturer: {
+            id: manufacturer._id,
+            name: manufacturer.name,
+            nameEn: manufacturer.nameEn
+          }
+        }
+      });
+      
+      return;
+      
+    } catch (error) {
+      logger.error('Error in vehicle search:', error);
+      return next(new AppError('Error processing vehicle search', 500));
+    }
+  }
+
+  // Fallback to original make/model search if no vehicle ID provided
   if (!make) {
     return next(new AppError('Vehicle make is required', 400));
   }
@@ -406,12 +484,16 @@ export const searchByVehicle = asyncHandler(async (req, res, next) => {
     query.compatibleVehicles.$elemMatch.year = parseInt(year, 10);
   }
 
+  // Build sort object
+  const sortObj = {};
+  sortObj[sortBy] = -1;
+
   // Execute query
   const products = await Product.find(query)
-    .select('name description price images category brand slug stock rating')
+    .select('name description price discountPrice images category brand slug stock rating numReviews')
     .populate('category', 'name slug')
-    .populate('brand', 'name slug')
-    .sort({ createdAt: -1 })
+    .populate('brand', 'name slug logo')
+    .sort(sortObj)
     .skip(skip)
     .limit(limitNum)
     .lean();

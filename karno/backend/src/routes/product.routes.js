@@ -165,7 +165,7 @@ router.get(
 );
 
 // Vehicle compatibility endpoints
-router.get('/vehicle-search', searchByVehicle);
+router.get('/vehicle-search', cacheMiddleware(CACHE_KEYS.PRODUCTS, 300), searchByVehicle);
 router.get('/vehicle-makes', cacheMiddleware(86400), getVehicleMakes); // Cache for 1 day
 router.get('/vehicle-models', cacheMiddleware(86400), getVehicleModels);
 router.get('/vehicle-years', cacheMiddleware(86400), getVehicleYears);
