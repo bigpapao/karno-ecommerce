@@ -3,17 +3,7 @@
   "name": "karno-ecommerce",
   "buildCommand": "cd karno/frontend && npm install && npm run build",
   "outputDirectory": "karno/frontend/build",
-  "installCommand": "npm run install:all",
-  "functions": {
-    "api/**/*.js": {
-      "runtime": "nodejs18.x"
-    }
-  },
   "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
-    },
     {
       "source": "/(.*)",
       "destination": "/index.html"
