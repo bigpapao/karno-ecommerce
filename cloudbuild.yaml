@@ -34,10 +34,14 @@ steps:
       - '--concurrency'
       - '80'
       - '--set-env-vars'
-      - 'NODE_ENV=production,PORT=5000'
+      - 'NODE_ENV=production,PORT=5000,MONGODB_URI=${_MONGODB_URI},JWT_SECRET=${_JWT_SECRET}'
 
 images:
   - 'gcr.io/$PROJECT_ID/karno-backend:$COMMIT_SHA'
 
 options:
-  logging: CLOUD_LOGGING_ONLY 
+  logging: CLOUD_LOGGING_ONLY
+
+substitutions:
+  _MONGODB_URI: 'your_mongodb_connection_string_here'
+  _JWT_SECRET: 'your_jwt_secret_here' 
