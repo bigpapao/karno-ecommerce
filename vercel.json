@@ -3,6 +3,7 @@
   "name": "karno-ecommerce",
   "buildCommand": "cd karno/frontend && npm install && npm run build",
   "outputDirectory": "karno/frontend/build",
+  "installCommand": "cd karno/frontend && npm install",
   "rewrites": [
     {
       "source": "/(.*)",
