@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Configuration - UPDATE THESE VALUES
-const ATLAS_URI = 'mongodb+srv://username:password@cluster.mongodb.net/karno?retryWrites=true&w=majority';
+const ATLAS_URI = 'mongodb+srv://vahidchaf:YahooVahid79@cluster.x8nqqru.mongodb.net/karno?retryWrites=true&w=majority&appName=Cluster';
 const BACKUP_PATH = './backup/karno';
 
 async function importData() {
