@@ -8,7 +8,9 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --detectOpenHandles",
-    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch"
+    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
+    "build": "echo 'No build step required for Node.js'",
+    "postinstall": "echo 'Dependencies installed successfully'"
   },
   "keywords": [
     "ecommerce",
