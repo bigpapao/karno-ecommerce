@@ -88,6 +88,11 @@ app.use(cors({
     'http://localhost:3001',
     'http://localhost:5000',
     'http://localhost:5001',
+    'https://karno-ecommerce.vercel.app',
+    'https://*.vercel.app',
+    'https://*.onrender.com',
+    'https://*.railway.app',
+    'https://*.fly.dev',
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -204,7 +209,25 @@ app.use(notFoundHandler);
 // Global error handler
 app.use(errorHandler);
 
-// Start server
-app.listen(port, () => {
+// Health check endpoint for Cloud Run
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    message: 'Server is running',
+    timestamp: new Date().toISOString(),
+    port: port
+  });
+});
+
+// Start server with better error handling
+const server = app.listen(port, '0.0.0.0', () => {
   logger.info(`Server is running on port ${port}`);
+  console.log(`Server is running on port ${port}`);
+});
+
+// Handle server errors
+server.on('error', (error) => {
+  logger.error('Server error:', error);
+  console.error('Server error:', error);
+  process.exit(1);
 });
