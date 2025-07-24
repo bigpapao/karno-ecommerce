@@ -144,3 +144,4 @@ For support, email support@karno.com or create an issue in the repository.
 ---
 
 **Built with ❤️ for the Iranian automotive community**# Environment variables updated - 07/24/2025 16:37:35
+# Redeployment trigger - 07/24/2025 17:50:46
