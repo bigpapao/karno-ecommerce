@@ -4,7 +4,6 @@
   "description": "Karno - Iranian Car Parts E-commerce Platform",
   "main": "karno/backend/src/server.js",
   "scripts": {
-    "build": "cd karno/frontend && npm install && npm run build",
     "start": "cd karno/backend && npm start",
     "dev": "cd karno/backend && npm run dev",
     "install:all": "npm install && cd karno/frontend && npm install && cd ../backend && npm install",
