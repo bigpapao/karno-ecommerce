@@ -104,188 +104,43 @@ A comprehensive full-stack e-commerce platform specialized in Iranian car parts 
    # Edit .env with your configuration
    ```
 
-4. **Database Setup**
+4. **Start the development servers**
    ```bash
-   # Make sure MongoDB is running
-   # The application will create the database automatically
-   
-   # Optional: Seed sample data
-   cd backend
-   npm run seed
-   ```
-
-5. **Start the application**
-   ```bash
-   # Start backend server (Terminal 1)
+   # Start backend server
    cd backend
    npm run dev
    
-   # Start frontend development server (Terminal 2)
+   # Start frontend server (in new terminal)
    cd frontend
    npm start
    ```
 
-6. **Access the application**
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:5000
-   - API Documentation: http://localhost:5000/api-docs
+## 📚 Documentation
 
-## 📁 Project Structure
+- **`DEPLOYMENT.md`** - Comprehensive deployment guide
+- **`QUICK_DEPLOY.md`** - 5-minute deployment guide
+- **`ENVIRONMENT_SETUP.md`** - Environment variables setup guide
 
-```
-karno-ecommerce/
-├── frontend/                 # React.js frontend application
-│   ├── public/              # Static assets
-│   ├── src/
-│   │   ├── components/      # Reusable UI components
-│   │   ├── pages/          # Page components
-│   │   ├── services/       # API services
-│   │   ├── store/          # Redux store and slices
-│   │   ├── utils/          # Utility functions
-│   │   └── styles/         # Global styles
-│   ├── package.json
-│   └── .env.example
-├── backend/                 # Node.js backend API
-│   ├── src/
-│   │   ├── controllers/    # Route controllers
-│   │   ├── models/         # Database models
-│   │   ├── routes/         # API routes
-│   │   ├── middleware/     # Custom middleware
-│   │   ├── services/       # Business logic
-│   │   └── utils/          # Utility functions
-│   ├── package.json
-│   └── .env.example
-├── .gitignore
-└── README.md
-```
+## 🌐 Live Demo
 
-## 🔧 Configuration
-
-### Backend Environment Variables
-```env
-# Server
-NODE_ENV=development
-PORT=5000
-
-# Database
-MONGODB_URI=mongodb://localhost:27017/karno-ecommerce
-
-# Redis
-REDIS_HOST=localhost
-REDIS_PORT=6379
-
-# Authentication
-JWT_SECRET=your_jwt_secret
-
-# Payment Gateways
-STRIPE_SECRET_KEY=sk_test_...
-ZARINPAL_MERCHANT_ID=your_merchant_id
-
-# Email
-SMTP_HOST=smtp.gmail.com
-SMTP_EMAIL=your_email@gmail.com
-SMTP_PASSWORD=your_password
-```
-
-### Frontend Environment Variables
-```env
-# API
-REACT_APP_API_URL=http://localhost:5000/api/v1
-
-# Features
-REACT_APP_CART_ENABLED=true
-
-# Contact
-REACT_APP_TEL=+98XXXXXXXXXX
-REACT_APP_TELEGRAM=your_telegram
-REACT_APP_WHATSAPP=+98XXXXXXXXXX
-```
-
-## 🚀 Deployment
-
-### Production Build
-```bash
-# Build frontend
-cd frontend
-npm run build
-
-# Start backend in production
-cd backend
-NODE_ENV=production npm start
-```
-
-### Deployment Options
-- **Vercel/Netlify**: Frontend deployment
-- **Heroku/Railway**: Full-stack deployment
-- **DigitalOcean/AWS**: VPS deployment
-- **Docker**: Containerized deployment
-
-## 📱 PWA Features
-
-The application includes Progressive Web App features:
-- **Offline Support**: Cache critical resources
-- **Add to Home Screen**: Install as native app
-- **Push Notifications**: Order updates and promotions
-- **Background Sync**: Sync data when connection restored
-
-## 🔒 Security Features
-
-- **Authentication**: JWT-based secure authentication
-- **Authorization**: Role-based access control
-- **Input Validation**: Comprehensive request validation
-- **Rate Limiting**: API rate limiting and DDoS protection
-- **Data Sanitization**: XSS and injection attack prevention
-- **HTTPS**: SSL/TLS encryption
-- **CORS**: Cross-origin resource sharing configuration
-
-## 🧪 Testing
-
-```bash
-# Run backend tests
-cd backend
-npm test
-
-# Run frontend tests
-cd frontend
-npm test
-
-# Run tests with coverage
-npm run test:coverage
-```
-
-## 📊 Analytics & Monitoring
-
-- **Google Analytics**: User behavior tracking
-- **Performance Monitoring**: Core Web Vitals
-- **Error Tracking**: Comprehensive error logging
-- **API Monitoring**: Request/response monitoring
+Visit the live application at: [Your Vercel URL]
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the ISC License.
 
-## 🆘 Support
+## 📞 Support
 
-For support and questions:
-- **Email**: support@karno.com
-- **Telegram**: @karno_support
-- **GitHub Issues**: [Create an issue](https://github.com/bigpapao/karno-ecommerce/issues)
-
-## 🙏 Acknowledgments
-
-- Iranian automotive industry for inspiration
-- Open source community for amazing tools
-- Material-UI team for excellent components
-- All contributors and supporters
+For support, email support@karno.com or create an issue in the repository.
 
 ---
 
-**Made with ❤️ for the Iranian automotive community**
+**Built with ❤️ for the Iranian automotive community**# Environment variables updated - 07/24/2025 16:37:35
