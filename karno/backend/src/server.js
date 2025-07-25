@@ -86,7 +86,7 @@ app.use(cors({
   origin: [
     'http://localhost:3000',
     'http://localhost:3001',
-    'http://localhost:5000',
+    `http://localhost:${PORT}`,
     'http://localhost:5001',
     'https://karno-ecommerce.vercel.app',
     'https://*.vercel.app',
@@ -201,7 +201,7 @@ app.get('/health', (req, res) => {
     status: 'ok',
     message: 'Server is running',
     timestamp: new Date().toISOString(),
-    port: port
+    port: PORT
   });
 });
 
@@ -220,9 +220,9 @@ app.use(notFoundHandler);
 app.use(errorHandler);
 
 // Start server with better error handling
-const server = app.listen(port, '0.0.0.0', () => {
-  logger.info(`Server is running on port ${port}`);
-  console.log(`Server is running on port ${port}`);
+const server = app.listen(PORT, '0.0.0.0', () => {
+  logger.info(`Server is running on port ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });
 
 // Handle server errors
