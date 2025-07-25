@@ -195,6 +195,16 @@ apiV1Router.use('/vehicles', vehicleRoutes);
 // Mount versioned API router
 app.use('/api/v1', apiV1Router);
 
+// Health check endpoint for Cloud Run
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    message: 'Server is running',
+    timestamp: new Date().toISOString(),
+    port: port
+  });
+});
+
 // 404 handler
 const notFoundHandler = (req, res, next) => {
   res.status(404).json({
@@ -208,16 +218,6 @@ app.use(notFoundHandler);
 
 // Global error handler
 app.use(errorHandler);
-
-// Health check endpoint for Cloud Run
-app.get('/health', (req, res) => {
-  res.status(200).json({
-    status: 'ok',
-    message: 'Server is running',
-    timestamp: new Date().toISOString(),
-    port: port
-  });
-});
 
 // Start server with better error handling
 const server = app.listen(port, '0.0.0.0', () => {
