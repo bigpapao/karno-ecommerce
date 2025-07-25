@@ -1,0 +1,45 @@
+# Backend files (not needed for frontend deployment)
+backend/
+node_modules/
+coverage/
+backup/
+uploads/
+*.log
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Development files
+.git/
+.gitignore
+README.md
+*.md
+Dockerfile
+docker-compose.yml
+cloudbuild*.yaml
+app.yaml
+deploy-*.sh
+*.bat
+
+# Test files
+tests/
+__tests__/
+*.test.js
+*.spec.js
+
+# Build artifacts
+build/
+dist/
+.cache/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db 

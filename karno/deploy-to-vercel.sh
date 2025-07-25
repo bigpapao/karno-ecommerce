@@ -1,36 +1,21 @@
 #!/bin/bash
 
-# 🚀 Karno E-commerce Vercel Deployment Script
-# This script helps you deploy your Karno project to Vercel
-
-echo "🚀 Starting Karno E-commerce Vercel Deployment..."
+echo "🚀 Deploying Karno Frontend to Vercel..."
 
 # Check if Vercel CLI is installed
 if ! command -v vercel &> /dev/null; then
-    echo "❌ Vercel CLI is not installed. Installing now..."
-    npm install -g vercel
-fi
-
-# Check if we're in the right directory
-if [ ! -f "package.json" ]; then
-    echo "❌ Please run this script from the project root directory"
+    echo "❌ Vercel CLI is not installed. Please install it first:"
+    echo "npm install -g vercel"
     exit 1
 fi
 
-# Install dependencies
-echo "📦 Installing dependencies..."
-npm run install:all
-
-# Build the frontend
-echo "🔨 Building frontend..."
-cd karno/frontend
-npm run build
-cd ../..
+# Navigate to the project root
+cd "$(dirname "$0")"
 
 # Deploy to Vercel
-echo "🚀 Deploying to Vercel..."
+echo "📦 Building and deploying..."
 vercel --prod
 
 echo "✅ Deployment completed!"
-echo "🌐 Your app should be available at the URL provided above"
-echo "📊 Check your Vercel dashboard for deployment status" 
+echo "🌐 Your frontend should now be live at the URL provided above"
+echo "🔗 Backend URL: https://karno-backend-834670291128.europe-west1.run.app" 

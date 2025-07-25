@@ -1,14 +1,11 @@
 {
   "version": 2,
   "name": "karno-ecommerce-frontend",
-  "buildCommand": "cd frontend && npm install && npm run build",
-  "outputDirectory": "frontend/build",
-  "installCommand": "npm run install:all",
+  "buildCommand": "cd karno/frontend && npm install && npm run build",
+  "outputDirectory": "karno/frontend/build",
+  "installCommand": "cd karno/frontend && npm install",
+  "framework": null,
   "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
-    },
     {
       "source": "/(.*)",
       "destination": "/index.html"

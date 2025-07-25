@@ -4,10 +4,11 @@
   "description": "Karno - Iranian Car Parts E-commerce Platform",
   "main": "karno/backend/src/server.js",
   "scripts": {
-    "build": "cd frontend && npm install && npm run build",
+    "build": "cd karno/frontend && npm install && npm run build",
     "start": "cd backend && npm start",
     "dev": "cd backend && npm run dev",
-    "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install",
+    "install:all": "npm install && cd karno/frontend && npm install && cd ../backend && npm install",
+    "vercel-build": "cd karno/frontend && npm install && npm run build",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx --ignore-path .eslintignore",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix --ignore-path .eslintignore"
