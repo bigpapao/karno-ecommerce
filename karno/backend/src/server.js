@@ -50,7 +50,7 @@ import recommendationMonitoringRoutes from './routes/recommendation-monitoring.r
 import vehicleRoutes from './routes/vehicle.routes.js';
 
 const app = express();
-const port = 5000;
+const PORT = process.env.PORT || 8080;
 
 // Connect to MongoDB
 try {

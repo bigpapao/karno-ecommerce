@@ -22,8 +22,7 @@ steps:
       - '--platform'
       - 'managed'
       - '--allow-unauthenticated'
-      - '--port'
-      - '5000'
+
       - '--memory'
       - '1Gi'
       - '--cpu'
@@ -35,7 +34,9 @@ steps:
       - '--concurrency'
       - '80'
       - '--set-env-vars'
-      - 'NODE_ENV=production,MONGODB_URI=${_MONGODB_URI},JWT_SECRET=${_JWT_SECRET}'
+      - 'NODE_ENV=production'
+      - '--set-env-vars=MONGODB_URI=${_MONGODB_URI}'
+      - '--set-env-vars=JWT_SECRET=${_JWT_SECRET}'
 
 images:
   - 'gcr.io/$PROJECT_ID/karno-backend:$COMMIT_SHA'
